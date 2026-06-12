@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Layers, RotateCcw } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CheckCircle2, Copy, Layers, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PLATFORM_CONFIG } from "@/lib/platforms";
@@ -17,6 +18,16 @@ import { CaptionField } from "./CaptionField";
 import { ScheduleCard, type ComposerAction } from "./ScheduleCard";
 import { UploadDropzone } from "./UploadDropzone";
 import type { ComposerAccount, UploadedMedia } from "./types";
+
+export interface InitialPost {
+  id: string;
+  type: PostTypeKey;
+  status: "draft" | "scheduled" | "publishing" | "posted" | "failed";
+  mainCaption: string;
+  perPlatform: Record<string, string>;
+  targets: string[];
+  media: UploadedMedia[];
+}
 
 const TYPE_TITLE: Record<PostTypeKey, string> = {
   text: "Create text post",
@@ -44,31 +55,43 @@ export function Composer({
   type,
   accounts,
   timezone,
+  initialPost = null,
+  initialDate,
 }: {
   type: PostTypeKey;
   accounts: ComposerAccount[];
   timezone: string;
+  initialPost?: InitialPost | null;
+  initialDate?: string;
 }) {
-  const [targets, setTargets] = useState<string[]>([]);
-  const [mainCaption, setMainCaption] = useState("");
-  const [perPlatform, setPerPlatform] = useState<Record<string, string>>({});
-  const [media, setMedia] = useState<UploadedMedia[]>([]);
+  const router = useRouter();
+  const isEdit = initialPost !== null;
+  const editable = !isEdit || initialPost.status === "draft" || initialPost.status === "scheduled";
+
+  const [targets, setTargets] = useState<string[]>(initialPost?.targets ?? []);
+  const [mainCaption, setMainCaption] = useState(initialPost?.mainCaption ?? "");
+  const [perPlatform, setPerPlatform] = useState<Record<string, string>>(
+    initialPost?.perPlatform ?? {},
+  );
+  const [media, setMedia] = useState<UploadedMedia[]>(initialPost?.media ?? []);
   const [activeTab, setActiveTab] = useState<string>("main"); // "main" | accountId
   const [platformCaptionsOpen, setPlatformCaptionsOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const [scheduleOn, setScheduleOn] = useState(false);
+  const [scheduleOn, setScheduleOn] = useState(Boolean(initialDate));
   const [scheduleTab, setScheduleTab] = useState<"time" | "queue">("time");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(initialDate ?? "");
   const [time, setTime] = useState("12:00");
 
   const [remember, setRemember] = useState(false);
   const [submitting, setSubmitting] = useState<ComposerAction | null>(null);
+  const [busy, setBusy] = useState(false); // delete/duplicate
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{ action: ComposerAction; publishAt?: string } | null>(null);
 
-  // Restore remembered selection/settings (doc 01 "Remember" toggle).
+  // Restore remembered selection/settings (doc 01 "Remember" toggle) — create mode only.
   useEffect(() => {
+    if (isEdit) return;
     try {
       const raw = localStorage.getItem(REMEMBER_KEY(type));
       if (!raw) return;
@@ -81,7 +104,7 @@ export function Composer({
     } catch {
       /* ignore corrupt storage */
     }
-  }, [type, accounts]);
+  }, [type, accounts, isEdit]);
 
   const selectedAccounts = useMemo(
     () => accounts.filter((a) => targets.includes(a.id)),
@@ -208,20 +231,33 @@ export function Composer({
     setSubmitting(action);
     setError(null);
     try {
-      // 1. Persist a draft to get an id.
-      const draftRes = await fetch("/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type,
-          mainCaption,
-          perPlatform,
-          targets,
-          media: media.map((m) => ({ mediaId: m.id, order: m.order })),
-        }),
-      });
-      if (!draftRes.ok) throw new Error("Could not save the post.");
-      const { id } = await draftRes.json();
+      const payload = {
+        type,
+        mainCaption,
+        perPlatform,
+        targets,
+        media: media.map((m) => ({ mediaId: m.id, order: m.order })),
+      };
+
+      // 1. Persist: PATCH the existing post in edit mode, else POST a new draft.
+      let id: string;
+      if (isEdit) {
+        const patch = await fetch(`/api/posts/${initialPost.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!patch.ok) throw new Error("Could not update the post.");
+        id = initialPost.id;
+      } else {
+        const draftRes = await fetch("/api/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!draftRes.ok) throw new Error("Could not save the post.");
+        id = (await draftRes.json()).id;
+      }
 
       if (action === "draft") {
         if (remember) persistRemember(true);
@@ -266,6 +302,35 @@ export function Composer({
     }
   }
 
+  async function handleDelete() {
+    if (!isEdit) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/posts/${initialPost.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Could not delete the post.");
+      router.push("/posts/all");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not delete.");
+      setBusy(false);
+    }
+  }
+
+  async function handleDuplicate() {
+    if (!isEdit) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/posts/${initialPost.id}/duplicate`, { method: "POST" });
+      if (!res.ok) throw new Error("Could not duplicate the post.");
+      const { id } = await res.json();
+      router.push(`/create/${type}?postId=${id}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not duplicate.");
+      setBusy(false);
+    }
+  }
+
   function reset() {
     setSuccess(null);
     setError(null);
@@ -289,35 +354,59 @@ export function Composer({
           ? "Fix the highlighted account(s) before posting"
           : null;
 
+  const title = isEdit ? TYPE_TITLE[type].replace("Create", "Edit") : TYPE_TITLE[type];
+
   return (
     <div className="mx-auto max-w-5xl p-6 md:p-8">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">{TYPE_TITLE[type]}</h1>
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={(e) => persistRemember(e.target.checked)}
-            className="h-4 w-4 rounded border-input"
-          />
-          Remember accounts
-        </label>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        {isEdit ? (
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleDuplicate} disabled={busy}>
+              <Copy />
+              Duplicate
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDelete} disabled={busy}>
+              <Trash2 />
+              Delete
+            </Button>
+          </div>
+        ) : (
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => persistRemember(e.target.checked)}
+              className="h-4 w-4 rounded border-input"
+            />
+            Remember accounts
+          </label>
+        )}
       </div>
 
-      <div className="mb-6 flex w-fit gap-1 rounded-lg bg-muted p-1 text-sm">
-        {TYPE_TABS.map((t) => (
-          <Link
-            key={t.key}
-            href={`/create/${t.key}`}
-            className={cn(
-              "rounded-md px-3 py-1.5 font-medium transition-colors",
-              t.key === type ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
+      {!editable && (
+        <div className="mb-4 rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
+          This post is {initialPost.status}. It can&apos;t be edited — use Duplicate to make a new
+          version.
+        </div>
+      )}
+
+      {!isEdit && (
+        <div className="mb-6 flex w-fit gap-1 rounded-lg bg-muted p-1 text-sm">
+          {TYPE_TABS.map((t) => (
+            <Link
+              key={t.key}
+              href={`/create/${t.key}`}
+              className={cn(
+                "rounded-md px-3 py-1.5 font-medium transition-colors",
+                t.key === type ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         {/* ── Left: account row + composer body ── */}
@@ -411,10 +500,10 @@ export function Composer({
           setDate={setDate}
           time={time}
           setTime={setTime}
-          submitEnabled={submitEnabled}
+          submitEnabled={submitEnabled && editable && !busy}
           submitting={submitting}
           onAction={submit}
-          disabledReason={disabledReason}
+          disabledReason={editable ? disabledReason : "This post can no longer be edited"}
         />
       </div>
     </div>

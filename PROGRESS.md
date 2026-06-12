@@ -110,14 +110,49 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
       story}`=200 w/ titles, `/create/bogus`=404, unauth→`/login?next=`. Throwaway sessions/
       posts/media purged. (Mid-test 500s were a stale dev-server worker pool from concurrent
       npm install/remove — clean `.next` + dev restart resolved; not a code issue.)
-- ☐ **CHECKPOINT (human):** review composer + media + draft/schedule/queue wiring; confirm the
-      Phase-4/5 boundary (records created, dispatch deferred) is OK before building the worker.
+- ☑ **CHECKPOINT (human):** reviewed composer + media + draft/schedule/queue wiring; Phase-4/5
+      boundary (records created, dispatch deferred) signed off (2026-06-12).
 
 ## Phase 5 — Scheduling, Lists, Calendar (`07–08`)
-- ☐ BullMQ queues + worker; due-post dispatch; idempotency; retry; missed-run sweep
-- ☐ Queue slot computation; posts lists + filters + badges; calendar month/week
-- ☐ Drafts 90-day cleanup job
-- ☐ CHECKPOINT
+- ☑ BullMQ dispatch + worker: enqueue wiring in `posts.ts` dispatch (`enqueueDispatch` →
+      `enqueuePublish`, one delayed job per pending target). `worker/index.ts` now runs a real
+      publish processor + a maintenance worker. `src/server/publish-runner.ts`
+      (`publishTarget` + `recomputePostStatus`): decrypt tokens, lazy-refresh expired tokens
+      (auth fail → account=expired + target failed), `provider.publish`, per-target status, and
+      parent-post rollup (all success→posted, any active→publishing, else→failed). Retry =
+      throw while `retryable && attempts < 5` (BullMQ exp-backoff 30s); terminal `failed` once
+      exhausted. **Idempotency:** target re-checks `status===success` first; BullMQ `jobId =
+      publish-<targetId>` (NOT idempotencyKey — BullMQ forbids ":" in custom ids; targetId is
+      1:1 with the target so dedup is preserved).
+- ☑ Maintenance sweeps (`src/server/maintenance.ts`) on repeatable schedules: missed-run sweep
+      (every 60s; re-enqueue due `scheduled`/`publishing` posts with pending targets),
+      token-refresh sweep (30m), **drafts 90-day cleanup** (daily 03:00).
+- ☑ Posts lists `/posts/[filter]` (all/scheduled/posted/drafts): URL-driven filter bar
+      (sort/platform/type), post cards (date+time in user tz, type chip, caption snippet,
+      stacked target avatars, status badge), empty states. Components in `src/components/posts/`
+      + `src/lib/post-display.ts`.
+- ☑ Calendar `/calendar` month + week: posts placed by `publishAt`/`publishedAt` bucketed to
+      the user's tz day (DST-safe via `Intl`-offset day keys, `src/lib/calendar.ts`); 1 chip per
+      post w/ stacked platform icons + status dot; prev/next + Today + month/week toggle +
+      platform filter; click empty day → `/create/text?date=`, click chip → edit. Drafts (no
+      publishAt) excluded.
+- ☑ Composer edit + prefill (completes doc 06 edit): `/create/[type]?postId=` rehydrates the
+      post (captions/targets/media), PATCHes on submit, Duplicate/Delete actions, read-only
+      banner for posted/publishing; wrong-type URL redirects to the post's type;
+      `?date=YYYY-MM-DD` prefills the schedule day. Makes list/calendar cards clickable.
+- ☑ Verified (2026-06-12, infra + worker up): `tsc` clean, `next build` (32 routes), `vitest`
+      6/6. **20-check engine smoke** (all green): publishTarget success→target success+url + post
+      rollup=posted; retryable fail→throws, target back to pending, attempts++, error set;
+      terminal fail (attempts exhausted)→target failed + post failed; **missed-run sweep
+      re-enqueues → live worker publishes → posted**; 90-day draft deleted while recent draft
+      kept; **end-to-end post-now over HTTP → enqueue → worker → posted** w/ externalUrl.
+      **18-check UI smoke**: all 4 list filters 200 + correct membership + platform filter,
+      `/posts/bogus`=404, calendar month/week 200 w/ chip on correct tz day, composer edit
+      (Edit title + rehydrated caption), wrong-type redirect, `?date=` prefill. Throwaway data
+      purged. NOTE: live partial-failure UX (MOCK_FAIL result cards + per-target retry) is the
+      Phase 6 publishing flow (doc 09); the worker failure branches themselves are verified here.
+- ☐ **CHECKPOINT (human):** review scheduling engine + lists + calendar; confirm worker runs as
+      a separate `npm run worker:start` process and the idempotency/retry model is OK.
 
 ## Phase 6 — Publishing (`09`)
 - ☐ Publish orchestration; progress screen; per-target result cards; retry

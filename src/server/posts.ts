@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/server/db";
+import { enqueuePublish } from "@/server/queue";
 import { nextQueueSlot, type QueueSettingsDef } from "@/server/queue-slots";
 import {
   resolveCaption,
@@ -90,7 +91,10 @@ export async function createDraft(userId: string, input: CreatePostInput): Promi
 export async function getOwnedPost(userId: string, postId: string) {
   const post = await prisma.post.findFirst({
     where: { id: postId, userId },
-    include: { media: { orderBy: { order: "asc" } }, targets: true },
+    include: {
+      media: { include: { media: true }, orderBy: { order: "asc" } },
+      targets: true,
+    },
   });
   return post;
 }
@@ -152,6 +156,19 @@ export async function duplicatePost(userId: string, postId: string): Promise<Pos
 export type DispatchOutcome =
   | { ok: true; post: Post }
   | { ok: false; status: number; errors: AccountValidationError[] | string };
+
+/**
+ * Enqueue one delayed publish job per pending target (doc 08). delay = publishAt − now
+ * (0 for "post now"). jobId = idempotencyKey so duplicate enqueues collapse.
+ */
+async function enqueueDispatch(postId: string, publishAt: Date): Promise<void> {
+  const targets = await prisma.postTarget.findMany({
+    where: { postId, status: "pending" },
+    select: { id: true },
+  });
+  const delayMs = publishAt.getTime() - Date.now();
+  await enqueuePublish(targets.map((t) => ({ targetId: t.id, delayMs })));
+}
 
 /**
  * Server-side re-validation before any state transition: the post must target ≥1 eligible
@@ -226,6 +243,7 @@ export async function publishNow(
       data: { status: "publishing", scheduleMode: "now", publishAt: new Date() },
     });
   });
+  await enqueueDispatch(post.id, post.publishAt ?? new Date());
   return { ok: true, post };
 }
 
@@ -249,6 +267,7 @@ export async function schedulePost(
       data: { status: "scheduled", scheduleMode: "time", publishAt, timezone },
     });
   });
+  await enqueueDispatch(post.id, publishAt);
   return { ok: true, post };
 }
 
@@ -290,5 +309,6 @@ export async function addToQueue(
       data: { status: "scheduled", scheduleMode: "queue", publishAt: slot, timezone: settings.timezone },
     });
   });
+  await enqueueDispatch(post.id, slot);
   return { ok: true, post };
 }
