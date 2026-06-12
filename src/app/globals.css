@@ -47,6 +47,44 @@
     --status-failed: 0 72% 51%; /* red */
   }
 
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 210 20% 98%;
+
+    --card: 222 47% 7%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 222 47% 7%;
+    --popover-foreground: 210 20% 98%;
+
+    /* Green primary stays vivid on dark surfaces */
+    --primary: 142 71% 45%;
+    --primary-foreground: 144 80% 6%;
+
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 210 20% 98%;
+
+    /* Dark gray surfaces */
+    --muted: 217 33% 12%;
+    --muted-foreground: 217 11% 65%;
+
+    --accent: 142 40% 16%;
+    --accent-foreground: 142 71% 75%;
+
+    --destructive: 0 63% 45%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 142 71% 45%;
+
+    /* Status colors — badges/chips (doc 14) */
+    --status-posted: 142 71% 45%; /* green */
+    --status-scheduled: 217 91% 60%; /* blue */
+    --status-draft: 38 92% 50%; /* amber */
+    --status-failed: 0 72% 55%; /* red */
+  }
+
   * {
     @apply border-border;
   }

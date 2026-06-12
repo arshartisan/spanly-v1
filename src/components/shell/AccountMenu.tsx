@@ -2,16 +2,20 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronsUpDown, CreditCard, LogOut, Settings } from "lucide-react";
+import { ChevronsUpDown, CreditCard, LogOut, Palette, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ThemeItems } from "@/components/ui/mode-toggle";
 
 interface AccountMenuProps {
   displayName: string;
@@ -72,6 +76,15 @@ export function AccountMenu({ displayName, email, planLabel, avatarUrl }: Accoun
             Billing
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Palette className="h-4 w-4" />
+            Theme
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <ThemeItems />
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={(e) => { e.preventDefault(); signOut(); }}>
           <LogOut className="h-4 w-4" />
