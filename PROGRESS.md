@@ -78,13 +78,40 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
       while reconnect of an existing platform is allowed · unauth refresh/delete→401 · tampered
       state→?error=state. Mock consent page renders Allow/Cancel + IG method label. Throwaway
       test user purged; seed demo user intact (6 accounts).
-- ☐ **CHECKPOINT (human):** review connections flow; confirm mock-OAuth + account-limit UX.
+- ☑ **CHECKPOINT (human):** reviewed connections flow; mock-OAuth + account-limit UX signed off (2026-06-12).
 
 ## Phase 4 — Composer + Media (`06`)
-- ☐ Type-parameterized composer; account selector by capability; per-platform captions
-- ☐ Media presign/finalize; validation via provider.validate
-- ☐ Draft/post-now/schedule/queue wiring
-- ☐ CHECKPOINT
+- ☑ Type-parameterized composer (`/create/[type]`, one component for text/image/video/story):
+      capability-filtered account row, caption field w/ circular counter ring (limit = min
+      captionMax across selected), per-platform caption tabs (≥2 accounts), upload dropzone
+      (click/drag/paste; story = exactly 1 media), schedule card (Post now · Pick a time +
+      quick-set chips · Add to queue · Save to Drafts), type switcher, Remember toggle
+      (localStorage). Components in `src/components/composer/` + `CreatePostButton` already
+      routes to `/create/text`.
+- ☑ Media presign/finalize: `src/server/storage.ts` (S3/MinIO presigned PUT, path-style;
+      `@aws-sdk/client-s3` + `s3-request-presigner`) + `POST /api/media/{presign,finalize}`.
+      Browser uploads direct-to-S3; finalize persists Media (processed=false; ffmpeg = Phase 5).
+- ☑ Draft/post-now/schedule/queue wiring: `src/server/posts.ts` (createDraft, update, delete,
+      duplicate, publishNow, schedulePost, addToQueue) + `src/lib/schemas/post.ts` (zod +
+      isomorphic `validatePostTargets`/`captionLimitFor`/`canSubmit`/`resolveCaption`) +
+      `src/server/queue-slots.ts` (next open slot in user tz via Intl offset, DST-refined).
+      Routes: `POST /api/posts`, `PATCH/DELETE /api/posts/[id]`,
+      `POST /api/posts/[id]/{publish,schedule,queue,duplicate}`. On dispatch: one PostTarget
+      per account w/ resolved caption + idempotencyKey `<postId>:<accountId>`; server
+      re-validates per-platform limits. NOTE: BullMQ enqueue + actual dispatch is Phase 5 —
+      post-now sets status=publishing but nothing publishes yet (clean phase boundary).
+- ☑ Verified (2026-06-12, infra up): `tsc` clean, `next build` (30 routes, incl. all 11 new),
+      `vitest` 6/6. 23-check live smoke (all green): presign auth-gate (401/200) · direct PUT
+      to MinIO + finalize Media row · draft create (201) · **300-char text→X publish=422**
+      (over-limit gate) · **schedule**: status=scheduled/mode=time/publishAt set, **X target =
+      main caption, LinkedIn target = per-platform override**, idempotencyKeys unique+formatted ·
+      **queue**: mode=queue, slot lands on configured 11:00/16:00 Asia/Colombo, future · story
+      0-media=422 / 1-media=200 · story→X (no story cap)=422. Pages: `/create/{text,image,video,
+      story}`=200 w/ titles, `/create/bogus`=404, unauth→`/login?next=`. Throwaway sessions/
+      posts/media purged. (Mid-test 500s were a stale dev-server worker pool from concurrent
+      npm install/remove — clean `.next` + dev restart resolved; not a code issue.)
+- ☐ **CHECKPOINT (human):** review composer + media + draft/schedule/queue wiring; confirm the
+      Phase-4/5 boundary (records created, dispatch deferred) is OK before building the worker.
 
 ## Phase 5 — Scheduling, Lists, Calendar (`07–08`)
 - ☐ BullMQ queues + worker; due-post dispatch; idempotency; retry; missed-run sweep
