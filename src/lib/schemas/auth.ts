@@ -23,6 +23,19 @@ export const resetSchema = z.object({
   password: z.string().min(8).max(72),
 });
 
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1).max(72),
+  newPassword: z.string().min(8).max(72),
+});
+
+export const changeEmailSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1).max(72),
+});
+
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+export type ChangeEmailInput = z.infer<typeof changeEmailSchema>;
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotInput = z.infer<typeof forgotSchema>;

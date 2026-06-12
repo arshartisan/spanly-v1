@@ -151,8 +151,8 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
       (Edit title + rehydrated caption), wrong-type redirect, `?date=` prefill. Throwaway data
       purged. NOTE: live partial-failure UX (MOCK_FAIL result cards + per-target retry) is the
       Phase 6 publishing flow (doc 09); the worker failure branches themselves are verified here.
-- ☐ **CHECKPOINT (human):** review scheduling engine + lists + calendar; confirm worker runs as
-      a separate `npm run worker:start` process and the idempotency/retry model is OK.
+- ☑ **CHECKPOINT (human):** reviewed scheduling engine + lists + calendar; separate-worker +
+      idempotency/retry model signed off (2026-06-12).
 
 ## Phase 6 — Publishing (`09`)
 - ☑ Publishing flow (mock providers): `/publishing/[postId]` progress screen — server-loads the
@@ -179,14 +179,47 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
       non-X untouched, **single externalPostId (no duplicate)**; post-now happy path→posted w/
       View-post URLs on all targets. Throwaway posts purged.
 - ☐ (Then) real providers one platform at a time behind `PROVIDER_LIVE_<P>` (needs approvals)
-- ☐ **CHECKPOINT (human):** review publishing flow — progress→result cards, retry semantics
-      (single-target + retry-all, no double-post), Reconnect path for expired tokens. Then decide
-      whether to start real providers (needs platform app approvals) or proceed to Phase 7 (Billing).
+- ☑ **CHECKPOINT (human):** reviewed publishing flow — result cards, retry semantics (no
+      double-post), Reconnect path. Signed off; chose to proceed to Phase 7 (Billing) and defer
+      real providers until platform app approvals land (2026-06-12).
 
-## Phase 7 — Billing (`10–11`)
-- ☐ Stripe checkout/portal/webhooks; plans/billing pages; trial; refund; feature gating
-- ☐ Settings general + queue tabs
-- ☐ CHECKPOINT
+## Phase 7 — Billing + Settings (`10–11`)
+- ☑ Billing behind `BILLING_MODE=mock|live` (D-014, mirrors MockProvider). `src/server/stripe.ts`
+      (lazy SDK client, `APP_URL`, price-id↔plan/interval map both directions, mock placeholders),
+      `src/server/plans.ts` (+`requirePlan`/`planAtLeast`/`isOverAccountLimit`/`GateResult`),
+      `src/server/billing.ts` (createCheckout, createPortal, toggleApiAddon, requestRefund,
+      `syncSubscription` idempotent upsert, `fromStripeSubscription` normalizer, `mockActivate`/
+      `mockCancel`). Stripe = source of truth in live mode; mock writes the same Subscription upsert.
+- ☑ Billing API: `POST /api/billing/{checkout,portal,addons/api,refund}` (return `{url}`/result),
+      `POST /api/webhooks/stripe` (raw-body signature verify → checkout.session.completed /
+      subscription.created|updated|deleted / invoice.payment_failed → upsert by stripeSubId;
+      no-ops in mock). Mock stand-ins: pages `/billing/mock/{checkout,portal}` + GET
+      `/api/billing/mock/{complete,cancel}` (mock-only, 404 in live) — same UX as mock OAuth consent.
+- ☑ Settings (doc 11): tab shell `/settings/[tab]` (general|queue|billing|plans, `/settings`→general)
+      + `SettingsTabs`. **General** panel (`GeneralPanel`): Profile (display name save; avatar shown,
+      upload deferred), Email (change-email re-verify), Password (change + forgot), Security (sign-out-all),
+      Email/Platform pref toggles (auto-save), Weekly goal, MCP placeholder, Connected apps. **Queue**
+      panel (`QueuePanel`): times×days grid, add/remove time, randomize toggle, tz select. **Billing**
+      panel (live sub state, trial badge, annual upsell, API add-on, portal, refund, mock-mode notice).
+      **Plans** panel (monthly/yearly toggle, 3 cards, current marked, checkout CTA, over-limit notice).
+- ☑ Settings API: `GET/PATCH /api/settings` (profile cols + `User.settings` JSON deep-merge,
+      `src/server/settings.ts`, `readSettings` forward-compatible), `GET/PUT /api/queue` (atomic
+      replace of `QueueSettings`/`QueueSlot`), `POST /api/auth/{change-password,change-email}`
+      (+ zod schemas). `lib/schemas/settings.ts`, `ui/switch.tsx` (no-Radix toggle).
+- ☑ Verified (2026-06-12, infra + dev server up, mock billing): `tsc` clean, `next build` (46 routes,
+      incl. all billing/settings/queue/webhook routes + mock pages), `vitest` 6/6. **36-check Phase-7
+      smoke** (all green): auth gates (settings/queue/checkout 401); settings PATCH persists
+      (use24h + weeklyGoal, untouched prefs preserved, goal 99999→422); queue PUT replace (tz +
+      randomize + 2 sorted slots persist, bad time→422); **mock checkout→complete→Subscription
+      trialing growth/year, trialEndsAt ≈ +7d, stripeSubId set**; API add-on enable/disable reflects
+      in DB; portal url; **refund within window→ok**; **mock cancel→status canceled**; password
+      change wrong-current→403 / short-new→422; settings tabs 200, /settings/bogus→404,
+      /settings→general redirect, unauth→/login. Demo subscription/settings/queue restored after.
+- ☐ (Then) live Stripe: set `BILLING_MODE=live` + `STRIPE_*` env (account + Price IDs = human-action
+      item); verify in Stripe test mode (checkout→webhook trialing, portal cancel→canceled).
+- ☐ **CHECKPOINT (human):** review billing (mock checkout→trial, portal, add-on, refund, plan gating)
+      + settings (general/queue persistence). Provide Stripe account + Price IDs to flip to live, or
+      proceed to Phase 8 (Content Studio / Bulk / Analytics / API keys).
 
 ## Phase 8+ — Later
 - ☐ Content Studio · Bulk tools · Analytics · API keys + webhooks · MCP · Help center

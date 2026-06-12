@@ -62,6 +62,41 @@ export function accountLimit(plan: PlanKey): number {
   return PLANS[plan].accountLimit;
 }
 
+// Plan ranking for tier comparisons (requirePlan, upgrade/downgrade copy).
+const PLAN_RANK: Record<PlanKey, number> = { creator: 0, growth: 1, pro: 2 };
+
+/** True if `plan` is at least `min` in the tier ordering (creator < growth < pro). */
+export function planAtLeast(plan: PlanKey, min: PlanKey): boolean {
+  return PLAN_RANK[plan] >= PLAN_RANK[min];
+}
+
+export type GateResult = { ok: true } | { ok: false; status: number; error: string };
+
+/**
+ * Server-side feature gate: caller's subscription must be on `min` or higher and not in a
+ * dead state. Used by handlers for Growth/Pro-only features (doc 10). Never gate on the client.
+ */
+export function requirePlan(
+  sub: { plan: PlanKey; status: string } | null,
+  min: PlanKey,
+): GateResult {
+  if (!sub) return { ok: false, status: 402, error: "No active subscription." };
+  if (sub.status === "canceled") return { ok: false, status: 402, error: "Subscription canceled." };
+  if (!planAtLeast(sub.plan, min)) {
+    return { ok: false, status: 402, error: `Requires the ${PLANS[min].name} plan or higher.` };
+  }
+  return { ok: true };
+}
+
+/**
+ * Whether a plan's account limit is exceeded by the current active-account count. On a
+ * downgrade (e.g. Pro→Creator with 20 accounts) existing accounts are kept but flagged
+ * over-limit; new connects are blocked by the connect flow (doc 05 / D-015).
+ */
+export function isOverAccountLimit(plan: PlanKey, activeCount: number): boolean {
+  return activeCount > accountLimit(plan);
+}
+
 /** Sidebar/account-menu plan label, e.g. "Creator — Trial" or "Pro" (doc 04). */
 export function planLabel(plan: PlanKey, status?: string): string {
   const name = PLANS[plan].name;

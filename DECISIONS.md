@@ -97,9 +97,34 @@ what we decided, why, and any alternative rejected.
 - **Why:** User direction — clean, consistent, accessible layout with minimal custom CSS;
   components are owned/editable code (not a locked dependency).
 
+### D-014 Billing has a mock mode, mirroring MockProvider
+- **Decision:** Billing runs behind `BILLING_MODE=mock|live` (default `mock`), the same
+  stand-in pattern as OAuth/publishing (D-008). In mock mode, `checkout`/`portal` redirect to
+  internal pages (`/billing/mock/*`) that drive the same `Subscription` upsert logic the live
+  Stripe webhook uses — so the full flow (subscribe → 7-day trial → portal → cancel → API
+  add-on) is buildable/verifiable with **no Stripe account or Price IDs**. The live path
+  (`stripe` SDK + signed `/api/webhooks/stripe`) is wired and switches on when `STRIPE_*` env
+  is set. Stripe is the source of truth in live mode; subscriptions upsert idempotently by
+  `stripeSubId`.
+- **Why:** Platform/Stripe credentials are still a pending human-action item; the mock keeps
+  the phase shippable now without blocking on external accounts, exactly like the providers.
+
+### D-015 Downgrade below account count: keep accounts, flag over-limit, block new connects
+- **Decision:** If a plan change leaves `active accounts > accountLimit`, existing accounts are
+  **kept** (never silently deleted); new connects are blocked by the connect gate (doc 05) and
+  the Plans/Billing UI surfaces an "over limit" notice. Helper `isOverAccountLimit(plan,count)`.
+- **Why:** Avoids destructive data loss on downgrade; the limit only constrains growth.
+
+### D-016 Refund: record request within 7-day window, no auto-refund in MVP
+- **Decision:** "Request Refund" checks the 7-day money-back window; within it we **record the
+  request + notify support** (console mailer, D-013) and return a confirmation; outside it we
+  deny with a message. No automatic Stripe refund call in MVP (avoids accidental money movement
+  in mock/test). Revisit to auto-refund via the Stripe API once live billing is verified.
+- **Why:** Keeps refunds safe and auditable before real payments exist.
+
 ## Open questions / to revisit
 - Exact annual prices (placeholder yearly values in `plans.ts` — set from real Stripe Prices).
-- Downgrade-with-over-limit-accounts UX (block new connects + flag over-limit; confirm copy).
+- ~~Downgrade-with-over-limit-accounts UX~~ → resolved D-015 (keep + flag, block new connects).
 - Trial-expiry behavior (MVP: read-only + subscribe prompt — confirm).
 - Whether calendar shows one chip-per-post (stacked icons) or one chip-per-target (chosen:
   one chip per post with stacked platform icons).
