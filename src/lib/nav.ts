@@ -3,6 +3,7 @@ import {
   BarChart3,
   CalendarDays,
   FileText,
+  HelpCircle,
   KeyRound,
   LayoutDashboard,
   Link2,
@@ -11,6 +12,7 @@ import {
   Send,
   Settings,
   Sparkles,
+  Upload,
 } from "lucide-react";
 
 // Sidebar nav map (doc 04). `soon` items render disabled with a "Soon" tag.
@@ -31,6 +33,7 @@ export const NAV_SECTIONS: NavSection[] = [
     heading: "Create",
     items: [
       { label: "Create post", href: "/create/text", icon: PenSquare },
+      { label: "Bulk Import", href: "/bulk", icon: Upload },
       { label: "Content Studio", href: "/studio", icon: Sparkles, soon: true },
     ],
   },
@@ -58,6 +61,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Billing", href: "/settings/billing", icon: LayoutDashboard },
       { label: "Plans", href: "/settings/plans", icon: BarChart3 },
       { label: "API Keys", href: "/api-keys", icon: KeyRound },
+      { label: "Help Center", href: "/help", icon: HelpCircle },
     ],
   },
 ];

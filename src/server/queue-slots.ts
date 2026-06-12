@@ -59,7 +59,7 @@ function tzOffsetMs(date: Date, tz: string): number {
 }
 
 /** The UTC instant whose wall-clock in `tz` equals the given local components. */
-function zonedTimeToUtc(
+export function zonedTimeToUtc(
   y: number,
   m0: number,
   d: number,

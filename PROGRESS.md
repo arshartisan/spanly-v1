@@ -251,14 +251,80 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
       payload event/status/targets correct, `webhookSentAt` stamped, **re-delivery no-op**). Test
       keys/webhook/posts purged, add-on restored.
 - ☐ (Later) media-in-API for `POST /v1/posts`; webhook retries/delivery log; rotate-secret action.
-- ☐ **CHECKPOINT (human):** review API keys + webhooks — copy-once secret, add-on gating, signed
-      post-completion delivery + idempotency. Then pick the next Phase 9 feature.
+- ☑ **CHECKPOINT (human):** reviewed API keys + webhooks — copy-once secret, add-on gating, signed
+      post-completion delivery + idempotency. Signed off; chose to proceed to Phase 9 (2026-06-12).
+
+## Phase 9 — Bulk Import (D-018)
+- ☑ CSV pipeline: `src/lib/csv.ts` (dependency-free RFC-4180 parser + header→record),
+      `src/lib/schemas/bulk.ts` (modes, column set, platform-token resolution (key/label/`twitter`),
+      type parse, date/time regexes, row/preview/commit types, `SAMPLE_CSV`). Exported
+      `zonedTimeToUtc` from `queue-slots.ts` for CSV local-time → UTC.
+- ☑ Service `src/server/bulk.ts` (server-only): `validateImport` (no writes; per-row resolve +
+      `validatePostTargets` + schedule/future checks + warnings) and `commitImport` (re-validates,
+      then `createDraft`→`schedulePost`/`addToQueue` per valid row; ingests `media_url` as an external
+      `Media` row; rolls back orphan draft+media on dispatch failure; per-row outcomes). `listBulkAccounts`
+      for the default-account picker. **No new Prisma model / no migration.**
+- ☑ API (session-auth): `POST /api/bulk/validate` (preview), `POST /api/bulk/commit` (create+dispatch).
+- ☑ UI: `/bulk` (`BulkImportView`) — default-account chips, mode cards (draft/schedule/queue),
+      CSV upload+paste+sample/download, Validate → preview table (per-row errors/warnings + summary),
+      Import → result panel (created/failed + links to Posts/Calendar). `ui/textarea.tsx` added.
+      Nav entry "Bulk Import" under Create.
+- ☑ Verified (2026-06-12, infra up; smoked against a fresh `next start :3100`): `tsc` clean,
+      `next build` (44 routes, incl. `/bulk` + 2 bulk API routes), `vitest` 6/6. **26-check Phase-9
+      smoke** (all green): auth gate (validate no-session→401); validate draft (5 rows; x/linkedin text
+      valid, unknown platform/missing-media/unknown-type flagged, image+media valid); schedule mode
+      (no-date/past/bad-date flagged, future row valid + `publishAtIso` set); platform-by-name resolves
+      to accounts; empty-platforms uses default accounts (and flagged when none selected); commit draft
+      (created 2 of 2 valid, invalid skipped); commit schedule (only future row → status scheduled);
+      commit queue (rows → status queued); created posts collected + **all cleaned up**. Orphan ingested
+      `Media` row purged; demo data intact.
+- ☐ (Later) bulk-import history/audit table + double-submit idempotency; media-by-upload (not URL);
+      column remapping UI.
+- ☐ **CHECKPOINT (human):** review bulk import — CSV validate/preview, draft/schedule/queue commit,
+      reuse of composer rules. Then pick the next Phase 9+ feature.
+
+## Phase 11 — MCP server (D-019)
+- ☑ `src/server/mcp.ts` (server-only): hand-rolled JSON-RPC 2.0 MCP — `initialize` / `ping` /
+      `tools/list` / `tools/call` + notification handling. Tools: `list_accounts`, `create_post`,
+      `get_post_status`. Protocol version `2025-06-18`, advertises `{ tools: {} }`.
+- ☑ `src/app/api/mcp/route.ts`: Streamable-HTTP transport, **stateless**. Auth via
+      `authorizeApiRequest` (same Bearer key + API-add-on gate as v1). Single + batch messages;
+      notifications → `202`; `GET` → `405` (no SSE). Parse error → JSON-RPC `-32700`.
+- ☑ DRY: extracted `createApiTextPost` into `posts.ts`; both `POST /api/v1/posts` and the MCP
+      `create_post` tool now call it (no drift between REST and MCP).
+- ☑ Wiring: Settings → General "Connect to Claude (MCP)" card now shows the real endpoint
+      (`appUrl('/api/mcp')`) + copy + a Setup Guide link to `/help/mcp`, and notes the add-on/key
+      requirement.
+- ☑ Verified (2026-06-12, infra up; fresh `next start :3100`): `tsc` clean, `next build` (59 routes),
+      `vitest` 6/6. Smoke (part of the 29-check run): MCP no-key/bad-key→401; `initialize`→serverInfo
+      + tools capability; `notifications/initialized`→202; `tools/list`→3 tools; `list_accounts`→
+      accounts; `create_post`→post id (not isError); `get_post_status`→post + targets; unknown
+      tool/bad args→`isError` content; unknown method→`-32601`; `GET`→405; **revoked key→401**.
+
+## Phase 13 — Help center (D-020)
+- ☑ `src/lib/help-content.ts`: **7 categories + 36 typed articles** (block arrays), topic coverage
+      modeled on a mature scheduler help center (support.post-bridge.com) but **written originally**
+      for Spanly — only the 6 platforms + our real limits/flows; omits features we don't have
+      (Bluesky/Threads, magic-link login, affiliate, TikTok music, team/VA access — D-004).
+      Categories: Getting started · Connections · Creating & scheduling · Media & limits ·
+      Account & billing · Troubleshooting · Developers. `getHelpArticle`/`articlesByCategory` helpers.
+- ☑ `src/components/help/ArticleBody.tsx` (block renderer: h/p/ul/ol/code) +
+      `src/components/help/HelpIndex.tsx` (client search over title/excerpt, grouped by category).
+- ☑ Pages: `(app)/help` (searchable index), `(app)/help/[slug]` (**SSG** via `generateStaticParams`,
+      article + related + back link, unknown slug → 404). Nav entry "Help Center" under Configuration.
+- ☑ Verified: `tsc` clean, `next build` (82 static pages — **36 help articles prerendered**),
+      runtime smoke: `/help`→200 (7 categories incl. Connections/Developers), new slugs
+      (connect-instagram, connect-tiktok-youtube, duplicate-content, limits-by-platform, refund,
+      login-issues, mcp)→200, `/help/<unknown>`→404. Original 13 slugs preserved (no broken links;
+      Settings MCP card's `/help/mcp` link intact).
+- ☑ Combined Phase 11+13 smoke: **29 checks all green**; test key/post purged, add-on restored to off.
 
 ## Phase 9+ — Later
-- ☐ Content Studio (needs media render pipeline) · Bulk tools · Analytics (needs live provider
-      insights APIs) · MCP server · Help center
+- ☐ Analytics (needs live provider insights APIs) · Content Studio (needs media render pipeline)
 - ☐ Live providers behind `PROVIDER_LIVE_<P>` + live Stripe (`BILLING_MODE=live`) — both need
       external accounts/approvals (human-action items).
+- ☐ **CHECKPOINT (human):** review MCP server (stateless JSON-RPC, key-gated tools) + help center
+      (searchable, SSG articles). Then pick Analytics / Content Studio, or wire a live integration.
 
 ## Human-action items (need the human)
 - Register developer apps per platform (Meta, TikTok, Google/YouTube, X, LinkedIn) — long

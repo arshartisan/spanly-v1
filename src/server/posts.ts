@@ -372,6 +372,37 @@ export async function schedulePost(
   return { ok: true, post };
 }
 
+/**
+ * Create + dispatch a text post from programmatic access (public v1 API + MCP). Shared so the
+ * REST and MCP surfaces apply identical rules. Schedules when `publishAt` is given, else posts
+ * now; a failed dispatch deletes the orphan draft so nothing is left behind.
+ */
+export async function createApiTextPost(
+  userId: string,
+  input: { caption: string; accountIds: string[]; publishAt?: Date },
+): Promise<DispatchOutcome> {
+  const draft = await createDraft(userId, {
+    type: "text",
+    mainCaption: input.caption,
+    perPlatform: {},
+    media: [],
+    targets: input.accountIds,
+  });
+
+  let outcome: DispatchOutcome;
+  if (input.publishAt) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    outcome = await schedulePost(userId, draft.id, input.accountIds, input.publishAt, user?.timezone ?? "UTC");
+  } else {
+    outcome = await publishNow(userId, draft.id, input.accountIds);
+  }
+
+  if (!outcome.ok) {
+    await prisma.post.deleteMany({ where: { id: draft.id, userId } });
+  }
+  return outcome;
+}
+
 /** Add to queue: drop into the next open slot computed from the user's QueueSettings. */
 export async function addToQueue(
   userId: string,

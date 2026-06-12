@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ interface Initial {
 
 // General settings (doc 11A). Cards backed by User.settings JSON + auth actions. Toggles
 // auto-save on change; text fields save on an explicit button.
-export function GeneralPanel({ initial }: { initial: Initial }) {
+export function GeneralPanel({ initial, mcpEndpoint }: { initial: Initial; mcpEndpoint: string }) {
   const [settings, setSettings] = useState<UserSettings>(initial.settings);
 
   // Partial PATCH helper. Returns true on success; callers manage their own busy/feedback.
@@ -81,7 +82,7 @@ export function GeneralPanel({ initial }: { initial: Initial }) {
       </SettingCard>
 
       <WeeklyGoalCard initial={settings.weeklyPostingGoal} onSave={(n) => patch({ weeklyPostingGoal: n })} />
-      <McpCard url={settings.mcpUrl} />
+      <McpCard endpoint={mcpEndpoint} />
       <ConnectedAppsCard />
     </div>
   );
@@ -376,31 +377,37 @@ function WeeklyGoalCard({ initial, onSave }: { initial: number; onSave: (n: numb
   );
 }
 
-function McpCard({ url }: { url?: string }) {
+function McpCard({ endpoint }: { endpoint: string }) {
   const [copied, setCopied] = useState(false);
-  const value = url ?? "Coming soon";
   return (
-    <SettingCard title="Connect to Claude (MCP)" description="Manage Spanly from Claude. Available in a later release.">
+    <SettingCard
+      title="Connect to Claude (MCP)"
+      description="Manage Spanly from an AI agent. Add this MCP endpoint and authenticate with an API key."
+    >
       <div className="flex items-center gap-2">
-        <Input value={value} readOnly disabled className="font-mono text-xs" />
+        <Input value={endpoint} readOnly className="font-mono text-xs" />
         <Button
           variant="outline"
           size="sm"
-          disabled={!url}
           onClick={() => {
-            if (url) {
-              navigator.clipboard.writeText(url);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 1500);
-            }
+            navigator.clipboard.writeText(endpoint);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
           }}
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>
-        <Button variant="outline" size="sm" disabled>
-          Setup Guide
+        <Button asChild variant="outline" size="sm">
+          <Link href="/help/mcp">Setup Guide</Link>
         </Button>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Requires the API add-on. Create a key under{" "}
+        <Link href="/api-keys" className="underline">
+          API Keys
+        </Link>{" "}
+        and send it as <code className="rounded bg-muted px-1">Authorization: Bearer &lt;key&gt;</code>.
+      </p>
     </SettingCard>
   );
 }

@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/server/db";
 import { authorizeApiRequest } from "@/server/api-keys";
-import { createDraft, publishNow, schedulePost } from "@/server/posts";
+import { createApiTextPost } from "@/server/posts";
 
 // Public posting API (doc 12). MVP supports text posts; media uploads land in a later release.
 const schema = z.object({
@@ -22,26 +21,12 @@ export async function POST(req: Request) {
   }
   const { caption, accountIds, publishAt } = parsed.data;
 
-  const draft = await createDraft(auth.userId, {
-    type: "text",
-    mainCaption: caption,
-    perPlatform: {},
-    media: [],
-    targets: accountIds,
+  const outcome = await createApiTextPost(auth.userId, {
+    caption,
+    accountIds,
+    publishAt: publishAt ? new Date(publishAt) : undefined,
   });
-
-  let outcome;
-  if (publishAt) {
-    const when = new Date(publishAt);
-    const user = await prisma.user.findUnique({ where: { id: auth.userId } });
-    outcome = await schedulePost(auth.userId, draft.id, accountIds, when, user?.timezone ?? "UTC");
-  } else {
-    outcome = await publishNow(auth.userId, draft.id, accountIds);
-  }
-
   if (!outcome.ok) {
-    // Clean up the orphan draft so a failed dispatch doesn't leave junk behind.
-    await prisma.post.deleteMany({ where: { id: draft.id, userId: auth.userId } });
     return NextResponse.json({ error: outcome.errors }, { status: outcome.status });
   }
 

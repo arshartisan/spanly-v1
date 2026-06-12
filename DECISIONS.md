@@ -135,6 +135,57 @@ what we decided, why, and any alternative rejected.
 - **Why:** Mirrors the project's existing security posture (hash-at-rest, server-side gates,
   idempotent delivery) and reuses the posts service so the API can't drift from the app's rules.
 
+### D-018 Bulk import: stateless validate→commit, reuses the composer service (no new model)
+- **Decision:** Bulk import (Phase 9) is a **stateless two-step**: `POST /api/bulk/validate` parses
+  the CSV into a per-row preview (no writes), then `POST /api/bulk/commit` **re-validates
+  server-side** and creates each valid row through the **same** service path as single-post creation
+  (`createDraft` → `schedulePost`/`addToQueue`) so per-platform caption/capability limits and the
+  future-time rule can't be bypassed. Columns: `caption, type, platforms, date, time, media_url`
+  (only `caption`/content structurally required). `platforms` accepts keys **or** labels
+  (`twitter`→`x`); empty → the UI's default-account selection. Three modes: **draft** (date/time
+  ignored), **schedule** (each row needs date+time, interpreted in the user's `timezone`), **queue**
+  (sequential next-open slots). Media-by-URL is **ingested as an external `Media` row** (kind from
+  type, `processed:true`) — no upload pipeline. Invalid rows are skipped, not fatal; per-row outcomes
+  are returned. A failed dispatch rolls back its orphan draft+media. **No `BulkImport`/history
+  model** — committed posts already surface in Posts/Calendar; an import-history table + true
+  double-submit idempotency are deferred.
+- **Why:** Reusing the composer service keeps bulk from drifting from the app's rules; a stateless
+  flow avoids schema churn and ships the feature with zero migration risk. CSV is parsed with a small
+  dependency-free reader (`src/lib/csv.ts`) to keep the dependency surface minimal.
+- **Rejected:** a `BulkImport` audit model (extra migration; redundant with the normal post lists for
+  MVP); a CSV-parsing dependency (unneeded for our column set).
+
+### D-019 MCP server: hand-rolled stateless JSON-RPC over HTTP, reuses API-key auth
+- **Decision:** The MCP server (Phase 11) is a single Next route handler at `/api/mcp` speaking
+  **JSON-RPC 2.0 over the Streamable-HTTP transport, stateless** — each POST is authenticated by
+  API key (the **same** `authorizeApiRequest` Bearer + API-add-on gate as the public v1 API) and
+  answered with one JSON response; notifications get `202`; `GET` returns `405` (no server→client
+  SSE). We **hand-roll** `initialize`/`tools/list`/`tools/call` (`src/server/mcp.ts`) instead of
+  pulling in the MCP SDK + a Node transport. Tools: `list_accounts`, `create_post`,
+  `get_post_status` — `create_post` shares `createApiTextPost` (posts.ts) with `POST /api/v1/posts`
+  so REST and MCP can't drift. The endpoint URL is surfaced in Settings → General with a link to
+  the help guide.
+- **Why:** Matches the project's dependency-light posture (cf. custom CSV/auth), keeps the whole
+  surface testable over plain `fetch`, and avoids the SDK's Node-transport friction inside Next
+  route handlers. Stateless is sufficient for a tool-only server (no subscriptions/sampling).
+- **Rejected:** `@modelcontextprotocol/sdk` + Streamable-HTTP transport (transport/runtime friction
+  in App Router, heavier dep for three tools); stdio transport (not reachable from a hosted web app).
+
+### D-020 Help center: typed structured content, no MDX/markdown pipeline
+- **Decision:** The help center (Phase 13) is **typed data** (`src/lib/help-content.ts`: categories
+  + articles as block arrays) rendered by a small block renderer (`ArticleBody`), with a
+  client-side search index. Articles are **statically generated** (`generateStaticParams`) under
+  `(app)/help` and map 1:1 to shipped features. No MDX/markdown dependency.
+- **Why:** Content is small and fully under our control; typed blocks give consistent styling, easy
+  client search, and zero new dependency. **Rejected:** MDX/contentlayer (overkill); a CMS (no need
+  for non-dev editing at MVP).
+- **Update (2026-06-12):** expanded to **7 categories / 36 articles**, modeling topic *coverage* on
+  the Post-Bridge support center (support.post-bridge.com) while writing all copy **originally** for
+  Spanly (D-001). Deliberately omitted topics that don't apply to Spanly: Bluesky/Threads, magic-link
+  login (we use password + email verification), affiliate program, TikTok-music/custom-thumbnails,
+  and team/VA account access (Workspaces deferred — D-004). All platform limits in the articles are
+  taken from `PLATFORM_CONFIG` so the docs match enforcement.
+
 ## Open questions / to revisit
 - Exact annual prices (placeholder yearly values in `plans.ts` — set from real Stripe Prices).
 - ~~Downgrade-with-over-limit-accounts UX~~ → resolved D-015 (keep + flag, block new connects).
