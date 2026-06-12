@@ -55,9 +55,30 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
 - ☐ **CHECKPOINT (human):** review auth + shell; confirm D-012/D-013 deviations are OK.
 
 ## Phase 3 — Connections (`05`)
-- ☐ Connections page (6 platforms) + IG method modal
-- ☐ OAuth start/callback/refresh/disconnect via MockProvider; account-limit gate
-- ☐ CHECKPOINT
+- ☑ Connections page (`/connections`): one row per platform (icon + dark Connect button +
+      account chips), Show-IDs toggle + platform filter, ?connected/?error banners. Components
+      `connections/{ConnectionsView,PlatformRow,AccountChip,ConnectButton,InstagramMethodModal}`
+      + `lib/platform-style.ts`. IG Connect opens a lightweight method-choice modal (Instagram
+      vs Facebook-Page), forwarded as `?method=`.
+- ☑ OAuth flow via MockProvider (full-page redirect, internal mock consent page at
+      `/connect/[platform]/mock` with Allow/Cancel): `GET /api/connect/[p]/start` (session +
+      limit gate → signed state → provider auth URL), `GET /api/connect/[p]/callback` (verify
+      state → handleCallback → encrypt tokens → **upsert** SocialAccount), `POST
+      /api/accounts/[id]/refresh`, `DELETE /api/accounts/[id]` (soft-delete per D-010).
+      CSRF state = HMAC-SHA256 (keyed by NEXTAUTH_SECRET) + 10-min expiry (`server/oauth-state.ts`).
+      Account-limit gate is server-side in `/start`; reconnecting a platform you already have
+      never consumes a new seat (`server/connections.ts`).
+- ☑ Verified (2026-06-12, infra up): `tsc` clean, `next build` (21 routes) green. Live smoke
+      test on a fresh signup user (all green): page loads at 0/15 · start→mock with signed state ·
+      unauth start→/login · **all 6 platforms connect** → active chips · tokens stored as
+      ciphertext (not JSON) in `encryptedTokens` · IG via Facebook sets igConnectMethod=facebook
+      + pageId · reconnect upserts (no dup row) · refresh→active + new expiry · disconnect→
+      soft-delete (disconnectedAt + status=error), drops from active list · reconnect re-activates
+      same row · **account-limit gate**: at 15/15 a platform with no seat is blocked (?error=limit)
+      while reconnect of an existing platform is allowed · unauth refresh/delete→401 · tampered
+      state→?error=state. Mock consent page renders Allow/Cancel + IG method label. Throwaway
+      test user purged; seed demo user intact (6 accounts).
+- ☐ **CHECKPOINT (human):** review connections flow; confirm mock-OAuth + account-limit UX.
 
 ## Phase 4 — Composer + Media (`06`)
 - ☐ Type-parameterized composer; account selector by capability; per-platform captions
