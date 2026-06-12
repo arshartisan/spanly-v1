@@ -1,0 +1,271 @@
+// Spanly data model — see docs/implementation/01-data-model-prisma.md
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────── Enums ───────────────────────────
+enum Platform {
+  facebook
+  instagram
+  linkedin
+  tiktok
+  youtube
+  x
+}
+
+enum AccountStatus {
+  active
+  expired
+  error
+}
+
+enum PostType {
+  text
+  image
+  video
+  story
+}
+
+enum PostStatus {
+  draft
+  scheduled
+  publishing
+  posted
+  failed
+}
+
+enum ScheduleMode {
+  now
+  time
+  queue
+}
+
+enum TargetStatus {
+  pending
+  publishing
+  success
+  failed
+}
+
+enum MediaKind {
+  image
+  video
+  pdf
+}
+
+enum PlanKey {
+  creator
+  growth
+  pro
+}
+
+enum BillingInterval {
+  month
+  year
+}
+
+enum SubscriptionStatus {
+  trialing
+  active
+  past_due
+  paused
+  canceled
+}
+
+enum IgConnectMethod {
+  instagram
+  facebook
+}
+
+// ─────────────────────────── Core ────────────────────────────
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  displayName   String?
+  avatarUrl     String?
+  timezone      String    @default("UTC")
+  emailVerified DateTime?
+
+  // settings (doc 11A): email + platform prefs, weekly goal, mcp
+  settings Json @default("{}")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscription  Subscription?
+  accounts      SocialAccount[]
+  posts         Post[]
+  media         Media[]
+  queueSettings QueueSettings?
+  sessions      Session[]
+}
+
+// Auth.js session table (Credentials + DB sessions). Deleting rows powers
+// "sign out of all devices".
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Subscription {
+  id               String             @id @default(cuid())
+  userId           String             @unique
+  plan             PlanKey            @default(creator)
+  interval         BillingInterval    @default(month)
+  status           SubscriptionStatus @default(trialing)
+  trialEndsAt      DateTime?
+  currentPeriodEnd DateTime?
+  apiAddonActive   Boolean            @default(false)
+  stripeCustomerId String?
+  stripeSubId      String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SocialAccount {
+  id              String           @id @default(cuid())
+  userId          String
+  platform        Platform
+  handle          String // @name shown on chips
+  displayName     String?
+  avatarUrl       String?
+  externalId      String // provider's user/page id
+  pageId          String? // Meta Page id when applicable
+  igConnectMethod IgConnectMethod?
+  status          AccountStatus    @default(active)
+  capabilities    String[] // ['text','image','video','story']
+  scopes          String[]
+  encryptedTokens String // AES-256-GCM blob (access+refresh+expiry)
+  tokenExpiresAt  DateTime?
+  connectedAt     DateTime         @default(now())
+  disconnectedAt  DateTime? // soft-delete (D-010) — preserve post history
+  updatedAt       DateTime         @updatedAt
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targets PostTarget[]
+
+  @@unique([userId, platform, externalId])
+  @@index([userId, platform])
+}
+
+model Post {
+  id           String       @id @default(cuid())
+  userId       String
+  type         PostType
+  mainCaption  String       @default("")
+  // map socialAccountId -> caption override (doc 06)
+  perPlatform  Json         @default("{}")
+  status       PostStatus   @default(draft)
+  scheduleMode ScheduleMode @default(now)
+  publishAt    DateTime? // UTC; null for now/draft
+  timezone     String       @default("UTC")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  publishedAt  DateTime?
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targets PostTarget[]
+  media   PostMedia[]
+
+  @@index([userId, status])
+  @@index([status, publishAt]) // scheduler "due posts" query
+}
+
+model PostTarget {
+  id              String       @id @default(cuid())
+  postId          String
+  socialAccountId String
+  status          TargetStatus @default(pending)
+  caption         String // resolved caption used for THIS account
+  externalPostId  String?
+  externalUrl     String?
+  error           String?
+  attempts        Int          @default(0)
+  // idempotency key so retries never double-post (doc 08)
+  idempotencyKey  String       @unique
+  publishedAt     DateTime?
+
+  post    Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  account SocialAccount @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([status])
+}
+
+model Media {
+  id           String      @id @default(cuid())
+  userId       String
+  kind         MediaKind
+  url          String
+  thumbnailUrl String?
+  width        Int?
+  height       Int?
+  durationSec  Float?
+  sizeBytes    Int?
+  mimeType     String?
+  processed    Boolean     @default(false) // server-side re-encode done
+  createdAt    DateTime    @default(now())
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts PostMedia[]
+
+  @@index([userId])
+}
+
+model PostMedia {
+  postId  String
+  mediaId String
+  order   Int
+
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([postId, mediaId])
+  @@index([postId])
+}
+
+// Queue (doc 11B): slots that "Add to queue" fills.
+model QueueSettings {
+  id                     String      @id @default(cuid())
+  userId                 String      @unique
+  timezone               String      @default("UTC")
+  randomizeWithinMinutes Int         @default(0)
+  slots                  QueueSlot[]
+  user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model QueueSlot {
+  id         String        @id @default(cuid())
+  settingsId String
+  time       String // "HH:mm" 24h
+  days       Boolean[] // length 7, Mon..Sun
+  settings   QueueSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+
+  @@index([settingsId])
+}
+
+// Single-use tokens for email verification + password reset (doc 03).
+model VerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String // 'verify_email' | 'reset_password'
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, type])
+}
