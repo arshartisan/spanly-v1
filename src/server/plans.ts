@@ -62,4 +62,13 @@ export function accountLimit(plan: PlanKey): number {
   return PLANS[plan].accountLimit;
 }
 
+/** Sidebar/account-menu plan label, e.g. "Creator — Trial" or "Pro" (doc 04). */
+export function planLabel(plan: PlanKey, status?: string): string {
+  const name = PLANS[plan].name;
+  if (status === "trialing") return `${name} — Trial`;
+  if (status === "past_due") return `${name} — Past due`;
+  if (status === "canceled") return `${name} — Canceled`;
+  return name;
+}
+
 export const PLAN_LIST: PlanDef[] = [PLANS.creator, PLANS.growth, PLANS.pro];
