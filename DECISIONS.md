@@ -5,7 +5,30 @@ what we decided, why, and any alternative rejected.
 
 ---
 
-## 2026-06-12 — Phase 0 & implementation-doc decisions
+## 2026-06-12 — Phase 2 decisions
+
+### D-012 Auth: lightweight custom DB-session layer (deviates from NextAuth v5)
+- **Decision:** Implement email/password auth with our **own** session layer instead of
+  Auth.js/NextAuth v5: bcrypt password hashing, a high-entropy opaque `sessionToken` stored in
+  the existing `Session` table, an httpOnly cookie (`spanly_session`) holding only that token,
+  and `getCurrentUser()` that validates it against the DB. Edge `middleware.ts` checks **cookie
+  presence** only (no Prisma on edge); the `(app)` layout does full DB validation.
+- **Why:** Docs `00`/`03` named NextAuth v5, but its **Credentials** provider forces the **JWT**
+  session strategy and does not support **database sessions** — which the spec explicitly
+  requires so "sign out of all devices" / reset-invalidation work by deleting `Session` rows.
+  Forcing DB sessions onto NextAuth Credentials needs fragile, version-sensitive workarounds.
+  Our `Session` table already matches this shape, so a small custom layer is cleaner, has fewer
+  moving parts, and satisfies every `03` acceptance criterion directly.
+- **Rejected:** NextAuth v5 + Prisma adapter with manual DB-session hack (beta churn, fragile).
+- **Approved by:** human (2026-06-12, AskUserQuestion).
+
+### D-013 Dev email: console mailer behind a swappable interface
+- **Decision:** A `mailer` abstraction with a dev transport that **logs** verify/reset links to
+  the server console. Resend (per docs `00`) plugs in behind the same interface once a
+  `RESEND_API_KEY` + verified sender exist.
+- **Why:** Lets the full auth loop be exercised now with zero email infra; matches `03`'s
+  "dev: log link" note. **Rejected:** Mailpit container (extra infra), wiring Resend now (needs
+  user-provided key/domain). **Approved by:** human (2026-06-12).
 
 ### D-001 Product: clone the Post-Bridge *concept*, build original
 - **Decision:** Build "Spanly", an original social scheduler modeled on Post-Bridge's
