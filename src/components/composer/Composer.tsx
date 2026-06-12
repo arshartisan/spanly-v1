@@ -294,6 +294,12 @@ export function Composer({
       }
       const out = await res.json();
       if (remember) persistRemember(true);
+
+      // "Post now" → straight to the publishing progress/result screen (doc 09).
+      if (action === "now") {
+        router.push(`/publishing/${id}`);
+        return;
+      }
       setSuccess({ action, publishAt: out.publishAt });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");

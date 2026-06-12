@@ -180,7 +180,7 @@ function DayBox({
         {chips.map((chip) => (
           <Link
             key={chip.id}
-            href={`/create/${chip.type}?postId=${chip.id}`}
+            href={chip.status === "scheduled" ? `/create/${chip.type}?postId=${chip.id}` : `/publishing/${chip.id}`}
             className="flex items-center gap-1 rounded-md bg-muted/50 px-1.5 py-1 text-[11px] hover:bg-muted"
             title={chip.caption}
           >

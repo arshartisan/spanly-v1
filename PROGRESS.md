@@ -155,9 +155,33 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
       a separate `npm run worker:start` process and the idempotency/retry model is OK.
 
 ## Phase 6 — Publishing (`09`)
-- ☐ Publish orchestration; progress screen; per-target result cards; retry
+- ☑ Publishing flow (mock providers): `/publishing/[postId]` progress screen — server-loads the
+      initial state, client `PublishingView` polls `GET /api/posts/[id]` every 2s until terminal
+      (`posted`/`failed`), then renders per-target result cards (`ResultCard`): platform icon +
+      handle + status badge, caption used, success→"View post" (externalUrl), failed→error +
+      **Retry** (auth/expired errors show **Reconnect** → `/connections` instead). Summary line
+      "Published to N of M accounts"; all-failed posts get **Retry all**. Components in
+      `src/components/publishing/` (+ `types.ts`).
+- ☑ Polling + retry API: `GET /api/posts/[id]` (post + targets w/ platform/handle/status/
+      externalUrl/error/caption, via `getPublishingState`), `POST /api/posts/[id]/targets/
+      [targetId]/retry` (failed→pending, keep idempotencyKey, attempts=0, re-enqueue — successes
+      untouched so no double-post), `POST /api/posts/[id]/retry-all`. Service fns `getPublishingState`/
+      `retryTarget`/`retryAllFailed` in `posts.ts`.
+- ☑ Wiring: composer "Post now" now redirects to `/publishing/[id]` (was a generic success panel);
+      `PostCard` + calendar chips route already-dispatched posts (publishing/posted/failed) to the
+      result screen, draft/scheduled still open the composer.
+- ☑ Verified (2026-06-12, infra + clean worker up): `tsc` clean, `next build` (35 routes, incl.
+      `/publishing/[postId]` + 2 retry routes), `vitest` 6/6. **21-check Phase-6 smoke** (all green):
+      engine all-success rollup→posted w/ externalUrls; **partial failure (MOCK_FAIL=x)**→post
+      failed, X target failed+error+no externalPostId, non-X success; `GET /api/posts/[id]` auth-gate
+      (401/200) + target shape + reports failed; retry validation (success target→409, unauth→401,
+      retry-all on posted→409); **retry failed X via live worker**→post posted, X success+externalUrl,
+      non-X untouched, **single externalPostId (no duplicate)**; post-now happy path→posted w/
+      View-post URLs on all targets. Throwaway posts purged.
 - ☐ (Then) real providers one platform at a time behind `PROVIDER_LIVE_<P>` (needs approvals)
-- ☐ CHECKPOINT
+- ☐ **CHECKPOINT (human):** review publishing flow — progress→result cards, retry semantics
+      (single-target + retry-all, no double-post), Reconnect path for expired tokens. Then decide
+      whether to start real providers (needs platform app approvals) or proceed to Phase 7 (Billing).
 
 ## Phase 7 — Billing (`10–11`)
 - ☐ Stripe checkout/portal/webhooks; plans/billing pages; trial; refund; feature gating

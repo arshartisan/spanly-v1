@@ -157,6 +157,107 @@ export type DispatchOutcome =
   | { ok: true; post: Post }
   | { ok: false; status: number; errors: AccountValidationError[] | string };
 
+/** A target's publish result for the publishing screen (doc 09). */
+export type PublishingTarget = {
+  id: string;
+  platform: PlatformKey;
+  handle: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  accountStatus: string;
+  caption: string;
+  status: "pending" | "publishing" | "success" | "failed";
+  externalUrl: string | null;
+  error: string | null;
+};
+
+export type PublishingState = {
+  id: string;
+  type: PostTypeKey;
+  status: "draft" | "scheduled" | "publishing" | "posted" | "failed";
+  publishAt: Date | null;
+  publishedAt: Date | null;
+  targets: PublishingTarget[];
+};
+
+/** Load a post + its targets (with account info) for the publishing/result screen. */
+export async function getPublishingState(
+  userId: string,
+  postId: string,
+): Promise<PublishingState | null> {
+  const post = await prisma.post.findFirst({
+    where: { id: postId, userId },
+    include: { targets: { include: { account: true }, orderBy: { id: "asc" } } },
+  });
+  if (!post) return null;
+  return {
+    id: post.id,
+    type: post.type as PostTypeKey,
+    status: post.status as PublishingState["status"],
+    publishAt: post.publishAt,
+    publishedAt: post.publishedAt,
+    targets: post.targets.map((t) => ({
+      id: t.id,
+      platform: t.account.platform as PlatformKey,
+      handle: t.account.handle,
+      displayName: t.account.displayName,
+      avatarUrl: t.account.avatarUrl,
+      accountStatus: t.account.status,
+      caption: t.caption,
+      status: t.status as PublishingTarget["status"],
+      externalUrl: t.externalUrl,
+      error: t.error,
+    })),
+  };
+}
+
+export type RetryOutcome =
+  | { ok: true; retried: number }
+  | { ok: false; status: number; error: string };
+
+/**
+ * Retry one failed target: reset it to pending (keeping its idempotencyKey + caption) and
+ * re-enqueue. Successful siblings are untouched, so retry never duplicates a success (doc 09).
+ */
+export async function retryTarget(
+  userId: string,
+  postId: string,
+  targetId: string,
+): Promise<RetryOutcome> {
+  const target = await prisma.postTarget.findFirst({
+    where: { id: targetId, postId, post: { userId } },
+  });
+  if (!target) return { ok: false, status: 404, error: "Target not found" };
+  if (target.status !== "failed") {
+    return { ok: false, status: 409, error: "Only failed targets can be retried" };
+  }
+  await prisma.postTarget.update({
+    where: { id: targetId },
+    data: { status: "pending", error: null, attempts: 0 },
+  });
+  await prisma.post.update({ where: { id: postId }, data: { status: "publishing" } });
+  await enqueuePublish([{ targetId, delayMs: 0 }]);
+  return { ok: true, retried: 1 };
+}
+
+/** Retry every failed target of a post (the "Retry all" affordance for a failed post). */
+export async function retryAllFailed(userId: string, postId: string): Promise<RetryOutcome> {
+  const post = await prisma.post.findFirst({ where: { id: postId, userId } });
+  if (!post) return { ok: false, status: 404, error: "Post not found" };
+  const failed = await prisma.postTarget.findMany({
+    where: { postId, status: "failed" },
+    select: { id: true },
+  });
+  if (failed.length === 0) return { ok: false, status: 409, error: "No failed targets to retry" };
+  await prisma.postTarget.updateMany({
+    where: { postId, status: "failed" },
+    data: { status: "pending", error: null, attempts: 0 },
+  });
+  await prisma.post.update({ where: { id: postId }, data: { status: "publishing" } });
+  await enqueuePublish(failed.map((t) => ({ targetId: t.id, delayMs: 0 })));
+  return { ok: true, retried: failed.length };
+}
+
 /**
  * Enqueue one delayed publish job per pending target (doc 08). delay = publishAt − now
  * (0 for "post now"). jobId = idempotencyKey so duplicate enqueues collapse.

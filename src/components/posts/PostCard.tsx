@@ -23,12 +23,19 @@ export interface PostCardData {
   targets: PostCardTarget[];
 }
 
-/** A single post row in the lists (doc 07). Whole card links to the composer for edit/detail. */
+/**
+ * A single post row in the lists (doc 07). Draft/scheduled posts open the composer for editing;
+ * publishing/posted/failed posts open the publishing result screen (doc 09).
+ */
 export function PostCard({ post, tz }: { post: PostCardData; tz: string }) {
   const status = STATUS_META[post.status];
+  const href =
+    post.status === "draft" || post.status === "scheduled"
+      ? `/create/${post.type}?postId=${post.id}`
+      : `/publishing/${post.id}`;
   return (
     <Link
-      href={`/create/${post.type}?postId=${post.id}`}
+      href={href}
       className="flex flex-col gap-3 rounded-xl border bg-background p-4 transition-colors hover:border-primary/40 hover:bg-muted/30"
     >
       <div className="flex items-center justify-between gap-2">
