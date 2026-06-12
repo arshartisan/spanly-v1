@@ -122,6 +122,19 @@ what we decided, why, and any alternative rejected.
   in mock/test). Revisit to auto-refund via the Stripe API once live billing is verified.
 - **Why:** Keeps refunds safe and auditable before real payments exist.
 
+### D-017 Public API: hashed keys, Bearer auth, add-on gate, HMAC webhooks
+- **Decision:** Programmatic access (doc 12) uses opaque keys `spb_live_<48hex>`; we store only
+  `sha256(secret)` + a non-secret prefix and last-4, and show the plaintext **once** at creation
+  (same one-time-reveal model as verification tokens). Public endpoints live under `/api/v1/*`,
+  authenticate via `Authorization: Bearer <key>`, and are gated server-side behind the **API
+  add-on** (`requireApiAddon`) — never the UI alone. Post-completion webhooks are per-user, signed
+  with **HMAC-SHA256** over the raw body in `X-Spanly-Signature`, delivered **once** per post from
+  the publish-runner terminal rollup (idempotent via `Post.webhookSentAt`, best-effort + time-boxed
+  so a bad URL never blocks publishing). MVP public surface: `GET /v1/me`, `GET /v1/accounts`,
+  `POST /v1/posts` (text); media-in-API deferred.
+- **Why:** Mirrors the project's existing security posture (hash-at-rest, server-side gates,
+  idempotent delivery) and reuses the posts service so the API can't drift from the app's rules.
+
 ## Open questions / to revisit
 - Exact annual prices (placeholder yearly values in `plans.ts` — set from real Stripe Prices).
 - ~~Downgrade-with-over-limit-accounts UX~~ → resolved D-015 (keep + flag, block new connects).

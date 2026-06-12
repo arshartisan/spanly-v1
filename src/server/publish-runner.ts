@@ -6,6 +6,7 @@
 import { prisma } from "@/server/db";
 import { getProvider } from "@/providers/registry";
 import { decryptTokens, encryptTokens } from "@/server/crypto";
+import { deliverPostWebhook } from "@/server/webhooks";
 import type { PlatformKey } from "@/lib/platforms";
 import type { PublishInput } from "@/providers/types";
 
@@ -26,10 +27,15 @@ export async function recomputePostStatus(postId: string): Promise<void> {
     await prisma.post.update({ where: { id: postId }, data: { status: "posted", publishedAt } });
   } else if (anyActive) {
     await prisma.post.update({ where: { id: postId }, data: { status: "publishing" } });
+    return; // not terminal yet — no webhook
   } else {
     // All terminal, at least one failed → post surfaces as failed (per-target UI shows detail).
     await prisma.post.update({ where: { id: postId }, data: { status: "failed" } });
   }
+
+  // Terminal (posted/failed): deliver the post-completion webhook once (doc 12). Best-effort;
+  // never let a webhook failure affect publishing. The delivery guard makes this idempotent.
+  await deliverPostWebhook(postId);
 }
 
 /**

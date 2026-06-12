@@ -3,6 +3,7 @@ import {
   BarChart3,
   CalendarDays,
   FileText,
+  KeyRound,
   LayoutDashboard,
   Link2,
   ListChecks,
@@ -56,6 +57,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Settings", href: "/settings/general", icon: Settings },
       { label: "Billing", href: "/settings/billing", icon: LayoutDashboard },
       { label: "Plans", href: "/settings/plans", icon: BarChart3 },
+      { label: "API Keys", href: "/api-keys", icon: KeyRound },
     ],
   },
 ];

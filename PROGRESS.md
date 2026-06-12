@@ -217,12 +217,48 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
       /settings→general redirect, unauth→/login. Demo subscription/settings/queue restored after.
 - ☐ (Then) live Stripe: set `BILLING_MODE=live` + `STRIPE_*` env (account + Price IDs = human-action
       item); verify in Stripe test mode (checkout→webhook trialing, portal cancel→canceled).
-- ☐ **CHECKPOINT (human):** review billing (mock checkout→trial, portal, add-on, refund, plan gating)
-      + settings (general/queue persistence). Provide Stripe account + Price IDs to flip to live, or
-      proceed to Phase 8 (Content Studio / Bulk / Analytics / API keys).
+- ☑ **CHECKPOINT (human):** reviewed billing (mock checkout→trial, portal, add-on, refund, plan
+      gating) + settings (general/queue persistence). Signed off; chose to proceed to Phase 8
+      (API Keys + Webhooks) and defer live Stripe until account + Price IDs are provided (2026-06-12).
 
-## Phase 8+ — Later
-- ☐ Content Studio · Bulk tools · Analytics · API keys + webhooks · MCP · Help center
+## Phase 8 — API Keys + Webhooks (design doc `12`)
+- ☑ Schema: `ApiKey` (sha256 `hashedKey` + non-secret `prefix`/`last4`, `lastUsedAt`/`revokedAt`),
+      `WebhookEndpoint` (per-user `url` + HMAC `secret`), `Post.webhookSentAt` (idempotent delivery).
+      Migration `20260612153714_api_keys_webhooks`. (D-017.)
+- ☑ Services: `src/server/api-keys.ts` (server-only) — create (plaintext once), list (masked),
+      revoke, `authenticateApiKey`, `requireApiAddon` gate, `authorizeApiRequest` (Bearer→key→gate).
+      `src/server/webhooks.ts` (**worker-safe**, no server-only) — get/upsert/delete config,
+      `signPayload`/`verifySignature` (HMAC-SHA256), `deliverPostWebhook` (claim-then-send,
+      time-boxed, swallows errors).
+- ☑ Wiring: `recomputePostStatus` (publish-runner) calls `deliverPostWebhook` on transition to a
+      terminal state (posted/failed) — fires once via the `webhookSentAt` claim guard; never blocks
+      publishing.
+- ☑ API: management (session-auth + add-on gate) `GET/POST /api/api-keys`, `DELETE /api/api-keys/[id]`,
+      `GET/PUT/DELETE /api/webhook`. Public (Bearer key) `GET /api/v1/me`, `GET /api/v1/accounts`,
+      `POST /api/v1/posts` (text; reuses `createDraft`+`publishNow`/`schedulePost`, cleans up orphan
+      draft on dispatch failure).
+- ☑ UI: `/api-keys` (`ApiKeysView`) — yellow gating banner + Manage Billing when add-on inactive;
+      create (copy-once secret reveal), key list (name/masked/created/last-used/revoke), webhook card
+      (URL + Save + signing-secret reveal), API docs card. Nav entry under Configuration. `ui/switch`
+      reused.
+- ☑ Verified (2026-06-12, infra up; smoked against a fresh `next start :3100` to avoid the dev
+      server's stale Prisma client): `tsc` clean, `next build` (41 routes, incl. all api-keys/v1/webhook
+      routes), `vitest` 6/6. **23-check Phase-8 smoke** (all green): add-on gate (inactive→402, page
+      renders banner); management CRUD (create→201+`spb_live_` plaintext, masked in list, list, no-name
+      →422, webhook PUT→`whsec_` secret); public v1 (no-auth/bad-key→401, valid→me/accounts, **POST
+      /v1/posts→201 publishing**, add-on-off→402, revoke→401); **webhook delivery** (sign/verify +
+      tamper-reject; in-process 2-target publish→posted→**exactly one signed delivery**, valid HMAC,
+      payload event/status/targets correct, `webhookSentAt` stamped, **re-delivery no-op**). Test
+      keys/webhook/posts purged, add-on restored.
+- ☐ (Later) media-in-API for `POST /v1/posts`; webhook retries/delivery log; rotate-secret action.
+- ☐ **CHECKPOINT (human):** review API keys + webhooks — copy-once secret, add-on gating, signed
+      post-completion delivery + idempotency. Then pick the next Phase 9 feature.
+
+## Phase 9+ — Later
+- ☐ Content Studio (needs media render pipeline) · Bulk tools · Analytics (needs live provider
+      insights APIs) · MCP server · Help center
+- ☐ Live providers behind `PROVIDER_LIVE_<P>` + live Stripe (`BILLING_MODE=live`) — both need
+      external accounts/approvals (human-action items).
 
 ## Human-action items (need the human)
 - Register developer apps per platform (Meta, TikTok, Google/YouTube, X, LinkedIn) — long

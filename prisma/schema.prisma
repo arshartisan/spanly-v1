@@ -104,6 +104,39 @@ model User {
   media         Media[]
   queueSettings QueueSettings?
   sessions      Session[]
+  apiKeys       ApiKey[]
+  webhook       WebhookEndpoint?
+}
+
+// Programmatic-access API key (doc 12). We store only a SHA-256 hash of the secret plus a
+// non-secret prefix + last-4 for display; the plaintext is shown exactly once at creation.
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String
+  prefix     String // non-secret, e.g. "spb_live" (shown in the list)
+  last4      String // last 4 chars of the secret, for identification
+  hashedKey  String    @unique // sha256(secret)
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Per-user webhook endpoint (doc 12). Post-completion callbacks are signed with HMAC-SHA256
+// over the request body using `secret`.
+model WebhookEndpoint {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  url       String
+  secret    String // HMAC signing secret (generated server-side)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Auth.js session table (Credentials + DB sessions). Deleting rows powers
@@ -175,6 +208,8 @@ model Post {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   publishedAt  DateTime?
+  // Set once the post-completion webhook has been delivered (doc 12) — idempotent under retries.
+  webhookSentAt DateTime?
 
   user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   targets PostTarget[]
