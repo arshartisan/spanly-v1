@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Spanly theme — green primary on light-gray surfaces (docs/implementation/14).
+ * HSL channels consumed by tailwind.config.ts + shadcn/ui.
+ */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 71% 4%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
+
+    /* Green primary */
+    --primary: 142 71% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 39% 11%;
+
+    /* Light gray surfaces (#f3f4f6-ish) */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 142 60% 95%;
+    --accent-foreground: 142 71% 25%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 142 71% 45%;
+
+    --radius: 0.625rem;
+
+    /* Status colors — badges/chips (doc 14) */
+    --status-posted: 142 71% 45%; /* green */
+    --status-scheduled: 217 91% 60%; /* blue */
+    --status-draft: 38 92% 50%; /* amber */
+    --status-failed: 0 72% 51%; /* red */
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-muted text-foreground;
+  }
+}
