@@ -30,10 +30,10 @@ export default async function DashboardPage() {
       ) : (
         <>
           <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat icon={<Link2 className="h-4 w-4" />} label="Connected accounts" value={accountCount} />
-            <Stat icon={<Send className="h-4 w-4" />} label="Scheduled" value={scheduledCount} />
-            <Stat icon={<FileText className="h-4 w-4" />} label="Drafts" value={draftCount} />
-            <Stat icon={<CalendarDays className="h-4 w-4" />} label="Posted" value={postedCount} />
+            <Stat icon={Link2} label="Connected accounts" value={accountCount} tone="primary" />
+            <Stat icon={Send} label="Scheduled" value={scheduledCount} tone="scheduled" />
+            <Stat icon={FileText} label="Drafts" value={draftCount} tone="draft" />
+            <Stat icon={CalendarDays} label="Posted" value={postedCount} tone="posted" />
           </section>
 
           <Card>
@@ -59,15 +59,34 @@ export default async function DashboardPage() {
   );
 }
 
-function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+const TONE: Record<string, string> = {
+  primary: "bg-accent text-accent-foreground",
+  scheduled: "bg-status-scheduled/10 text-status-scheduled",
+  draft: "bg-status-draft/10 text-status-draft",
+  posted: "bg-status-posted/10 text-status-posted",
+};
+
+function Stat({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number;
+  tone: keyof typeof TONE;
+}) {
   return (
-    <Card>
-      <CardContent className="flex flex-col gap-1 p-5">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          {icon}
-          <span className="text-sm">{label}</span>
+    <Card className="transition-shadow hover:shadow-md">
+      <CardContent className="flex flex-col gap-4 p-5">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${TONE[tone]}`}>
+          <Icon className="h-5 w-5" />
         </div>
-        <span className="text-3xl font-semibold tracking-tight">{value}</span>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-3xl font-semibold tracking-tight tabular-nums">{value}</span>
+          <span className="text-sm text-muted-foreground">{label}</span>
+        </div>
       </CardContent>
     </Card>
   );

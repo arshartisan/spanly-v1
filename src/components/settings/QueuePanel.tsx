@@ -5,6 +5,13 @@ import { Loader2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { QueueView } from "@/server/settings";
 
@@ -160,18 +167,18 @@ export function QueuePanel({ initial }: { initial: QueueView }) {
         <p className="mb-2 text-xs text-muted-foreground">
           Authoritative for slot times (overrides your profile timezone for the queue).
         </p>
-        <select
-          id="tz"
-          value={timezone}
-          onChange={(e) => setTimezone(e.target.value)}
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-        >
-          {zones.map((z) => (
-            <option key={z} value={z}>
-              {z}
-            </option>
-          ))}
-        </select>
+        <Select value={timezone} onValueChange={setTimezone}>
+          <SelectTrigger id="tz" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {zones.map((z) => (
+              <SelectItem key={z} value={z}>
+                {z}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </section>
 
       <div className="flex items-center gap-3">

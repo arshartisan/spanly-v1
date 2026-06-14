@@ -7,6 +7,7 @@ import { DASHBOARD_NAV, NAV_SECTIONS, type NavItem } from "@/lib/nav";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { CreatePostButton } from "./CreatePostButton";
 import { AccountMenu } from "./AccountMenu";
+import { ThemeToggleRow } from "./ThemeToggleRow";
 
 interface SidebarProps {
   user: { displayName: string; email: string; avatarUrl?: string | null };
@@ -33,7 +34,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
         "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
         active
           ? "bg-accent font-medium text-accent-foreground"
-          : "text-foreground/80 hover:bg-muted hover:text-foreground",
+          : "text-foreground/80 hover:bg-foreground/5 hover:text-foreground",
       )}
     >
       <Icon className="h-4 w-4" />
@@ -77,7 +78,8 @@ export function Sidebar({ user, planLabel }: SidebarProps) {
         ))}
       </nav>
 
-      <div className="border-t border-border p-2">
+      <div className="flex flex-col gap-0.5 border-t border-border p-2">
+        <ThemeToggleRow />
         <AccountMenu
           displayName={user.displayName}
           email={user.email}

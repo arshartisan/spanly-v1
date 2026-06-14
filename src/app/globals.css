@@ -48,13 +48,13 @@
   }
 
   .dark {
-    --background: 224 71% 4%;
+    --background: 222 47% 5%;
     --foreground: 210 20% 98%;
 
-    --card: 222 47% 7%;
+    --card: 222 40% 9%;
     --card-foreground: 210 20% 98%;
 
-    --popover: 222 47% 7%;
+    --popover: 222 40% 9%;
     --popover-foreground: 210 20% 98%;
 
     /* Green primary stays vivid on dark surfaces */
@@ -64,8 +64,8 @@
     --secondary: 215 28% 17%;
     --secondary-foreground: 210 20% 98%;
 
-    /* Dark gray surfaces */
-    --muted: 217 33% 12%;
+    /* Page background — the deepest surface so cards/sidebar layer above it */
+    --muted: 222 47% 6%;
     --muted-foreground: 217 11% 65%;
 
     --accent: 142 40% 16%;

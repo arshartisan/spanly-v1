@@ -45,7 +45,7 @@ export function AccountMenu({ displayName, email, planLabel, avatarUrl }: Accoun
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left hover:bg-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Avatar className="h-8 w-8">
             {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}

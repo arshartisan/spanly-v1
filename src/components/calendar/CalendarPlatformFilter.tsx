@@ -3,6 +3,13 @@
 import { useRouter } from "next/navigation";
 import { PLATFORMS } from "@/lib/platforms";
 import { PLATFORM_STYLE } from "@/lib/platform-style";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 /** Platform filter for the calendar — navigates with view+date preserved. */
 export function CalendarPlatformFilter({
@@ -16,21 +23,25 @@ export function CalendarPlatformFilter({
 }) {
   const router = useRouter();
   return (
-    <select
-      className="rounded-md border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
+    <Select
       value={platform ?? "all"}
-      onChange={(e) => {
+      onValueChange={(value) => {
         const params = new URLSearchParams({ view, date: anchorKey });
-        if (e.target.value !== "all") params.set("platform", e.target.value);
+        if (value !== "all") params.set("platform", value);
         router.replace(`/calendar?${params.toString()}`);
       }}
     >
-      <option value="all">All platforms</option>
-      {PLATFORMS.map((p) => (
-        <option key={p} value={p}>
-          {PLATFORM_STYLE[p].label}
-        </option>
-      ))}
-    </select>
+      <SelectTrigger className="w-[160px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All platforms</SelectItem>
+        {PLATFORMS.map((p) => (
+          <SelectItem key={p} value={p}>
+            {PLATFORM_STYLE[p].label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
