@@ -26,7 +26,7 @@ export default async function SettingsPage({
   if (!user) redirect("/login");
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6 p-6 md:p-8">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6 md:p-8">
       <h1 className="text-2xl font-semibold">Settings</h1>
       <SettingsTabs active={active} />
 

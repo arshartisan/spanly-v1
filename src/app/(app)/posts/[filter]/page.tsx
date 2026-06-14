@@ -101,7 +101,7 @@ export default async function PostsPage({
   });
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-5 p-6 md:p-8">
+    <div className="mx-auto flex max-w-7xl flex-col gap-5 p-6 md:p-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">{TITLE[f]}</h1>
         <Button asChild size="sm">

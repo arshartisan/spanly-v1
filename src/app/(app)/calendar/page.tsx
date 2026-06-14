@@ -101,7 +101,7 @@ export default async function CalendarPage({
       : `Week of ${new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", day: "2-digit", month: "short" }).format(cells[0].date)}`;
 
   return (
-    <div className="flex flex-col gap-4 p-6 md:p-8">
+    <div className="mx-auto flex max-w-7xl flex-col gap-4 p-6 md:p-8">
       <CalendarControls
         label={label}
         view={view}

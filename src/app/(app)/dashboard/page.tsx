@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   const firstName = (user.displayName ?? user.email).split(" ")[0];
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6 md:p-8">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6 md:p-8">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back, {firstName}</h1>
         <p className="text-sm text-muted-foreground">Here&apos;s what&apos;s happening in your workspace.</p>

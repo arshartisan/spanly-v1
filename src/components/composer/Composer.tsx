@@ -363,7 +363,7 @@ export function Composer({
   const title = isEdit ? TYPE_TITLE[type].replace("Create", "Edit") : TYPE_TITLE[type];
 
   return (
-    <div className="mx-auto max-w-5xl p-6 md:p-8">
+    <div className="mx-auto max-w-7xl p-6 md:p-8">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {isEdit ? (

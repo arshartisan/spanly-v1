@@ -47,7 +47,7 @@ export function ConnectionsView({
   );
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6 p-6 md:p-8">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6 md:p-8">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Connected Accounts</h1>
         <p className="text-sm text-muted-foreground">

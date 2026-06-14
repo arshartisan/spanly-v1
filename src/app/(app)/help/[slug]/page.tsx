@@ -23,7 +23,7 @@ export default async function HelpArticlePage({ params }: { params: Promise<{ sl
   const related = articlesByCategory(article.category).filter((a) => a.slug !== article.slug);
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6 p-6 md:p-8">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6 md:p-8">
       <Link href="/help" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Help Center
       </Link>

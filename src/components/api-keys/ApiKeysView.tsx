@@ -49,7 +49,7 @@ export function ApiKeysView({
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6 p-6 md:p-8">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6 md:p-8">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">API Keys</h1>

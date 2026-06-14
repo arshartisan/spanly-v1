@@ -21,7 +21,7 @@ export function HelpIndex({ articles }: { articles: Item[] }) {
   }, [q, articles]);
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6 p-6 md:p-8">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6 md:p-8">
       <div>
         <h1 className="text-2xl font-semibold">Help Center</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">
