@@ -38,16 +38,27 @@ export interface PublishEnqueue {
 // (1:1 with the target, so duplicate enqueues still collapse — exactly-once preserved).
 const jobIdFor = (targetId: string) => `publish-${targetId}`;
 
-/** Add one delayed publish job per target. Idempotent via jobId. */
+/**
+ * Add one delayed publish job per target, keyed by a stable jobId.
+ *
+ * BullMQ dedups by jobId across ALL states — including completed/failed. A finished job left
+ * in the queue would therefore silently swallow every later re-enqueue (Retry button, the
+ * missed-run sweep), leaving the target stuck "pending" forever. So we remove any prior job
+ * with this id before re-adding. publishTarget is itself idempotent (it early-returns on a
+ * target already "success"), so a removed-then-readded job never double-posts.
+ */
 export async function enqueuePublish(jobs: PublishEnqueue[]): Promise<void> {
   if (jobs.length === 0) return;
   await Promise.all(
-    jobs.map((j) =>
-      publishQueue.add(
+    jobs.map(async (j) => {
+      const jobId = jobIdFor(j.targetId);
+      // No-op if it doesn't exist; ignore the rare race where it's mid-removal/active.
+      await publishQueue.remove(jobId).catch(() => undefined);
+      await publishQueue.add(
         "publish",
         { targetId: j.targetId },
-        { jobId: jobIdFor(j.targetId), delay: Math.max(0, Math.floor(j.delayMs)) },
-      ),
-    ),
+        { jobId, delay: Math.max(0, Math.floor(j.delayMs)) },
+      );
+    }),
   );
 }

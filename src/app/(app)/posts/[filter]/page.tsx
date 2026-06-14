@@ -120,7 +120,7 @@ export default async function PostsPage({
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {cards.map((post) => (
             <PostCard key={post.id} post={post} tz={user.timezone} />
           ))}
