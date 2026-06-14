@@ -3,6 +3,7 @@ import { prisma } from "@/server/db";
 import { encryptTokens } from "@/server/crypto";
 import { verifyState } from "@/server/oauth-state";
 import { getProvider } from "@/providers/registry";
+import { publicOrigin } from "@/server/public-url";
 import { PLATFORMS, type PlatformKey } from "@/lib/platforms";
 import type { IgConnectMethod } from "@prisma/client";
 
@@ -12,7 +13,7 @@ import type { IgConnectMethod } from "@prisma/client";
 export async function GET(req: Request, ctx: { params: Promise<{ platform: string }> }) {
   const { platform } = await ctx.params;
   const url = new URL(req.url);
-  const origin = url.origin;
+  const origin = publicOrigin(req);
   const back = (q: string) => NextResponse.redirect(new URL(`/connections?${q}`, origin));
 
   if (!PLATFORMS.includes(platform as PlatformKey)) return back("error=unknown");
@@ -29,10 +30,11 @@ export async function GET(req: Request, ctx: { params: Promise<{ platform: strin
 
   const provider = getProvider(key);
   const redirectUri = `${origin}/api/connect/${key}/callback`;
+  const rawState = url.searchParams.get("state") ?? undefined;
 
   let tokens, account;
   try {
-    ({ tokens, account } = await provider.handleCallback({ code, redirectUri }));
+    ({ tokens, account } = await provider.handleCallback({ code, redirectUri, state: rawState }));
   } catch {
     return back("error=callback");
   }

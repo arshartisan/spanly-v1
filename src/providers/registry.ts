@@ -8,8 +8,26 @@
 import type { PlatformKey } from "@/lib/platforms";
 import type { PlatformProvider } from "@/providers/types";
 import { MockProvider } from "@/providers/mock";
+import { XProvider } from "@/providers/x";
 
 const mockCache = new Map<PlatformKey, MockProvider>();
+const liveCache = new Map<PlatformKey, PlatformProvider>();
+
+/** Construct the real provider for a platform, or null if not implemented yet. */
+function liveProvider(platform: PlatformKey): PlatformProvider | null {
+  let p = liveCache.get(platform);
+  if (p) return p;
+  switch (platform) {
+    case "x":
+      p = new XProvider();
+      break;
+    // facebook / instagram / linkedin / tiktok / youtube: add real providers here.
+    default:
+      return null;
+  }
+  liveCache.set(platform, p);
+  return p;
+}
 
 function mock(platform: PlatformKey): MockProvider {
   let p = mockCache.get(platform);
@@ -27,8 +45,9 @@ function isLive(platform: PlatformKey): boolean {
 
 export function getProvider(platform: PlatformKey): PlatformProvider {
   if (isLive(platform)) {
-    // Real providers slot in here per platform (Phase 6). Until then, fall back to mock.
-    // e.g. if (platform === "x") return new XProvider();
+    const live = liveProvider(platform);
+    if (live) return live;
+    // Flag is on but no real provider yet — fall back to mock rather than break.
   }
   return mock(platform);
 }

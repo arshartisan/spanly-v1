@@ -40,7 +40,11 @@ export class MockProvider implements PlatformProvider {
     return `/connect/${this.platform}/mock?${params.toString()}`;
   }
 
-  async handleCallback(): Promise<{ tokens: ProviderTokens; account: ExternalAccount }> {
+  async handleCallback(_opts?: {
+    code: string;
+    redirectUri: string;
+    state?: string;
+  }): Promise<{ tokens: ProviderTokens; account: ExternalAccount }> {
     const expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
     return {
       tokens: {

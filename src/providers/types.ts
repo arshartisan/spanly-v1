@@ -58,7 +58,9 @@ export interface PlatformProvider {
 
   // OAuth (doc 05/14)
   getAuthUrl(opts: AuthUrlOptions): string;
-  handleCallback(opts: { code: string; redirectUri: string }): Promise<{
+  // `state` is the same signed CSRF token passed to getAuthUrl (echoed back by the
+  // provider). Stateless PKCE providers (e.g. X) re-derive their code_verifier from it.
+  handleCallback(opts: { code: string; redirectUri: string; state?: string }): Promise<{
     tokens: ProviderTokens;
     account: ExternalAccount;
   }>;

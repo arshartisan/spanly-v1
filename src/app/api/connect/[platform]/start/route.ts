@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/server/auth";
 import { canConnect } from "@/server/connections";
 import { signState } from "@/server/oauth-state";
 import { getProvider } from "@/providers/registry";
+import { publicOrigin } from "@/server/public-url";
 import { PLATFORMS, type PlatformKey } from "@/lib/platforms";
 
 // GET /api/connect/[platform]/start (docs/implementation/05 + 14)
@@ -10,7 +11,7 @@ import { PLATFORMS, type PlatformKey } from "@/lib/platforms";
 // (the internal mock consent page in MVP) carrying a signed CSRF state.
 export async function GET(req: Request, ctx: { params: Promise<{ platform: string }> }) {
   const { platform } = await ctx.params;
-  const origin = new URL(req.url).origin;
+  const origin = publicOrigin(req);
 
   if (!PLATFORMS.includes(platform as PlatformKey)) {
     return NextResponse.redirect(new URL("/connections?error=unknown", origin));
