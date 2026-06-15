@@ -10,6 +10,7 @@ import type { PlatformProvider } from "@/providers/types";
 import { MockProvider } from "@/providers/mock";
 import { XProvider } from "@/providers/x";
 import { LinkedinProvider } from "@/providers/linkedin";
+import { FacebookProvider } from "@/providers/facebook";
 
 const mockCache = new Map<PlatformKey, MockProvider>();
 const liveCache = new Map<PlatformKey, PlatformProvider>();
@@ -25,7 +26,10 @@ function liveProvider(platform: PlatformKey): PlatformProvider | null {
     case "linkedin":
       p = new LinkedinProvider();
       break;
-    // facebook / instagram / tiktok / youtube: add real providers here.
+    case "facebook":
+      p = new FacebookProvider();
+      break;
+    // instagram / tiktok / youtube: add real providers here.
     default:
       return null;
   }
