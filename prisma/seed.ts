@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { encryptTokens } from "../src/server/crypto";
 import { PLATFORM_CONFIG, PLATFORMS } from "../src/lib/platforms";
+import { isAlwaysLive } from "../src/providers/registry";
 
 const prisma = new PrismaClient();
 
@@ -50,8 +51,11 @@ async function main() {
     },
   });
 
-  // One mock SocialAccount per platform (PROVIDER_MODE=mock).
+  // One mock SocialAccount per platform (PROVIDER_MODE=mock). Always-live platforms
+  // (e.g. LinkedIn, Instagram) have no mock provider, so a fake account would be unusable —
+  // skip them and connect those for real via the OAuth flow.
   for (const platform of PLATFORMS) {
+    if (isAlwaysLive(platform)) continue;
     const cfg = PLATFORM_CONFIG[platform];
     const tokens = encryptTokens({
       accessToken: `mock-access-${platform}`,

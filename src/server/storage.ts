@@ -1,5 +1,5 @@
 import "server-only";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomBytes } from "node:crypto";
 
@@ -55,4 +55,25 @@ export async function presignUpload(opts: {
     { expiresIn: PRESIGN_TTL_SECONDS },
   );
   return { key, uploadUrl, publicUrl: `${PUBLIC_BASE_URL}/${key}` };
+}
+
+export interface FetchedObject {
+  bytes: ArrayBuffer;
+  contentType?: string;
+}
+
+/**
+ * Read one object's bytes from storage. Used by the dev media-proxy route so locally-stored
+ * media (MinIO on localhost) can be served over the app's public origin — remote platforms
+ * (e.g. Instagram) fetch media by URL and can't reach localhost. In production
+ * S3_PUBLIC_BASE_URL points straight at the CDN/bucket and the proxy route is unused.
+ */
+export async function fetchObject(key: string): Promise<FetchedObject> {
+  const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+  if (!res.Body) throw new Error(`Object not found: ${key}`);
+  const arr = await res.Body.transformToByteArray();
+  // Copy into a standalone ArrayBuffer (a valid BodyInit) — the SDK's view may be backed by
+  // a pooled/Shared buffer.
+  const bytes = arr.buffer.slice(arr.byteOffset, arr.byteOffset + arr.byteLength) as ArrayBuffer;
+  return { bytes, contentType: res.ContentType };
 }

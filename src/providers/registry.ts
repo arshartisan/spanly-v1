@@ -11,6 +11,7 @@ import { MockProvider } from "@/providers/mock";
 import { XProvider } from "@/providers/x";
 import { LinkedinProvider } from "@/providers/linkedin";
 import { FacebookProvider } from "@/providers/facebook";
+import { InstagramProvider } from "@/providers/instagram";
 
 const mockCache = new Map<PlatformKey, MockProvider>();
 const liveCache = new Map<PlatformKey, PlatformProvider>();
@@ -29,7 +30,10 @@ function liveProvider(platform: PlatformKey): PlatformProvider | null {
     case "facebook":
       p = new FacebookProvider();
       break;
-    // instagram / tiktok / youtube: add real providers here.
+    case "instagram":
+      p = new InstagramProvider();
+      break;
+    // tiktok / youtube: add real providers here.
     default:
       return null;
   }
@@ -48,7 +52,7 @@ function mock(platform: PlatformKey): MockProvider {
 
 // Platforms that always use the real provider — the mock/demo connection is removed for
 // these regardless of PROVIDER_MODE or the per-platform live flag.
-const ALWAYS_LIVE = new Set<PlatformKey>(["linkedin"]);
+const ALWAYS_LIVE = new Set<PlatformKey>(["linkedin", "instagram"]);
 
 function isLive(platform: PlatformKey): boolean {
   if (ALWAYS_LIVE.has(platform)) return true;

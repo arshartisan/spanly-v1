@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getProvider } from "@/providers/registry";
 import { FacebookProvider } from "@/providers/facebook";
+import { InstagramProvider } from "@/providers/instagram";
 
 describe("MockProvider (registry)", () => {
   it("returns a provider for every platform in mock mode", () => {
@@ -90,5 +91,63 @@ describe("FacebookProvider (live)", () => {
 
   it("validate accepts a well-formed text post", () => {
     expect(fb.validate({ type: "text", caption: "hello", media: [] }).ok).toBe(true);
+  });
+});
+
+describe("InstagramProvider (live)", () => {
+  const ig = new InstagramProvider();
+
+  it("getAuthUrl (instagram login) points at instagram.com/oauth/authorize with publish scope", () => {
+    process.env.INSTAGRAM_CLIENT_ID = "ig-test-id";
+    const url = new URL(ig.getAuthUrl({ state: "csrf123", redirectUri: "https://app/cb", method: "instagram" }));
+    expect(url.hostname).toContain("instagram.com");
+    expect(url.pathname).toContain("/oauth/authorize");
+    expect(url.searchParams.get("client_id")).toBe("ig-test-id");
+    expect(url.searchParams.get("redirect_uri")).toBe("https://app/cb");
+    expect(url.searchParams.get("state")).toBe("csrf123");
+    expect(url.searchParams.get("scope")).toMatch(/instagram_business_content_publish/);
+  });
+
+  it("getAuthUrl defaults to the instagram-login path when no method is given", () => {
+    process.env.INSTAGRAM_CLIENT_ID = "ig-test-id";
+    const url = new URL(ig.getAuthUrl({ state: "s", redirectUri: "https://app/cb" }));
+    expect(url.hostname).toContain("instagram.com");
+  });
+
+  it("getAuthUrl (facebook login) points at the FB dialog with FACEBOOK_CLIENT_ID", () => {
+    process.env.FACEBOOK_CLIENT_ID = "fb-test-id";
+    const url = new URL(ig.getAuthUrl({ state: "s", redirectUri: "https://app/cb", method: "facebook" }));
+    expect(url.origin + url.pathname).toContain("facebook.com");
+    expect(url.pathname).toContain("/dialog/oauth");
+    expect(url.searchParams.get("client_id")).toBe("fb-test-id");
+    expect(url.searchParams.get("scope")).toMatch(/instagram_content_publish/);
+  });
+
+  it("getAuthUrl throws when INSTAGRAM_CLIENT_ID is unset", () => {
+    delete process.env.INSTAGRAM_CLIENT_ID;
+    expect(() => ig.getAuthUrl({ state: "s", redirectUri: "r", method: "instagram" })).toThrow(
+      /INSTAGRAM_CLIENT_ID/,
+    );
+  });
+
+  it("validate enforces story = exactly one media", () => {
+    expect(ig.validate({ type: "story", caption: "", media: [] }).ok).toBe(false);
+    expect(
+      ig.validate({ type: "story", caption: "", media: [{ kind: "image", url: "u", order: 0 }] }).ok,
+    ).toBe(true);
+  });
+
+  it("validate rejects an over-limit caption (max 2200)", () => {
+    const res = ig.validate({
+      type: "image",
+      caption: "x".repeat(2201),
+      media: [{ kind: "image", url: "u", order: 0 }],
+    });
+    expect(res.ok).toBe(false);
+    expect(res.errors.join(" ")).toMatch(/2200/);
+  });
+
+  it("validate rejects text posts (unsupported on Instagram)", () => {
+    expect(ig.validate({ type: "text", caption: "hi", media: [] }).ok).toBe(false);
   });
 });

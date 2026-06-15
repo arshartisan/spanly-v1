@@ -34,7 +34,12 @@ export async function GET(req: Request, ctx: { params: Promise<{ platform: strin
 
   let tokens, account;
   try {
-    ({ tokens, account } = await provider.handleCallback({ code, redirectUri, state: rawState }));
+    ({ tokens, account } = await provider.handleCallback({
+      code,
+      redirectUri,
+      state: rawState,
+      method: state.method,
+    }));
   } catch (err) {
     console.error(`[connect:${key}] handleCallback failed:`, err);
     return back("error=callback");

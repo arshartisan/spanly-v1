@@ -60,7 +60,14 @@ export interface PlatformProvider {
   getAuthUrl(opts: AuthUrlOptions): string;
   // `state` is the same signed CSRF token passed to getAuthUrl (echoed back by the
   // provider). Stateless PKCE providers (e.g. X) re-derive their code_verifier from it.
-  handleCallback(opts: { code: string; redirectUri: string; state?: string }): Promise<{
+  // `method` echoes the Instagram connect-method choice so the provider can pick the
+  // matching token-exchange/publish path.
+  handleCallback(opts: {
+    code: string;
+    redirectUri: string;
+    state?: string;
+    method?: "instagram" | "facebook";
+  }): Promise<{
     tokens: ProviderTokens;
     account: ExternalAccount;
   }>;
