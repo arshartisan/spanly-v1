@@ -42,9 +42,19 @@ function mock(platform: PlatformKey): MockProvider {
   return p;
 }
 
+// Platforms that always use the real provider — the mock/demo connection is removed for
+// these regardless of PROVIDER_MODE or the per-platform live flag.
+const ALWAYS_LIVE = new Set<PlatformKey>(["linkedin"]);
+
 function isLive(platform: PlatformKey): boolean {
+  if (ALWAYS_LIVE.has(platform)) return true;
   if ((process.env.PROVIDER_MODE ?? "mock") !== "live") return false;
   return process.env[`PROVIDER_LIVE_${platform.toUpperCase()}`] === "true";
+}
+
+/** True when a platform always uses its real provider (no mock/demo connection). */
+export function isAlwaysLive(platform: PlatformKey): boolean {
+  return ALWAYS_LIVE.has(platform);
 }
 
 export function getProvider(platform: PlatformKey): PlatformProvider {

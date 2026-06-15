@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PLATFORMS, PLATFORM_CONFIG, type PlatformKey } from "@/lib/platforms";
 import { PLATFORM_STYLE } from "@/lib/platform-style";
+import { isAlwaysLive } from "@/providers/registry";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -19,6 +20,8 @@ export default async function MockConsentPage({
   const { platform } = await params;
   if (!PLATFORMS.includes(platform as PlatformKey)) notFound();
   const key = platform as PlatformKey;
+  // Platforms that always use the real provider have no mock/demo connection.
+  if (isAlwaysLive(key)) notFound();
 
   const { state, method } = await searchParams;
   const style = PLATFORM_STYLE[key];

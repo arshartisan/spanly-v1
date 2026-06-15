@@ -36,7 +36,7 @@ describe("MockProvider (registry)", () => {
   });
 
   it("publish succeeds by default and is deterministic by idempotencyKey", async () => {
-    const r = await getProvider("linkedin").publish(
+    const r = await getProvider("facebook").publish(
       { type: "text", caption: "hello", media: [], idempotencyKey: "post1:acc1" },
       { accessToken: "t", scopes: [] },
     );
