@@ -10,6 +10,7 @@ import { fromStripeSubscription, syncSubscription } from "@/server/billing";
 export async function POST(req: Request) {
   if (!isLiveBilling()) {
     // Mock mode drives subscription state via /api/billing/mock/*; no webhook is used.
+    // No WebhookEvent row is written here — there is no real inbound Stripe event to log.
     return NextResponse.json({ ignored: "mock mode" }, { status: 200 });
   }
 
@@ -28,14 +29,50 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `Webhook verification failed: ${message}` }, { status: 400 });
   }
 
+  // Best-effort event log (doc 19). Never let logging break webhook handling.
+  const logId = await logWebhookEvent(event.type, "received", event.id);
+
   try {
     await handleEvent(event);
   } catch (err) {
     // Return 500 so Stripe retries; log for diagnosis (never log tokens/secrets).
     console.error(`Stripe webhook handler error for ${event.type}:`, err);
+    await markWebhookEvent(logId, "failed", err instanceof Error ? err.message : "Handler failed.");
     return NextResponse.json({ error: "Handler failed." }, { status: 500 });
   }
+  await markWebhookEvent(logId, "processed");
   return NextResponse.json({ received: true });
+}
+
+/** Append a WebhookEvent row; returns its id (or null on failure). Best-effort — never throws. */
+async function logWebhookEvent(
+  type: string,
+  status: string,
+  refId: string,
+): Promise<string | null> {
+  try {
+    const row = await prisma.webhookEvent.create({
+      data: { source: "stripe", type, status, refId },
+      select: { id: true },
+    });
+    return row.id;
+  } catch {
+    return null;
+  }
+}
+
+/** Update a previously-logged WebhookEvent's status/error. Best-effort — never throws. */
+async function markWebhookEvent(
+  id: string | null,
+  status: string,
+  error?: string,
+): Promise<void> {
+  if (!id) return;
+  try {
+    await prisma.webhookEvent.update({ where: { id }, data: { status, error: error ?? null } });
+  } catch {
+    // Logging failures must never break webhook handling.
+  }
 }
 
 async function handleEvent(event: Stripe.Event): Promise<void> {

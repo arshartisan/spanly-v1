@@ -221,6 +221,22 @@ model WebhookEndpoint {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// Lightweight log of inbound Stripe webhooks + outbound user-webhook deliveries (doc 19).
+// Written best-effort by the existing handlers; read by the admin event log. Holds only
+// event metadata — never tokens, secrets, or signatures.
+model WebhookEvent {
+  id        String   @id @default(cuid())
+  source    String // "stripe" | "user_webhook"
+  type      String
+  status    String // received | processed | failed | delivered
+  refId     String? // stripe event id / post id
+  attempts  Int      @default(1)
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([source, createdAt])
+}
+
 // Auth.js session table (Credentials + DB sessions). Deleting rows powers
 // "sign out of all devices".
 model Session {

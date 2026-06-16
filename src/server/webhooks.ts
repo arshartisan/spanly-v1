@@ -120,9 +120,36 @@ export async function deliverPostWebhook(postId: string): Promise<void> {
       signal: controller.signal,
     });
     // We don't retry on non-2xx in MVP; the stamp prevents duplicate sends regardless.
-  } catch {
+    await logWebhookDelivery(payload.event, postId, "delivered", null);
+  } catch (err) {
     // Network/timeout: swallow so publishing is never blocked by a bad webhook URL.
+    await logWebhookDelivery(
+      payload.event,
+      postId,
+      "failed",
+      err instanceof Error ? err.message : "Delivery failed.",
+    );
   } finally {
     clearTimeout(timer);
+  }
+}
+
+/**
+ * Append a WebhookEvent row for an attempted user-webhook delivery (doc 19, admin event log).
+ * Best-effort: never throw, so a logging failure can't block publishing. Records only the event
+ * type / post id / status — never the webhook URL, secret, or signature.
+ */
+async function logWebhookDelivery(
+  type: string,
+  refId: string,
+  status: "delivered" | "failed",
+  error: string | null,
+): Promise<void> {
+  try {
+    await prisma.webhookEvent.create({
+      data: { source: "user_webhook", type, status, refId, error },
+    });
+  } catch {
+    // Logging is non-critical; swallow.
   }
 }
