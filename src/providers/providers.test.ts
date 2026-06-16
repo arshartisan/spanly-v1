@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getProvider } from "@/providers/registry";
 import { FacebookProvider } from "@/providers/facebook";
 import { InstagramProvider } from "@/providers/instagram";
+import { TiktokProvider } from "@/providers/tiktok";
 
 describe("MockProvider (registry)", () => {
   it("returns a provider for every platform in mock mode", () => {
@@ -47,8 +48,9 @@ describe("MockProvider (registry)", () => {
   });
 
   it("publish fails for platforms listed in MOCK_FAIL_PLATFORMS", async () => {
-    process.env.MOCK_FAIL_PLATFORMS = "tiktok";
-    const r = await getProvider("tiktok").publish(
+    // youtube is still mock-backed (tiktok/instagram/linkedin are always-live).
+    process.env.MOCK_FAIL_PLATFORMS = "youtube";
+    const r = await getProvider("youtube").publish(
       { type: "video", caption: "v", media: [{ kind: "video", url: "u", order: 0 }], idempotencyKey: "p:a" },
       { accessToken: "t", scopes: [] },
     );
@@ -149,5 +151,60 @@ describe("InstagramProvider (live)", () => {
 
   it("validate rejects text posts (unsupported on Instagram)", () => {
     expect(ig.validate({ type: "text", caption: "hi", media: [] }).ok).toBe(false);
+  });
+});
+
+describe("TiktokProvider (live)", () => {
+  const tt = new TiktokProvider();
+
+  it("getAuthUrl points at the TikTok authorize endpoint with PKCE + comma scopes", () => {
+    process.env.TIKTOK_CLIENT_KEY = "tt-test-key";
+    process.env.NEXTAUTH_SECRET ??= "test-secret";
+    const url = new URL(tt.getAuthUrl({ state: "csrf123", redirectUri: "https://app/cb" }));
+    expect(url.origin + url.pathname).toContain("tiktok.com/v2/auth/authorize");
+    expect(url.searchParams.get("client_key")).toBe("tt-test-key");
+    expect(url.searchParams.get("redirect_uri")).toBe("https://app/cb");
+    expect(url.searchParams.get("state")).toBe("csrf123");
+    expect(url.searchParams.get("response_type")).toBe("code");
+    expect(url.searchParams.get("code_challenge_method")).toBe("S256");
+    expect(url.searchParams.get("code_challenge")).toBeTruthy();
+    // TikTok expects comma-separated scopes, not space-separated.
+    expect(url.searchParams.get("scope")).toMatch(/video\.publish/);
+    expect(url.searchParams.get("scope")).toContain(",");
+  });
+
+  it("getAuthUrl throws when TIKTOK_CLIENT_KEY is unset", () => {
+    delete process.env.TIKTOK_CLIENT_KEY;
+    expect(() => tt.getAuthUrl({ state: "s", redirectUri: "r" })).toThrow(/TIKTOK_CLIENT_KEY/);
+  });
+
+  it("handleCallback rejects a missing state (PKCE cannot be derived)", async () => {
+    await expect(
+      tt.handleCallback({ code: "c", redirectUri: "https://app/cb" }),
+    ).rejects.toThrow(/state/);
+  });
+
+  it("validate rejects an over-limit caption (max 2200)", () => {
+    const res = tt.validate({
+      type: "video",
+      caption: "x".repeat(2201),
+      media: [{ kind: "video", url: "u", order: 0 }],
+    });
+    expect(res.ok).toBe(false);
+    expect(res.errors.join(" ")).toMatch(/2200/);
+  });
+
+  it("validate rejects video posts with no media", () => {
+    expect(tt.validate({ type: "video", caption: "hi", media: [] }).ok).toBe(false);
+  });
+
+  it("validate rejects text posts (unsupported on TikTok)", () => {
+    expect(tt.validate({ type: "text", caption: "hi", media: [] }).ok).toBe(false);
+  });
+
+  it("validate accepts a well-formed video post", () => {
+    expect(
+      tt.validate({ type: "video", caption: "clip", media: [{ kind: "video", url: "u", order: 0 }] }).ok,
+    ).toBe(true);
   });
 });
