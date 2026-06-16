@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { PostStatus } from "@prisma/client";
 import { CheckCircle2, Copy, Info, Layers, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,7 +25,7 @@ import type { ComposerAccount, UploadedMedia } from "./types";
 export interface InitialPost {
   id: string;
   type: PostTypeKey;
-  status: "draft" | "scheduled" | "publishing" | "posted" | "failed";
+  status: PostStatus;
   mainCaption: string;
   perPlatform: Record<string, string>;
   targets: string[];

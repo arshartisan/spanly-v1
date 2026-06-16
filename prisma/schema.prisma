@@ -37,6 +37,8 @@ enum PostStatus {
   publishing
   posted
   failed
+  canceled
+  removed
 }
 
 enum ScheduleMode {
@@ -50,6 +52,7 @@ enum TargetStatus {
   publishing
   success
   failed
+  canceled
 }
 
 enum MediaKind {
@@ -132,6 +135,7 @@ model User {
   supportNotes  SupportNote[]   @relation("NoteSubject")
   authoredNotes SupportNote[]   @relation("NoteAuthor")
   refundRequests RefundRequest[]
+  moderatedPosts Post[]          @relation("PostModerator")
 }
 
 // Actionable refund queue (doc 17). Created by the customer refund route (in-policy) or
@@ -289,9 +293,15 @@ model Post {
   // Set once the post-completion webhook has been delivered (doc 12) — idempotent under retries.
   webhookSentAt DateTime?
 
-  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  targets PostTarget[]
-  media   PostMedia[]
+  // Staff moderation overlay (doc 18): who canceled/took down this post and why.
+  moderatedById    String?
+  moderatedAt      DateTime?
+  moderationReason String?
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moderatedBy User?        @relation("PostModerator", fields: [moderatedById], references: [id], onDelete: SetNull)
+  targets     PostTarget[]
+  media       PostMedia[]
 
   @@index([userId, status])
   @@index([status, publishAt]) // scheduler "due posts" query

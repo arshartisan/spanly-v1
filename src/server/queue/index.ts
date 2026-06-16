@@ -62,3 +62,16 @@ export async function enqueuePublish(jobs: PublishEnqueue[]): Promise<void> {
     }),
   );
 }
+
+/**
+ * Remove the queued publish job for each target (admin cancel/takedown, doc 18). Mirrors
+ * `enqueuePublish`: keyed by the same `jobIdFor`, Promise.all, swallows not-found so a job
+ * that already completed/never existed is a no-op. Callers go through this helper rather
+ * than importing bullmq, keeping the worker process boundary clean.
+ */
+export async function removePublishJobs(targetIds: string[]): Promise<void> {
+  if (targetIds.length === 0) return;
+  await Promise.all(
+    targetIds.map((id) => publishQueue.remove(jobIdFor(id)).catch(() => undefined)),
+  );
+}
