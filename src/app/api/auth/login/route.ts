@@ -32,6 +32,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
   }
 
+  // Suspended accounts authenticate but are denied a session (doc 16).
+  if (user.suspendedAt) {
+    return NextResponse.json({ error: "This account has been suspended." }, { status: 403 });
+  }
+
   await createSession(user.id);
   return NextResponse.json({ ok: true });
 }

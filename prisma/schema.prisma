@@ -120,6 +120,22 @@ model User {
   apiKeys       ApiKey[]
   webhook       WebhookEndpoint?
   auditLogs     AuditLog[]      @relation("AuditActor")
+  supportNotes  SupportNote[]   @relation("NoteSubject")
+  authoredNotes SupportNote[]   @relation("NoteAuthor")
+}
+
+// Free-form staff note attached to a customer account (doc 16). Shown on the user
+// detail Activity tab alongside the AuditLog. `author` is the staff member who wrote it.
+model SupportNote {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("NoteSubject", fields: [userId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation("NoteAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 // Append-only admin action log (doc 15). Written by logAdminAction() after every
