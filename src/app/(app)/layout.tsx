@@ -19,7 +19,11 @@ import {
 // read-only enforcement of mutations is out of scope for this UI task (banner only).
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getSessionContext();
-  if (!ctx) redirect("/login");
+  // No valid session. If a (now-invalid) session cookie is still present, middleware lets
+  // protected routes through on cookie *presence* alone, then bounces /login back here on the
+  // same cookie — an infinite 307 loop. Route through the logout endpoint, which clears the
+  // stale cookie server-side, so /login is reached cookie-free and renders normally.
+  if (!ctx) redirect("/api/auth/logout");
   const { user, impersonatorId } = ctx;
 
   const label = user.subscription
