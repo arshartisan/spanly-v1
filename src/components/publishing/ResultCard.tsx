@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { CheckCircle2, ExternalLink, Loader2, RotateCcw, XCircle } from "lucide-react";
+import { CheckCircle2, ExternalLink, Info, Loader2, RotateCcw, XCircle } from "lucide-react";
 import { PLATFORM_STYLE } from "@/lib/platform-style";
 import { snippet } from "@/lib/post-display";
+import { humanizePublishError } from "@/lib/publish-error";
 import { cn } from "@/lib/utils";
 import type { PublishingTargetView } from "./types";
 
@@ -24,14 +25,14 @@ export function ResultCard({
 }) {
   const style = PLATFORM_STYLE[target.platform];
   const Icon = style.Icon;
-  // An expired-account failure is surfaced with a Reconnect path rather than a plain Retry.
-  const isAuthError =
-    target.status === "failed" && /reconnect|authorization|expired/i.test(target.error ?? "");
+  const failure = target.status === "failed" ? humanizePublishError(target.error) : null;
+  // Expired/revoked connections get a Reconnect path; everything else offers Retry.
+  const isAuthError = failure?.kind === "auth";
 
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-xl border bg-background p-4",
+        "glass flex flex-col gap-3 rounded-2xl p-4",
         target.status === "failed" && "border-destructive/40",
         target.status === "success" && "border-emerald-500/40",
       )}
@@ -68,16 +69,32 @@ export function ResultCard({
         </a>
       )}
 
-      {target.status === "failed" && (
+      {target.status === "failed" && failure && (
         <div className="flex flex-col gap-2">
-          <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {target.error ?? "Publishing failed."}
-          </p>
+          <div className="rounded-lg bg-destructive/10 px-3 py-2.5">
+            <p className="text-sm font-medium text-destructive">{failure.message}</p>
+            {failure.hint && (
+              <p className="mt-1 flex items-start gap-1.5 text-xs text-destructive/80">
+                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span>{failure.hint}</span>
+              </p>
+            )}
+            {failure.raw && failure.raw !== failure.message && (
+              <details className="mt-2 text-xs text-muted-foreground">
+                <summary className="cursor-pointer select-none hover:text-foreground">
+                  Technical details
+                </summary>
+                <pre className="mt-1.5 max-h-32 overflow-auto whitespace-pre-wrap break-words rounded-md bg-foreground/5 p-2 font-mono text-[11px] leading-relaxed">
+                  {failure.raw}
+                </pre>
+              </details>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             {isAuthError ? (
               <Link
                 href="/connections"
-                className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+                className="press inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
               >
                 Reconnect account
               </Link>
@@ -86,10 +103,10 @@ export function ResultCard({
                 type="button"
                 onClick={() => onRetry(target.id)}
                 disabled={retrying}
-                className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:opacity-60"
+                className="press inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:opacity-60"
               >
                 {retrying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
-                Retry
+                {failure.kind === "permission" ? "Retry anyway" : "Retry"}
               </button>
             )}
           </div>
