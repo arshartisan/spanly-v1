@@ -4,6 +4,7 @@ import { signupSchema } from "@/lib/schemas/auth";
 import { createSession, hashPassword, issueToken } from "@/server/auth";
 import { mailer } from "@/server/mailer";
 import { clientIp, rateLimit } from "@/server/rate-limit";
+import { isEnabled } from "@/server/settings/flags";
 
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 const TRIAL_DAYS = 7;
@@ -12,6 +13,11 @@ export async function POST(req: Request) {
   const rl = await rateLimit(`signup:${clientIp(req)}`, 10, 60);
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many attempts. Try again shortly." }, { status: 429 });
+  }
+
+  // Kill switch (doc 20): an admin can pause sign-ups without a deploy. Absent flag → enabled.
+  if (!(await isEnabled("signups"))) {
+    return NextResponse.json({ error: "Sign-ups are temporarily disabled." }, { status: 403 });
   }
 
   const parsed = signupSchema.safeParse(await req.json().catch(() => null));

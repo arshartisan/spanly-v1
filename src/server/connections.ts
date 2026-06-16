@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/server/db";
 import { accountLimit } from "@/server/plans";
+import { isEnabled } from "@/server/settings/flags";
 import type { PlanKey } from "@prisma/client";
 import type { PlatformKey } from "@/lib/platforms";
 
@@ -8,6 +9,14 @@ import type { PlatformKey } from "@/lib/platforms";
  * Connection helpers (docs/implementation/05). "Active" = not soft-deleted
  * (disconnectedAt is null). The plan account-limit is enforced server-side on connect.
  */
+
+/**
+ * Whether new connects to `platform` are allowed (doc 20 `platform.<name>` kill switch).
+ * Absent flag → enabled, so a platform is connectable until an admin explicitly disables it.
+ */
+export async function platformEnabled(platform: PlatformKey): Promise<boolean> {
+  return isEnabled(`platform.${platform}`);
+}
 
 export async function activeAccountCount(userId: string): Promise<number> {
   return prisma.socialAccount.count({ where: { userId, disconnectedAt: null } });

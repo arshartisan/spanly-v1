@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/server/auth";
-import { canConnect } from "@/server/connections";
+import { canConnect, platformEnabled } from "@/server/connections";
 import { signState } from "@/server/oauth-state";
 import { getProvider } from "@/providers/registry";
 import { publicOrigin } from "@/server/public-url";
@@ -21,6 +21,13 @@ export async function GET(req: Request, ctx: { params: Promise<{ platform: strin
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.redirect(new URL(`/login?next=/connections`, origin));
+  }
+
+  // Per-platform kill switch (doc 20): an admin can disable connecting a platform without a
+  // deploy. Absent flag → enabled. Block the connect flow here (the composer eligible-list is
+  // the UI agent's concern).
+  if (!(await platformEnabled(key))) {
+    return NextResponse.redirect(new URL("/connections?error=disabled", origin));
   }
 
   const methodParam = new URL(req.url).searchParams.get("method");

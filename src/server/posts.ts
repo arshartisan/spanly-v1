@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/server/db";
 import { enqueuePublish } from "@/server/queue";
+import { isEnabled } from "@/server/settings/flags";
 import { nextQueueSlot, type QueueSettingsDef } from "@/server/queue-slots";
 import {
   resolveCaption,
@@ -263,6 +264,12 @@ export async function retryAllFailed(userId: string, postId: string): Promise<Re
  * (0 for "post now"). jobId = idempotencyKey so duplicate enqueues collapse.
  */
 async function enqueueDispatch(postId: string, publishAt: Date): Promise<void> {
+  // Publishing kill switch (doc 20). HOLD-NOT-DROP: when publishing is paused we leave the
+  // targets `pending` (the Post already carries publishing/scheduled status + publishAt) and
+  // simply skip enqueuing. Nothing is lost — re-enabling `publishing` plus the missed-run
+  // sweep (admin maintenance) re-dispatches these held targets. Absent flag → enabled.
+  if (!(await isEnabled("publishing"))) return;
+
   const targets = await prisma.postTarget.findMany({
     where: { postId, status: "pending" },
     select: { id: true },

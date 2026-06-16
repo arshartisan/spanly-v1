@@ -50,6 +50,35 @@ export async function createSession(userId: string): Promise<void> {
   });
 }
 
+/** 30-min TTL for impersonation sessions (doc 21). Short-lived by design. */
+const IMPERSONATION_TTL_MS = 30 * 60 * 1000;
+
+/**
+ * Create a short-lived impersonation Session for `targetId`, recording the acting staff
+ * id in `impersonatorId`, and set the session cookie to it (doc 21). Mirrors
+ * `createSession` but writes `impersonatorId` + the 30-min TTL. The staff's own session
+ * row is left untouched so `stopImpersonation` can restore it.
+ */
+export async function createImpersonationSession(
+  targetId: string,
+  impersonatorId: string,
+): Promise<void> {
+  const sessionToken = newSessionToken();
+  const expires = new Date(Date.now() + IMPERSONATION_TTL_MS);
+  await prisma.session.create({
+    data: { sessionToken, userId: targetId, impersonatorId, expires },
+  });
+
+  const store = await cookies();
+  store.set(SESSION_COOKIE, sessionToken, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    expires,
+  });
+}
+
 /** Destroy the current session (this device only). */
 export async function destroySession(): Promise<void> {
   const store = await cookies();
@@ -88,6 +117,35 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     return null;
   }
   return session.user;
+}
+
+export interface SessionContext {
+  /** The EFFECTIVE user — the impersonated target when impersonating, else the signed-in user. */
+  user: CurrentUser;
+  /** The acting staff user id when this is an impersonation session, else null. */
+  impersonatorId: string | null;
+}
+
+/**
+ * Like `getCurrentUser`, but ALSO exposes the impersonator (doc 21). Returns the effective
+ * user plus `impersonatorId` (the staff member acting as them) so the app layout can render
+ * the "viewing as" banner. Null if logged out / expired. Does not alter `getCurrentUser`.
+ */
+export async function getSessionContext(): Promise<SessionContext | null> {
+  const store = await cookies();
+  const token = store.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
+
+  const session = await prisma.session.findUnique({
+    where: { sessionToken: token },
+    include: { user: { include: { subscription: true } } },
+  });
+  if (!session) return null;
+  if (session.expires.getTime() < Date.now()) {
+    await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+    return null;
+  }
+  return { user: session.user, impersonatorId: session.impersonatorId };
 }
 
 // ─────────────────────────── Verification tokens ───────────────────────────

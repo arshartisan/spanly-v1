@@ -5,6 +5,23 @@ import { encryptTokens } from "../src/server/crypto";
 import { PLATFORM_CONFIG, PLATFORMS } from "../src/lib/platforms";
 import { isAlwaysLive } from "../src/providers/registry";
 
+// Known feature flags to seed (doc 20). Mirrors KNOWN_FLAGS in src/server/settings/flags.ts
+// — kept inline here because that module is `server-only` (unresolvable under the tsx seed).
+// Every flag seeds enabled EXCEPT maintenance-mode, which seeds disabled (absent = not in
+// maintenance). The runtime store treats a missing row as enabled regardless.
+const KNOWN_FLAGS: { key: string; description: string }[] = [
+  { key: "signups", description: "Allow new account sign-ups." },
+  { key: "publishing", description: "Allow posts to be dispatched to providers." },
+  { key: "content-studio", description: "Enable the AI content studio." },
+  { key: "bulk", description: "Enable bulk scheduling / CSV import." },
+  { key: "api", description: "Enable the public v1 API + MCP surface." },
+  { key: "maintenance-mode", description: "Put the customer app into maintenance mode (default off)." },
+  ...PLATFORMS.map((p) => ({
+    key: `platform.${p}`,
+    description: `Allow connecting & publishing to ${p}.`,
+  })),
+];
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -101,6 +118,17 @@ async function main() {
     },
   });
   console.log(`✅ Seeded superadmin ${adminEmail} / ${adminPassword} (role: superadmin).`);
+
+  // Feature flags (doc 20). Idempotent upsert per key; only create the row when missing so a
+  // re-seed never clobbers an admin's deliberate toggle. maintenance-mode seeds disabled.
+  for (const flag of KNOWN_FLAGS) {
+    await prisma.featureFlag.upsert({
+      where: { key: flag.key },
+      create: { key: flag.key, enabled: flag.key !== "maintenance-mode", description: flag.description },
+      update: { description: flag.description },
+    });
+  }
+  console.log(`✅ Seeded ${KNOWN_FLAGS.length} feature flags (maintenance-mode disabled).`);
 }
 
 main()

@@ -237,6 +237,35 @@ model WebhookEvent {
   @@index([source, createdAt])
 }
 
+// Platform settings & feature flags (doc 20). A DB-backed kill-switch / config store
+// read by both the admin UI and the customer app gates. A MISSING row defaults to
+// enabled (see src/server/settings/flags.ts) so an absent flag never blocks the product.
+model FeatureFlag {
+  key         String   @id
+  enabled     Boolean  @default(true)
+  value       Json?
+  description String?
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+}
+
+// Customer-facing announcement banners (doc 20). Audience + active-window filtered by
+// activeAnnouncements(user). `severity`: info | warning | critical.
+// `audience`: all | trialing | plan:<key>.
+model Announcement {
+  id          String    @id @default(cuid())
+  message     String
+  severity    String    @default("info")
+  audience    String    @default("all")
+  startsAt    DateTime?
+  endsAt      DateTime?
+  active      Boolean   @default(true)
+  createdById String?
+  createdAt   DateTime  @default(now())
+
+  @@index([active, startsAt])
+}
+
 // Auth.js session table (Credentials + DB sessions). Deleting rows powers
 // "sign out of all devices".
 model Session {
@@ -244,6 +273,9 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+  // Staff user id when this session is an impersonation (doc 21). No relation — kept a
+  // bare id like decidedById elsewhere. Null on normal sessions.
+  impersonatorId String?
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

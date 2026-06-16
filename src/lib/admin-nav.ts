@@ -4,6 +4,7 @@ import {
   Layers,
   LayoutDashboard,
   Link2,
+  Megaphone,
   ReceiptText,
   RotateCcw,
   ScrollText,
@@ -44,6 +45,7 @@ export const ADMIN_NAV: NavSection[] = [
     heading: "Platform",
     items: [
       { label: "System", href: "/admin/system", icon: Server },
+      { label: "Broadcast", href: "/admin/broadcast", icon: Megaphone },
       { label: "Settings", href: "/admin/settings", icon: Settings },
       { label: "Audit log", href: "/admin/audit", icon: ScrollText },
     ],

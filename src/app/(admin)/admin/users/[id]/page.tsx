@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Reveal } from "@/components/motion/reveal";
 import { UserActions } from "@/components/admin/users/UserActions";
 import { UserDetailTabs } from "@/components/admin/users/UserDetailTabs";
+import { SupportPowers } from "@/components/admin/users/SupportPowers";
 import { PlanBadge, RoleBadge } from "@/components/admin/users/display";
 
 // Admin user detail (doc 16) — RSC. Reads the full user via getUserDetail() and hands the
@@ -24,8 +25,11 @@ export default async function AdminUserDetailPage({
   const { id } = await params;
   const viewer = await requireStaff();
   const canManageBilling = roleAtLeast(viewer.role, "superadmin");
+  const isSuperadmin = roleAtLeast(viewer.role, "superadmin");
   const user = await getUserDetail(id);
   if (!user) notFound();
+
+  const targetIsStaff = roleAtLeast(user.role, "support");
 
   const suspended = user.suspendedAt !== null;
   const verified = user.emailVerified !== null;
@@ -96,6 +100,15 @@ export default async function AdminUserDetailPage({
       <Reveal delay={0.1}>
         <UserDetailTabs user={user} canManageBilling={canManageBilling} />
       </Reveal>
+
+      {isSuperadmin ? (
+        <Reveal delay={0.14}>
+          <SupportPowers
+            user={{ id: user.id, email: user.email }}
+            targetIsStaff={targetIsStaff}
+          />
+        </Reveal>
+      ) : null}
     </div>
   );
 }
