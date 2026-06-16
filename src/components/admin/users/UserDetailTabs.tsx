@@ -19,7 +19,7 @@ import { STATUS_META, TYPE_LABEL, snippet } from "@/lib/post-display";
 import { cn } from "@/lib/utils";
 import { PlanBadge, ROLE_LABEL, STATUS_LABEL } from "./display";
 import { SupportNotes, type SupportNoteVM } from "./SupportNotes";
-import { SubscriptionOverride } from "@/components/admin/billing/SubscriptionOverride";
+import { SubscriptionOverride, type PlanOption } from "@/components/admin/billing/SubscriptionOverride";
 
 // Tabbed detail panels for an admin user (doc 16). Accessible custom tab switcher (no
 // shadcn Tabs primitive): role="tablist"/"tab"/"tabpanel" + aria-selected, arrow-key
@@ -41,9 +41,12 @@ const STRIPE_BASE = "https://dashboard.stripe.com";
 export function UserDetailTabs({
   user,
   canManageBilling = false,
+  planOptions,
 }: {
   user: AdminUserDetail;
   canManageBilling?: boolean;
+  /** Live catalog plan options for the override select; falls back to statics when omitted. */
+  planOptions?: PlanOption[];
 }) {
   const [active, setActive] = useState<TabKey>("profile");
   const baseId = useId();
@@ -112,6 +115,7 @@ export function UserDetailTabs({
             sub={user.subscription}
             userId={user.id}
             canManageBilling={canManageBilling}
+            planOptions={planOptions}
           />
         ) : null}
         {active === "connections" ? <ConnectionsPanel accounts={user.accounts} /> : null}
@@ -190,16 +194,20 @@ function SubscriptionPanel({
   sub,
   userId,
   canManageBilling,
+  planOptions,
 }: {
   sub: AdminUserDetail["subscription"];
   userId: string;
   canManageBilling: boolean;
+  planOptions?: PlanOption[];
 }) {
   if (!sub) {
     return (
       <div className="flex flex-col gap-4">
         <EmptyPanel icon={CreditCard} message="No subscription on this account." />
-        {canManageBilling ? <SubscriptionOverride userId={userId} /> : null}
+        {canManageBilling ? (
+          <SubscriptionOverride userId={userId} planOptions={planOptions} />
+        ) : null}
       </div>
     );
   }
@@ -252,7 +260,9 @@ function SubscriptionPanel({
         </Field>
       </dl>
     </Panel>
-      {canManageBilling ? <SubscriptionOverride userId={userId} /> : null}
+      {canManageBilling ? (
+        <SubscriptionOverride userId={userId} planOptions={planOptions} />
+      ) : null}
     </div>
   );
 }

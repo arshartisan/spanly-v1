@@ -1,8 +1,8 @@
 import "server-only";
 import { prisma } from "@/server/db";
-import { accountLimit } from "@/server/plans";
+import { getAccountLimit } from "@/server/plans";
+import type { PlanKey } from "@/server/plans";
 import { isEnabled } from "@/server/settings/flags";
-import type { PlanKey } from "@prisma/client";
 import type { PlatformKey } from "@/lib/platforms";
 
 /**
@@ -39,7 +39,7 @@ export async function canConnect(
   plan: PlanKey,
   platform: PlatformKey,
 ): Promise<{ ok: boolean; used: number; limit: number }> {
-  const limit = accountLimit(plan);
+  const limit = await getAccountLimit(plan);
   const used = await activeAccountCount(userId);
   if (used < limit) return { ok: true, used, limit };
   const reconnect = await hasActivePlatform(userId, platform);

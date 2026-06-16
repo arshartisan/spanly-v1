@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Coins, Loader2, ShieldAlert, SlidersHorizontal } from "lucide-react";
-import { BillingInterval, PlanKey, SubscriptionStatus } from "@prisma/client";
+import { BillingInterval, SubscriptionStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,15 +15,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PLANS } from "@/server/plans";
+import { DEFAULT_PLAN_DEFS } from "@/lib/plan-defaults";
 import { STATUS_LABEL } from "@/components/admin/users/display";
 import { cn } from "@/lib/utils";
 
 // Superadmin-only billing controls for the user Subscription tab (doc 17). Two popover
 // forms: override the subscription (plan/interval/status/trial) and grant account credit.
-// Both POST to the admin API and router.refresh() the RSC on success.
+// Both POST to the admin API and router.refresh() the RSC on success. The plan select is fed
+// the LIVE admin-editable catalog via `planOptions` (from the RSC parent); when omitted it
+// falls back to the static defaults so the component still renders client-side.
 
-const PLAN_KEYS = Object.values(PlanKey);
+/** A plan choice for the override select — key + display name. */
+export type PlanOption = { key: string; name: string };
+
+const DEFAULT_PLAN_OPTIONS: PlanOption[] = DEFAULT_PLAN_DEFS.map((p) => ({
+  key: p.key,
+  name: p.name,
+}));
+
 const STATUSES = Object.values(SubscriptionStatus);
 const INTERVALS = Object.values(BillingInterval);
 const KEEP = "__keep__";
@@ -35,9 +44,16 @@ const INTERVAL_LABEL: Record<BillingInterval, string> = {
 
 type Feedback = { kind: "ok" | "error"; message: string } | null;
 
-export function SubscriptionOverride({ userId }: { userId: string }) {
+export function SubscriptionOverride({
+  userId,
+  planOptions,
+}: {
+  userId: string;
+  planOptions?: PlanOption[];
+}) {
   const router = useRouter();
   const [feedback, setFeedback] = useState<Feedback>(null);
+  const plans = planOptions && planOptions.length > 0 ? planOptions : DEFAULT_PLAN_OPTIONS;
 
   return (
     <div className="glass flex flex-col gap-3 rounded-2xl border border-primary/20 p-5">
@@ -50,7 +66,12 @@ export function SubscriptionOverride({ userId }: { userId: string }) {
         is recorded in the audit log.
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <OverridePopover userId={userId} onFeedback={setFeedback} onSuccess={() => router.refresh()} />
+        <OverridePopover
+          userId={userId}
+          plans={plans}
+          onFeedback={setFeedback}
+          onSuccess={() => router.refresh()}
+        />
         <CreditPopover userId={userId} onFeedback={setFeedback} onSuccess={() => router.refresh()} />
       </div>
       {feedback ? (
@@ -70,10 +91,12 @@ export function SubscriptionOverride({ userId }: { userId: string }) {
 
 function OverridePopover({
   userId,
+  plans,
   onFeedback,
   onSuccess,
 }: {
   userId: string;
+  plans: PlanOption[];
   onFeedback: (f: Feedback) => void;
   onSuccess: () => void;
 }) {
@@ -147,9 +170,9 @@ function OverridePopover({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={KEEP}>Keep current</SelectItem>
-                {PLAN_KEYS.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {PLANS[p].name}
+                {plans.map((p) => (
+                  <SelectItem key={p.key} value={p.key}>
+                    {p.name}
                   </SelectItem>
                 ))}
               </SelectContent>

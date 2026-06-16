@@ -25,7 +25,7 @@ import { SubscriptionFilters } from "@/components/admin/billing/SubscriptionFilt
 import { PlanBadge, StatusBadge } from "@/components/admin/users/display";
 import { formatCents, formatPercent } from "@/lib/admin-format";
 import { cn } from "@/lib/utils";
-import type { PlanKey } from "@prisma/client";
+import type { PlanKey } from "@/server/plans";
 
 // Admin subscriptions oversight (doc 17) — RSC. A billing-metrics KPI strip + plan-mix
 // breakdown, then a filterable subscriptions table sharing the users-table styling.

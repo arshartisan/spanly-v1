@@ -61,12 +61,6 @@ enum MediaKind {
   pdf
 }
 
-enum PlanKey {
-  creator
-  growth
-  pro
-}
-
 enum BillingInterval {
   month
   year
@@ -249,6 +243,34 @@ model FeatureFlag {
   updatedAt   DateTime @updatedAt
 }
 
+// DB-backed plan catalog (was the hardcoded PlanKey enum + src/server/plans.ts data).
+// Admin-editable so tiers can be added/removed. `key` is the dynamic plan key referenced
+// by Subscription.plan (no FK — app-level integrity). accountLimit -1 = unlimited.
+model Plan {
+  key          String   @id
+  name         String
+  tagline      String   @default("")
+  monthly      Int // whole dollars (matches 29/49/99)
+  yearly       Int
+  accountLimit Int // -1 = unlimited
+  features     String[]
+  rank         Int // tier ordering + comparison (was PLAN_RANK)
+  isPublic     Boolean  @default(true) // shown on pricing/checkout
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([active, rank])
+}
+
+// Platform-wide config defaults store (trial length, refund window, signups default).
+// Read via src/server/settings/config.ts with the same cache+fallback pattern as flags.
+model PlatformConfig {
+  key       String   @id // "trialDays" | "refundWindowDays" | "signupsDefault"
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
 // Customer-facing announcement banners (doc 20). Audience + active-window filtered by
 // activeAnnouncements(user). `severity`: info | warning | critical.
 // `audience`: all | trialing | plan:<key>.
@@ -284,7 +306,7 @@ model Session {
 model Subscription {
   id               String             @id @default(cuid())
   userId           String             @unique
-  plan             PlanKey            @default(creator)
+  plan             String             @default("creator") // dynamic plan key (was PlanKey enum); app-level integrity, no FK
   interval         BillingInterval    @default(month)
   status           SubscriptionStatus @default(trialing)
   trialEndsAt      DateTime?

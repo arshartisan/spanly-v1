@@ -1,7 +1,7 @@
 import "server-only";
-import type { BillingInterval, PlanKey } from "@prisma/client";
+import type { BillingInterval } from "@prisma/client";
 import { prisma } from "@/server/db";
-import { PLANS } from "@/server/plans";
+import { PLANS, type PlanKey } from "@/server/plans";
 
 // Admin Overview KPIs (doc 15). One Promise.all of Prisma aggregates, mirroring the
 // customer dashboard's metric pattern. All read-only; never logged.

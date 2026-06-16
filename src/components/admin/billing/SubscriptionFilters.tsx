@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
-import { BillingInterval, PlanKey, SubscriptionStatus } from "@prisma/client";
+import { BillingInterval, SubscriptionStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { STATUS_LABEL } from "@/components/admin/users/display";
-import { PLANS } from "@/server/plans";
+import { DEFAULT_PLANS as PLANS, DEFAULT_PLAN_KEYS } from "@/lib/plan-defaults";
 
 // URL-driven filter bar for the admin subscriptions list (doc 17), mirroring
 // <UserFilters/>. All state lives in the query string so the RSC page does the query;
@@ -22,7 +22,7 @@ import { PLANS } from "@/server/plans";
 const ALL = "all";
 
 const STATUSES = Object.values(SubscriptionStatus);
-const PLAN_KEYS = Object.values(PlanKey);
+const PLAN_KEYS = DEFAULT_PLAN_KEYS;
 const INTERVALS = Object.values(BillingInterval);
 
 const INTERVAL_LABEL: Record<BillingInterval, string> = {

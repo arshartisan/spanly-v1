@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { BillingInterval, PlanKey, RefundStatus, SubscriptionStatus } from "@prisma/client";
+import { BillingInterval, RefundStatus, SubscriptionStatus } from "@prisma/client";
 
 // Admin billing validation (doc 17). Shared by API routes and the admin UI.
 // The list query is parsed from URLSearchParams, so every field is optional.
 
 export const subscriptionListQuerySchema = z.object({
   status: z.nativeEnum(SubscriptionStatus).optional(),
-  plan: z.nativeEnum(PlanKey).optional(),
+  plan: z.string().min(1).optional(),
   interval: z.nativeEnum(BillingInterval).optional(),
 });
 
@@ -44,7 +44,7 @@ const isoDateOrNull = z
 
 export const overrideSubscriptionSchema = z
   .object({
-    plan: z.nativeEnum(PlanKey).optional(),
+    plan: z.string().min(1).optional(),
     interval: z.nativeEnum(BillingInterval).optional(),
     status: z.nativeEnum(SubscriptionStatus).optional(),
     trialEndsAt: isoDateOrNull.optional(),

@@ -1,22 +1,23 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Clock,
   Layers,
   Megaphone,
   Power,
-  RotateCcw,
   Settings2,
   ShieldAlert,
   Sparkles,
 } from "lucide-react";
 import { KNOWN_FLAGS, listFlags } from "@/server/settings/flags";
 import { requireStaff, roleAtLeast } from "@/server/admin/access";
-import { PLANS } from "@/server/plans";
+import { getEditableDefaults } from "@/server/settings/config";
+import { getPlanCatalog } from "@/server/plans";
 import { PLATFORMS, PLATFORM_CONFIG } from "@/lib/platforms";
+import type { PlanDef } from "@/lib/plan-defaults";
 import { Card } from "@/components/ui/card";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 import { FlagToggle } from "@/components/admin/settings/FlagToggle";
+import { DefaultsForm } from "@/components/admin/settings/DefaultsForm";
 
 // Admin Platform Settings — feature flags / kill switches + read-only defaults (doc 20). RSC.
 // View is gated at `admin`; the global kill switches (signups, publishing, maintenance-mode)
@@ -58,7 +59,11 @@ export default async function AdminSettingsPage() {
   const viewer = await requireStaff("admin");
   const canToggleGlobal = roleAtLeast(viewer.role, "superadmin");
 
-  const stored = await listFlags();
+  const [stored, defaults, catalog] = await Promise.all([
+    listFlags(),
+    getEditableDefaults(),
+    getPlanCatalog(),
+  ]);
   const storedByKey = new Map(stored.map((f) => [f.key, f.enabled]));
 
   // Merge KNOWN_FLAGS (canonical list, incl. unseeded keys) with stored rows. Unseeded keys
@@ -136,12 +141,12 @@ export default async function AdminSettingsPage() {
         <FlagGroup rows={featureRows} canToggleGlobal={canToggleGlobal} />
       </Reveal>
 
-      {/* ── Defaults (read-only, configured in code) ── */}
+      {/* ── Defaults (editable, DB-backed) ── */}
       <Reveal delay={0.28}>
         <SectionTitle icon={Settings2}>Defaults</SectionTitle>
       </Reveal>
       <Reveal delay={0.3}>
-        <DefaultsPanel />
+        <DefaultsPanel defaults={defaults} catalog={catalog} />
       </Reveal>
     </div>
   );
@@ -202,23 +207,28 @@ function FlagGroup({
   );
 }
 
-function DefaultsPanel() {
+function DefaultsPanel({
+  defaults,
+  catalog,
+}: {
+  defaults: { trialDays: number; refundWindowDays: number; signupsDefault: boolean };
+  catalog: PlanDef[];
+}) {
   return (
     <Card className="p-5">
-      <div className="mb-4 flex items-center gap-2 rounded-lg border border-border/50 bg-foreground/[0.03] px-3 py-2 text-xs text-muted-foreground">
-        <Settings2 className="h-3.5 w-3.5 shrink-0" />
-        These are configured in code (read-only here). Edit the source + deploy to change them.
-      </div>
+      <DefaultsForm initial={defaults} />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <DefaultTile icon={Clock} label="Trial length" value="7 days" />
-        <DefaultTile icon={RotateCcw} label="Refund window" value="7 days" />
-      </div>
-
-      <div className="mt-5">
+      <div className="mt-6 border-t border-border/50 pt-5">
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Plan account limits
         </h3>
+        <p className="mb-3 text-[11px] text-muted-foreground">
+          The live catalog (edit on the{" "}
+          <Link href="/admin/plans" className="text-primary hover:underline">
+            Plans
+          </Link>{" "}
+          page).
+        </p>
         <div className="overflow-hidden rounded-xl border border-border/50">
           <table className="w-full border-collapse text-sm">
             <thead>
@@ -229,7 +239,7 @@ function DefaultsPanel() {
               </tr>
             </thead>
             <tbody>
-              {Object.values(PLANS).map((plan) => (
+              {catalog.map((plan) => (
                 <tr
                   key={plan.key}
                   className="border-b border-border/30 last:border-0"
@@ -248,28 +258,6 @@ function DefaultsPanel() {
         </div>
       </div>
     </Card>
-  );
-}
-
-function DefaultTile({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="glass flex items-center gap-3 rounded-xl border border-border/50 px-4 py-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-        <Icon className="h-4 w-4" />
-      </div>
-      <div className="flex flex-col">
-        <span className="text-sm font-semibold tabular-nums">{value}</span>
-        <span className="text-xs text-muted-foreground">{label}</span>
-      </div>
-    </div>
   );
 }
 

@@ -129,6 +129,97 @@ async function main() {
     });
   }
   console.log(`✅ Seeded ${KNOWN_FLAGS.length} feature flags (maintenance-mode disabled).`);
+
+  // Plan catalog (doc 10/17). DB-backed + admin-editable; these mirror DEFAULT_PLAN_DEFS in
+  // src/lib/plan-defaults.ts (accountLimit -1 = unlimited). Idempotent upsert; a re-seed
+  // refreshes the built-in tiers' metadata without clobbering an admin-added tier.
+  const DEFAULT_PLANS: {
+    key: string;
+    name: string;
+    tagline: string;
+    monthly: number;
+    yearly: number;
+    accountLimit: number; // -1 = unlimited
+    rank: number;
+    features: string[];
+  }[] = [
+    {
+      key: "creator",
+      name: "Creator",
+      tagline: "Best for growing creators",
+      monthly: 29,
+      yearly: 319,
+      accountLimit: 15,
+      rank: 0,
+      features: [
+        "Unlimited posts",
+        "Schedule & queue",
+        "Carousels",
+        "Bulk tools",
+        "Content studio",
+        "Analytics (beta)",
+        "API add-on available",
+        "Human support",
+      ],
+    },
+    {
+      key: "growth",
+      name: "Growth",
+      tagline: "Best for growing teams & agencies",
+      monthly: 49,
+      yearly: 529,
+      accountLimit: 50,
+      rank: 1,
+      features: ["Everything in Creator", "Viral content tools", "Priority support"],
+    },
+    {
+      key: "pro",
+      name: "Pro",
+      tagline: "Best for scaling brands",
+      monthly: 99,
+      yearly: 1069,
+      accountLimit: -1, // unlimited
+      rank: 2,
+      features: [
+        "Everything in Growth",
+        "Unlimited connected accounts",
+        "Viral consulting",
+        "Invite team members (later)",
+      ],
+    },
+  ];
+  for (const plan of DEFAULT_PLANS) {
+    await prisma.plan.upsert({
+      where: { key: plan.key },
+      create: { ...plan, isPublic: true, active: true },
+      update: {
+        name: plan.name,
+        tagline: plan.tagline,
+        monthly: plan.monthly,
+        yearly: plan.yearly,
+        accountLimit: plan.accountLimit,
+        rank: plan.rank,
+        features: plan.features,
+      },
+    });
+  }
+  console.log(`✅ Seeded ${DEFAULT_PLANS.length} plans (pro = unlimited accounts).`);
+
+  // Editable platform defaults (doc 20). Trial length, refund window, and the signups
+  // default. Idempotent: only create when missing so an admin's tuned value survives a re-seed.
+  const DEFAULT_CONFIG: { key: string; value: number | boolean }[] = [
+    { key: "trialDays", value: 7 },
+    { key: "refundWindowDays", value: 7 },
+    { key: "signupsDefault", value: true },
+  ];
+  for (const cfg of DEFAULT_CONFIG) {
+    await prisma.platformConfig.upsert({
+      where: { key: cfg.key },
+      create: { key: cfg.key, value: cfg.value },
+      update: {}, // never clobber a tuned value on re-seed
+    });
+  }
+  console.log(`✅ Seeded ${DEFAULT_CONFIG.length} platform defaults (trial/refund/signups).`);
 }
 
 main()

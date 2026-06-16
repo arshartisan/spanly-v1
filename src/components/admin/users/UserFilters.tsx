@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
-import { PlanKey, Role, SubscriptionStatus } from "@prisma/client";
+import { Role, SubscriptionStatus } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ROLE_LABEL, STATUS_LABEL } from "./display";
-import { PLANS } from "@/server/plans";
+import { DEFAULT_PLANS as PLANS, DEFAULT_PLAN_KEYS } from "@/lib/plan-defaults";
 
 // URL-driven filter bar for the admin user list (doc 16). All state lives in the query
 // string so the RSC page does the actual querying; this component only writes to the URL.
@@ -23,7 +23,7 @@ import { PLANS } from "@/server/plans";
 const ALL = "all";
 
 const ROLES = Object.values(Role);
-const PLAN_KEYS = Object.values(PlanKey);
+const PLAN_KEYS = DEFAULT_PLAN_KEYS;
 const STATUSES = Object.values(SubscriptionStatus);
 
 const BOOL_OPTIONS = [

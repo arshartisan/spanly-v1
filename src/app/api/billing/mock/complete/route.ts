@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/server/auth";
 import { isLiveBilling } from "@/server/stripe";
 import { mockActivate } from "@/server/billing";
-import type { BillingInterval, PlanKey } from "@prisma/client";
+import type { BillingInterval } from "@prisma/client";
+import type { PlanKey } from "@/server/plans";
 
 const PLANS = ["creator", "growth", "pro"];
 const INTERVALS = ["month", "year"];

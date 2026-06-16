@@ -1,9 +1,11 @@
 import "server-only";
 import type Stripe from "stripe";
-import type { BillingInterval, PlanKey, Subscription } from "@prisma/client";
+import type { BillingInterval, Subscription } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { mailer } from "@/server/mailer";
-import { PLANS } from "@/server/plans";
+import { getPlanMap } from "@/server/plans";
+import type { PlanKey } from "@/server/plans";
+import { getRefundWindowDays, getTrialDays } from "@/server/settings/config";
 import {
   API_ADDON_PRICE,
   appUrl,
@@ -18,9 +20,6 @@ import {
  * to Stripe, the mock path drives the same `Subscription` upsert logic via internal pages.
  * Stripe is the source of truth in live mode (webhook-driven); mock mode writes directly.
  */
-
-const TRIAL_DAYS = 7;
-const REFUND_WINDOW_DAYS = 7;
 
 export type CheckoutResult = { url: string };
 
@@ -42,11 +41,12 @@ export async function createCheckout(
 
   const stripe = getStripe();
   const customerId = await ensureStripeCustomer(userId, email);
+  const trialDays = await getTrialDays();
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: priceIdFor(plan, interval), quantity: 1 }],
-    subscription_data: { trial_period_days: TRIAL_DAYS },
+    subscription_data: { trial_period_days: trialDays },
     success_url: appUrl("/settings/billing?subscribed=1"),
     cancel_url: appUrl("/settings/plans?canceled=1"),
     client_reference_id: userId,
@@ -105,9 +105,13 @@ export async function requestRefund(userId: string, email: string): Promise<Refu
   const anchor = sub.currentPeriodEnd
     ? new Date(sub.currentPeriodEnd.getTime() - intervalMs(sub.interval))
     : sub.createdAt;
-  const withinWindow = Date.now() - anchor.getTime() <= REFUND_WINDOW_DAYS * 86_400_000;
+  const refundWindowDays = await getRefundWindowDays();
+  const withinWindow = Date.now() - anchor.getTime() <= refundWindowDays * 86_400_000;
   if (!withinWindow) {
-    return { ok: false, message: "Refund window has passed (7-day money-back guarantee)." };
+    return {
+      ok: false,
+      message: `Refund window has passed (${refundWindowDays}-day money-back guarantee).`,
+    };
   }
 
   // In-policy: record an actionable refund request for the admin queue (doc 17). Don't
@@ -117,8 +121,9 @@ export async function requestRefund(userId: string, email: string): Promise<Refu
     select: { id: true },
   });
   if (!existingPending) {
-    const plan = PLANS[sub.plan];
-    const amount = (sub.interval === "year" ? plan.yearly : plan.monthly) * 100;
+    const planMap = await getPlanMap();
+    const plan = planMap[sub.plan];
+    const amount = plan ? (sub.interval === "year" ? plan.yearly : plan.monthly) * 100 : 0;
     await prisma.refundRequest.create({
       data: {
         userId,
@@ -169,12 +174,13 @@ export async function mockActivate(
   interval: BillingInterval,
 ): Promise<void> {
   const now = Date.now();
+  const trialDays = await getTrialDays();
   await syncSubscription({
     userId,
     plan,
     interval,
     status: "trialing",
-    trialEndsAt: new Date(now + TRIAL_DAYS * 86_400_000),
+    trialEndsAt: new Date(now + trialDays * 86_400_000),
     currentPeriodEnd: new Date(now + intervalMs(interval)),
     stripeCustomerId: `mock_cus_${userId.slice(0, 12)}`,
     stripeSubId: `mock_sub_${userId.slice(0, 12)}`,

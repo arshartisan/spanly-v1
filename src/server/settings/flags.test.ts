@@ -496,8 +496,8 @@ describe("announcementCreateSchema", () => {
     }
   });
 
-  it("rejects a malformed audience (unknown plan, bare plan key, random string)", () => {
-    for (const a of ["plan:bogus", "plan:", "creator", "everyone", "growth"]) {
+  it("rejects a malformed audience (empty plan key, bare plan key, random string)", () => {
+    for (const a of ["plan:", "creator", "everyone", "growth"]) {
       expect(
         announcementCreateSchema.safeParse({ message: "m", audience: a }).success,
       ).toBe(false);
@@ -532,7 +532,7 @@ describe("announcementUpdateSchema (all fields optional, incl. active)", () => {
 
   it("still enforces the field constraints when present (message min, audience grammar, severity enum)", () => {
     expect(announcementUpdateSchema.safeParse({ message: "" }).success).toBe(false);
-    expect(announcementUpdateSchema.safeParse({ audience: "plan:bogus" }).success).toBe(false);
+    expect(announcementUpdateSchema.safeParse({ audience: "plan:" }).success).toBe(false);
     expect(announcementUpdateSchema.safeParse({ severity: "fatal" }).success).toBe(false);
     expect(announcementUpdateSchema.parse({ message: "ok" }).message).toBe("ok");
   });

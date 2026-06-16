@@ -4,11 +4,17 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PLAN_LIST } from "@/server/plans";
+import {
+  DEFAULT_PLAN_DEFS,
+  type PlanDef,
+  type PlanKey,
+} from "@/lib/plan-defaults";
 import { cn } from "@/lib/utils";
-import type { BillingInterval, PlanKey, SubscriptionStatus } from "@prisma/client";
+import type { BillingInterval, SubscriptionStatus } from "@prisma/client";
 
-// Plans tab (doc 10). Monthly/Yearly toggle, three plan cards, current plan marked, checkout CTA.
+// Plans tab (doc 10). Monthly/Yearly toggle, plan cards, current plan marked, checkout CTA.
+// `plans` is the LIVE admin-editable catalog passed from the RSC parent; when absent it falls
+// back to the static defaults (`DEFAULT_PLAN_DEFS`) so the panel always renders.
 export function PlansPanel({
   currentPlan,
   currentInterval,
@@ -16,6 +22,7 @@ export function PlansPanel({
   overLimit,
   accountLimit,
   activeAccounts,
+  plans,
 }: {
   currentPlan: PlanKey | null;
   currentInterval: BillingInterval;
@@ -23,7 +30,9 @@ export function PlansPanel({
   overLimit: boolean;
   accountLimit: number | null;
   activeAccounts: number;
+  plans?: PlanDef[];
 }) {
+  const PLAN_LIST = plans ?? DEFAULT_PLAN_DEFS;
   const params = useSearchParams();
   const initialInterval: BillingInterval = params.get("interval") === "year" ? "year" : currentInterval;
   const [interval, setInterval] = useState<BillingInterval>(initialInterval);

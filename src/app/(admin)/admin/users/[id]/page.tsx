@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { ArrowLeft, Ban } from "lucide-react";
 import { getUserDetail } from "@/server/admin/users";
 import { requireStaff, roleAtLeast } from "@/server/admin/access";
+import { getPlanCatalog } from "@/server/plans";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Reveal } from "@/components/motion/reveal";
 import { UserActions } from "@/components/admin/users/UserActions";
@@ -28,6 +29,9 @@ export default async function AdminUserDetailPage({
   const isSuperadmin = roleAtLeast(viewer.role, "superadmin");
   const user = await getUserDetail(id);
   if (!user) notFound();
+
+  // Live (admin-editable) catalog options for the superadmin override plan select.
+  const planOptions = (await getPlanCatalog()).map((p) => ({ key: p.key, name: p.name }));
 
   const targetIsStaff = roleAtLeast(user.role, "support");
 
@@ -98,7 +102,11 @@ export default async function AdminUserDetailPage({
       </Reveal>
 
       <Reveal delay={0.1}>
-        <UserDetailTabs user={user} canManageBilling={canManageBilling} />
+        <UserDetailTabs
+          user={user}
+          canManageBilling={canManageBilling}
+          planOptions={planOptions}
+        />
       </Reveal>
 
       {isSuperadmin ? (

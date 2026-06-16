@@ -5,8 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PLANS, planLabel } from "@/server/plans";
-import type { BillingInterval, PlanKey, SubscriptionStatus } from "@prisma/client";
+import {
+  DEFAULT_PLANS,
+  defaultPlanLabel,
+  type PlanDef,
+  type PlanKey,
+} from "@/lib/plan-defaults";
+import type { BillingInterval, SubscriptionStatus } from "@prisma/client";
 
 interface SubView {
   plan: PlanKey;
@@ -18,14 +23,18 @@ interface SubView {
 }
 
 // Billing tab (doc 10). Live subscription state + Stripe actions (mock-backed in dev, D-014).
+// `plan` is the LIVE catalog def for the current subscription's plan, passed from the RSC
+// parent so admin price/name edits show; it falls back to the static default when absent.
 export function BillingPanel({
   mode,
   subscription,
   activeAccounts,
+  plan,
 }: {
   mode: "mock" | "live";
   subscription: SubView | null;
   activeAccounts: number;
+  plan?: PlanDef;
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -78,8 +87,10 @@ export function BillingPanel({
     );
   }
 
-  const def = PLANS[subscription.plan];
-  const price = subscription.interval === "year" ? def.yearly : def.monthly;
+  const def = plan ?? DEFAULT_PLANS[subscription.plan];
+  const planName = def?.name ?? subscription.plan;
+  const price = subscription.interval === "year" ? def?.yearly : def?.monthly;
+  const planAccountLimit = def?.accountLimit ?? Infinity;
   const per = subscription.interval === "year" ? "/year" : "/month";
   const isTrial = subscription.status === "trialing";
   const isCanceled = subscription.status === "canceled";
@@ -95,7 +106,8 @@ export function BillingPanel({
       {subscription.interval === "month" && !isCanceled && (
         <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 p-4">
           <p className="text-sm">
-            Save ~2 months with annual billing — <span className="font-medium">${def.yearly}/yr</span>.
+            Save ~2 months with annual billing —{" "}
+            <span className="font-medium">${def?.yearly ?? 0}/yr</span>.
           </p>
           <Button asChild size="sm" variant="outline">
             <Link href="/settings/plans?interval=year">Upgrade to Annual</Link>
@@ -108,7 +120,7 @@ export function BillingPanel({
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold">{def.name}</h2>
+              <h2 className="text-base font-semibold">{planName}</h2>
               {isTrial && (
                 <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                   Trial
@@ -121,8 +133,8 @@ export function BillingPanel({
               )}
             </div>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              ${price}
-              {per} · {planLabel(subscription.plan)}
+              ${price ?? 0}
+              {per} · {plan ? plan.name : defaultPlanLabel(subscription.plan)}
             </p>
             {isTrial && subscription.trialEndsAt && (
               <p className="mt-1 text-xs text-muted-foreground">
@@ -135,7 +147,8 @@ export function BillingPanel({
               </p>
             )}
             <p className="mt-1 text-xs text-muted-foreground">
-              {activeAccounts} of {def.accountLimit === Infinity ? "∞" : def.accountLimit} accounts used
+              {activeAccounts} of {planAccountLimit === Infinity ? "∞" : planAccountLimit} accounts
+              used
             </p>
           </div>
         </div>

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { PlanKey } from "@prisma/client";
 
 // Admin platform-settings validation (doc 20). Shared by the API routes and the admin UI.
 
@@ -9,17 +8,16 @@ const isoDate = z
   .datetime({ message: "Expected an ISO date string." })
   .transform((v) => new Date(v));
 
-const planKeys = Object.values(PlanKey) as [string, ...string[]];
-
 /**
- * `audience` is `all` | `trialing` | `plan:<planKey>`. Validate the `plan:` prefix carries
- * a real plan key so an audience can never silently target no one.
+ * `audience` is `all` | `trialing` | `plan:<planKey>`. Plan keys are dynamic (admin-editable
+ * catalog), so we validate the `plan:` shape carries a non-empty key rather than checking it
+ * against a fixed enum — an audience can still never be an empty `plan:`.
  */
 const audience = z
   .string()
   .trim()
   .refine(
-    (v) => v === "all" || v === "trialing" || planKeys.includes(v.replace(/^plan:/, "")) && v.startsWith("plan:"),
+    (v) => v === "all" || v === "trialing" || (v.startsWith("plan:") && v.length > "plan:".length),
     { message: "Audience must be 'all', 'trialing', or 'plan:<planKey>'." },
   );
 

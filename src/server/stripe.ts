@@ -1,6 +1,7 @@
 import "server-only";
 import Stripe from "stripe";
-import type { BillingInterval, PlanKey } from "@prisma/client";
+import type { BillingInterval } from "@prisma/client";
+import type { PlanKey } from "@/server/plans";
 
 /**
  * Stripe wiring + env price mapping (docs/implementation/10).

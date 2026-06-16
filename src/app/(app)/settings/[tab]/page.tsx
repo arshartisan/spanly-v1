@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/auth";
 import { readSettings, getQueue } from "@/server/settings";
 import { activeAccountCount } from "@/server/connections";
-import { accountLimit, isOverAccountLimit } from "@/server/plans";
+import { accountLimit, isOverAccountLimit, getPlanCatalog, getPlanMap } from "@/server/plans";
 import { BILLING_MODE, appUrl } from "@/server/stripe";
 import { SettingsTabs, type SettingsTab } from "@/components/settings/SettingsTabs";
 import { GeneralPanel } from "@/components/settings/GeneralPanel";
@@ -62,6 +62,11 @@ export default async function SettingsPage({
               : null
           }
           activeAccounts={await activeAccountCount(user.id)}
+          plan={
+            user.subscription
+              ? (await getPlanMap())[user.subscription.plan] ?? undefined
+              : undefined
+          }
         />
       )}
 
@@ -77,6 +82,7 @@ export default async function SettingsPage({
               : false
           }
           accountLimit={user.subscription ? accountLimit(user.subscription.plan) : null}
+          plans={await getPlanCatalog()}
         />
       )}
     </div>

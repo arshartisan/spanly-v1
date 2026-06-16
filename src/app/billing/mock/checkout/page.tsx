@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PLANS } from "@/server/plans";
 import { Button } from "@/components/ui/button";
-import type { BillingInterval, PlanKey } from "@prisma/client";
+import type { BillingInterval } from "@prisma/client";
+import type { PlanKey } from "@/server/plans";
 
 /**
  * Internal mock Stripe Checkout (docs/implementation/10, D-014). Stands in for the real Stripe

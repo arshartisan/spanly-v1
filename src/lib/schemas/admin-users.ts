@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PlanKey, Role, SubscriptionStatus } from "@prisma/client";
+import { Role, SubscriptionStatus } from "@prisma/client";
 
 // Admin user-management validation (doc 16). Shared by API routes and the admin UI.
 // The list query is parsed from URLSearchParams, so every field is optional + coercible.
@@ -9,7 +9,7 @@ const boolFlag = z.enum(["true", "false"]);
 export const userListQuerySchema = z.object({
   query: z.string().trim().min(1).optional(),
   role: z.nativeEnum(Role).optional(),
-  plan: z.nativeEnum(PlanKey).optional(),
+  plan: z.string().min(1).optional(),
   status: z.nativeEnum(SubscriptionStatus).optional(),
   suspended: boolFlag.optional(),
   verified: boolFlag.optional(),

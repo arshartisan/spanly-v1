@@ -1,5 +1,5 @@
-import type { PlanKey, Role, SubscriptionStatus } from "@prisma/client";
-import { PLANS } from "@/server/plans";
+import type { Role, SubscriptionStatus } from "@prisma/client";
+import { DEFAULT_PLANS as PLANS, type PlanKey } from "@/lib/plan-defaults";
 import { cn } from "@/lib/utils";
 
 // Shared, client-safe display helpers for the admin user surface (doc 16): consistent
@@ -75,7 +75,7 @@ export function PlanBadge({
           className,
         )}
       >
-        {PLANS[plan].name}
+        {PLANS[plan]?.name ?? plan}
       </span>
       {status ? <StatusBadge status={status} /> : null}
     </span>

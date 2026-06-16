@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type {
-  BillingInterval,
-  PlanKey,
-  RefundRequest,
-  SubscriptionStatus,
-} from "@prisma/client";
+import type { BillingInterval, RefundRequest, SubscriptionStatus } from "@prisma/client";
+import type { PlanKey } from "@/server/plans";
 
 // billing.ts imports "server-only" (a Next build alias, not a real module in a plain
 // vitest run). Stub it. We mock @/server/db so the service runs with no real database,
@@ -515,8 +511,9 @@ describe("overrideSubscriptionSchema", () => {
     expect(overrideSubscriptionSchema.safeParse({}).success).toBe(false);
   });
 
-  it("rejects an unknown plan enum", () => {
-    expect(overrideSubscriptionSchema.safeParse({ plan: "platinum" }).success).toBe(false);
+  it("accepts any non-empty plan key (catalog is dynamic) but rejects an empty one", () => {
+    expect(overrideSubscriptionSchema.safeParse({ plan: "platinum" }).success).toBe(true);
+    expect(overrideSubscriptionSchema.safeParse({ plan: "" }).success).toBe(false);
   });
 
   it("accepts a plan-only override", () => {

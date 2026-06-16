@@ -1,7 +1,6 @@
 import "server-only";
 import type {
   BillingInterval,
-  PlanKey,
   Prisma,
   RefundRequest,
   RefundStatus,
@@ -10,7 +9,7 @@ import type {
 import { prisma } from "@/server/db";
 import { getStripe, isLiveBilling } from "@/server/stripe";
 import { AdminActionError } from "@/server/admin/errors";
-import { PLANS } from "@/server/plans";
+import { PLANS, type PlanKey } from "@/server/plans";
 
 /**
  * Admin billing service (doc 17). Wraps `src/server/billing.ts` + `src/server/stripe.ts`
