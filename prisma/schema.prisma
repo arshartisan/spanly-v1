@@ -82,6 +82,15 @@ enum IgConnectMethod {
   facebook
 }
 
+// Staff access tiers (doc 15). `user` is a normal customer; support/admin/superadmin
+// are staff. Role gating lives in src/server/admin/access.ts (never on the client).
+enum Role {
+  user
+  support
+  admin
+  superadmin
+}
+
 // ─────────────────────────── Core ────────────────────────────
 model User {
   id            String    @id @default(cuid())
@@ -91,6 +100,10 @@ model User {
   avatarUrl     String?
   timezone      String    @default("UTC")
   emailVerified DateTime?
+
+  // Staff role + suspension (doc 15). All existing rows default to `user`.
+  role        Role      @default(user)
+  suspendedAt DateTime?
 
   // settings (doc 11A): email + platform prefs, weekly goal, mcp
   settings Json @default("{}")
@@ -106,6 +119,25 @@ model User {
   sessions      Session[]
   apiKeys       ApiKey[]
   webhook       WebhookEndpoint?
+  auditLogs     AuditLog[]      @relation("AuditActor")
+}
+
+// Append-only admin action log (doc 15). Written by logAdminAction() after every
+// successful mutating /api/admin/* call. metadata holds before/after, reasons,
+// amounts — never secrets, tokens, or password hashes.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  actor      User     @relation("AuditActor", fields: [actorId], references: [id], onDelete: Cascade)
+  action     String // e.g. "user.suspend", "refund.approve", "user.impersonate"
+  targetType String? // "user" | "subscription" | "post" | "account" | ...
+  targetId   String?
+  metadata   Json     @default("{}")
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([targetType, targetId])
 }
 
 // Programmatic-access API key (doc 12). We store only a SHA-256 hash of the secret plus a

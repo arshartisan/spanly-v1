@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/auth";
 import { planLabel } from "@/server/plans";
+import { roleAtLeast } from "@/server/admin/access";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { SmoothScroll } from "@/components/shell/SmoothScroll";
 
@@ -14,6 +15,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? planLabel(user.subscription.plan, user.subscription.status)
     : "No plan";
 
+  const isStaff = roleAtLeast(user.role, "support");
+
   return (
     <div className="app-bg flex h-screen overflow-hidden">
       <Sidebar
@@ -23,6 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           avatarUrl: user.avatarUrl,
         }}
         planLabel={label}
+        isStaff={isStaff}
       />
       <SmoothScroll>{children}</SmoothScroll>
     </div>

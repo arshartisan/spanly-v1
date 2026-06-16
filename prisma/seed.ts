@@ -82,6 +82,25 @@ async function main() {
 
   const accountCount = await prisma.socialAccount.count({ where: { userId: user.id } });
   console.log(`✅ Seeded ${email} with ${accountCount} mock accounts, a trialing Creator plan, and 2 queue slots.`);
+
+  // Staff superadmin for the admin dashboard (doc 15). Idempotent: wipe + recreate.
+  const adminEmail = "admin@spanly.app";
+  const adminPassword = "password";
+  await prisma.user.deleteMany({ where: { email: adminEmail } });
+  await prisma.user.create({
+    data: {
+      email: adminEmail,
+      passwordHash: await bcrypt.hash(adminPassword, 12),
+      displayName: "Spanly Admin",
+      timezone: "Asia/Colombo",
+      emailVerified: new Date(),
+      role: "superadmin",
+      subscription: {
+        create: { plan: "pro", interval: "month", status: "active" },
+      },
+    },
+  });
+  console.log(`✅ Seeded superadmin ${adminEmail} / ${adminPassword} (role: superadmin).`);
 }
 
 main()
