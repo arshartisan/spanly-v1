@@ -15,6 +15,7 @@ Post-Bridge is a multi-platform social media scheduler: connect accounts (Instag
 | Prefix | Meaning |
 |--------|---------|
 | `app-*` | Pages inside the authenticated dashboard (these are the screens you build) |
+| `admin-*` | Staff-only platform-admin console screens (see doc 15; new, not in the reference) |
 | `support-*` | Public help-center / docs pages (optional to clone) |
 | `oauth-*` | Third-party OAuth consent screens (reference only — not built by you) |
 
@@ -37,6 +38,7 @@ Post-Bridge is a multi-platform social media scheduler: connect accounts (Instag
 | [12-api-keys.md](12-api-keys.md) | API keys + webhook |
 | [13-help-center.md](13-help-center.md) | Support help center home + article pages |
 | [14-oauth-connect-flows.md](14-oauth-connect-flows.md) | X, LinkedIn, Instagram, Facebook, Google/YouTube, TikTok consent (reference) |
+| [15-admin-dashboard.md](15-admin-dashboard.md) | Internal admin console: users, subscriptions, payments, content, system, settings, audit (staff-only, not in the reference) |
 
 ## Global design language (applies everywhere)
 

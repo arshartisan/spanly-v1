@@ -45,6 +45,13 @@ files translate that design into concrete, implementable engineering specs.
 | — | `12-api-surface.md` | Reference (all phases) |
 | — | `13-testing-and-qa.md` | Reference (all phases) |
 | — | `14-ui-components.md` | Reference (all UI phases) |
+| — | `15-admin-foundation-and-access.md` | Phase 9 |
+| — | `16-admin-users.md` | Phase 9 |
+| — | `17-admin-subscriptions-billing.md` | Phase 9 |
+| — | `18-admin-content-and-connections.md` | Phase 9 |
+| — | `19-admin-system-and-operations.md` | Phase 9 |
+| — | `20-admin-platform-settings.md` | Phase 9 |
+| — | `21-admin-support-powers.md` | Phase 9 |
 
 ## Build order (milestones)
 1. **Foundation** — scaffold Next.js app, Prisma schema + migrations, provider abstraction
@@ -57,6 +64,10 @@ files translate that design into concrete, implementable engineering specs.
 6. **Publishing** — orchestration + result cards; mock → real one platform at a time. (`09`)
 7. **Billing** — Stripe checkout/portal, plans, trial, feature gating. (`10`, `11`)
 8. **Later** — content studio, bulk tools, analytics, API keys, MCP, help center.
+9. **Administration** — staff-only admin console (design in `../15-admin-dashboard.md`).
+   Build the phases in order, each depends on the foundation (`15`):
+   foundation & access → users → subscriptions/billing → content/connections →
+   system/ops → platform settings → support powers. (`15`–`21`)
 
 ## Conventions
 - **TypeScript strict.** No `any` in shared types.
