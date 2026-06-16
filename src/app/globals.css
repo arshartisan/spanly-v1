@@ -3,86 +3,90 @@
 @tailwind utilities;
 
 /*
- * Spanly theme — green primary on light-gray surfaces (docs/implementation/14).
- * HSL channels consumed by tailwind.config.ts + shadcn/ui.
+ * Spanly theme — warm orange accent on deep charcoal surfaces with a glassmorphism
+ * treatment. HSL channels (space-separated) are consumed by tailwind.config.ts +
+ * shadcn/ui, and re-used directly via hsl(var(--token) / <alpha>) in the glass utilities.
  */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71% 4%;
+    --background: 30 40% 99%;
+    --foreground: 24 24% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 24 24% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
+    --popover-foreground: 24 24% 12%;
 
-    /* Green primary */
-    --primary: 142 71% 45%;
+    /* Orange primary */
+    --primary: 22 92% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 39% 11%;
+    --secondary: 30 24% 95%;
+    --secondary-foreground: 24 30% 16%;
 
-    /* Light gray surfaces (#f3f4f6-ish) */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    /* Warm light surfaces */
+    --muted: 30 30% 96%;
+    --muted-foreground: 24 10% 42%;
 
-    --accent: 142 60% 95%;
-    --accent-foreground: 142 71% 25%;
+    --accent: 28 100% 94%;
+    --accent-foreground: 22 90% 38%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 142 71% 45%;
+    --border: 28 25% 89%;
+    --input: 28 25% 89%;
+    --ring: 22 92% 52%;
 
-    --radius: 0.625rem;
+    --radius: 0.875rem;
 
     /* Status colors — badges/chips (doc 14) */
-    --status-posted: 142 71% 45%; /* green */
+    --status-posted: 142 68% 42%; /* green */
     --status-scheduled: 217 91% 60%; /* blue */
     --status-draft: 38 92% 50%; /* amber */
     --status-failed: 0 72% 51%; /* red */
   }
 
   .dark {
-    --background: 222 47% 5%;
-    --foreground: 210 20% 98%;
+    /* Deep warm charcoal — near-black with an orange undertone */
+    --background: 20 14% 5%;
+    --foreground: 30 25% 96%;
 
-    --card: 222 40% 9%;
-    --card-foreground: 210 20% 98%;
+    /* Cards sit a touch lighter than the page so glass surfaces read as elevated */
+    --card: 22 16% 11%;
+    --card-foreground: 30 25% 96%;
 
-    --popover: 222 40% 9%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 22 18% 10%;
+    --popover-foreground: 30 25% 96%;
 
-    /* Green primary stays vivid on dark surfaces */
-    --primary: 142 71% 45%;
-    --primary-foreground: 144 80% 6%;
+    /* Orange primary stays vivid on dark surfaces */
+    --primary: 24 94% 54%;
+    --primary-foreground: 20 30% 8%;
 
-    --secondary: 215 28% 17%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 24 12% 16%;
+    --secondary-foreground: 30 25% 96%;
 
     /* Page background — the deepest surface so cards/sidebar layer above it */
-    --muted: 222 47% 6%;
-    --muted-foreground: 217 11% 65%;
+    --muted: 20 14% 4%;
+    --muted-foreground: 30 8% 62%;
 
-    --accent: 142 40% 16%;
-    --accent-foreground: 142 71% 75%;
+    /* Warm orange-tinted dark — active nav / hover surfaces */
+    --accent: 24 40% 16%;
+    --accent-foreground: 26 96% 68%;
 
-    --destructive: 0 63% 45%;
-    --destructive-foreground: 210 20% 98%;
+    --destructive: 0 68% 50%;
+    --destructive-foreground: 30 25% 96%;
 
-    --border: 215 28% 17%;
-    --input: 215 28% 17%;
-    --ring: 142 71% 45%;
+    --border: 26 16% 18%;
+    --input: 26 16% 18%;
+    --ring: 24 94% 54%;
 
     /* Status colors — badges/chips (doc 14) */
-    --status-posted: 142 71% 45%; /* green */
-    --status-scheduled: 217 91% 60%; /* blue */
-    --status-draft: 38 92% 50%; /* amber */
-    --status-failed: 0 72% 55%; /* red */
+    --status-posted: 142 64% 45%; /* green */
+    --status-scheduled: 217 91% 62%; /* blue */
+    --status-draft: 38 92% 52%; /* amber */
+    --status-failed: 0 72% 58%; /* red */
   }
 
   * {
@@ -92,4 +96,119 @@
   body {
     @apply bg-muted text-foreground;
   }
+
+  /* Ambient warm glow behind translucent glass surfaces. */
+  body,
+  .app-bg {
+    background-color: hsl(var(--muted));
+    background-image:
+      radial-gradient(900px 460px at 8% -8%, hsl(28 100% 60% / 0.1), transparent 55%),
+      radial-gradient(720px 420px at 102% 4%, hsl(20 95% 55% / 0.07), transparent 55%);
+    background-attachment: fixed;
+  }
+
+  .dark body,
+  .dark .app-bg {
+    background-image:
+      radial-gradient(1100px 560px at 12% -10%, hsl(22 92% 34% / 0.22), transparent 58%),
+      radial-gradient(820px 480px at 104% 2%, hsl(30 92% 40% / 0.14), transparent 55%),
+      radial-gradient(760px 760px at 52% 128%, hsl(16 88% 30% / 0.12), transparent 60%);
+  }
+
+  /* Slim, warm-tinted scrollbars to match the glass aesthetic. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--primary) / 0.55);
+  }
+}
+
+@layer components {
+  /*
+   * Frosted-glass surface: translucent gradient fill, backdrop blur, hairline border
+   * and a faint top highlight. Works in both themes because it derives from --card.
+   */
+  .glass {
+    background-image: linear-gradient(
+      to bottom right,
+      hsl(var(--card) / 0.78),
+      hsl(var(--card) / 0.58)
+    );
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid hsl(var(--border) / 0.7);
+    box-shadow:
+      0 10px 34px -14px hsl(20 50% 2% / 0.55),
+      inset 0 1px 0 0 hsl(0 0% 100% / 0.06);
+  }
+
+  /* Lighter frosted panel for the sidebar / header chrome. */
+  .glass-panel {
+    background-color: hsl(var(--background) / 0.6);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
+
+  /* Warm glow halo for primary CTAs. */
+  .glow-primary {
+    box-shadow:
+      0 8px 22px -8px hsl(var(--primary) / 0.55),
+      inset 0 1px 0 0 hsl(0 0% 100% / 0.18);
+  }
+
+  /*
+   * Tactile press feedback for clickable elements that aren't <Button> (nav links, tabs,
+   * avatar pickers). Emil Kowalski's UI spring curve, fast, and honours reduced motion.
+   */
+  .press {
+    transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .press:active {
+    transform: scale(0.96);
+  }
+}
+
+/* Lenis smooth scroll (bound to <main> in SmoothScroll.tsx). */
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .press,
+  .press:active {
+    transition: none;
+    transform: none;
+  }
+}
+
+/*
+ * Theme-switch circular reveal (see lib/theme-transition.ts). Disable the default
+ * cross-fade and stack the new theme above the old so it can be clip-revealed.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
 }

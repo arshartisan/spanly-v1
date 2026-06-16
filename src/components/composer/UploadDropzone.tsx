@@ -58,8 +58,10 @@ export function UploadDropzone({
           pick(e.dataTransfer.files);
         }}
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-6 py-8 text-center transition-colors",
-          dragging ? "border-primary bg-primary/5" : "border-input hover:bg-muted/50",
+          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors",
+          dragging
+            ? "border-primary bg-primary/10"
+            : "border-border/70 bg-card/30 hover:border-primary/50 hover:bg-primary/5",
         )}
       >
         {busy ? (
@@ -92,7 +94,7 @@ export function UploadDropzone({
           {media.map((m) => (
             <div
               key={m.id}
-              className="group relative h-20 w-20 overflow-hidden rounded-md border bg-muted"
+              className="group relative h-20 w-20 overflow-hidden rounded-xl border border-border/70 bg-muted"
             >
               {m.kind === "image" ? (
                 // eslint-disable-next-line @next/next/no-img-element

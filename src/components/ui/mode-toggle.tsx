@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { switchTheme } from "@/lib/theme-transition";
 
 // Light / dark / system switcher (shadcn dark-mode pattern).
 export function ModeToggle() {
@@ -44,7 +45,11 @@ export function ThemeItems() {
       {options.map(({ value, label, icon: Icon }) => (
         <DropdownMenuItem
           key={value}
-          onSelect={() => setTheme(value)}
+          onSelect={(e) => {
+            const el = e.currentTarget as HTMLElement | null;
+            const r = el?.getBoundingClientRect();
+            switchTheme(value, setTheme, r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : undefined);
+          }}
           className={theme === value ? "font-medium" : undefined}
         >
           <Icon className="h-4 w-4" />

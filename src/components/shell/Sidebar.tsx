@@ -31,13 +31,16 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+        "press group relative flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm transition-all",
         active
-          ? "bg-accent font-medium text-accent-foreground"
-          : "text-foreground/80 hover:bg-foreground/5 hover:text-foreground",
+          ? "bg-primary/15 font-medium text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.25)]"
+          : "text-foreground/75 hover:bg-foreground/5 hover:text-foreground",
       )}
     >
-      <Icon className="h-4 w-4" />
+      {active && (
+        <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
+      )}
+      <Icon className={cn("h-4 w-4", active && "text-primary")} />
       {item.label}
     </Link>
   );
@@ -48,15 +51,15 @@ export function Sidebar({ user, planLabel }: SidebarProps) {
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <aside className="flex h-screen w-[230px] shrink-0 flex-col border-r border-border bg-background">
+    <aside className="glass-panel flex h-screen w-[230px] shrink-0 flex-col border-r border-border/60">
       <div className="flex flex-col gap-3 p-3">
         <Link href="/dashboard" className="flex items-center gap-2 px-1.5 pt-1">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary font-bold text-primary-foreground">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 font-bold text-primary-foreground glow-primary">
             S
           </div>
           <span className="text-lg font-bold tracking-tight">Spanly</span>
         </Link>
-        <WorkspaceSwitcher />
+        {/* <WorkspaceSwitcher /> */}
         <CreatePostButton />
       </div>
 

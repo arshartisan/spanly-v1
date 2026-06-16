@@ -3,16 +3,18 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Copy, Layers, RotateCcw, Trash2 } from "lucide-react";
+import { CheckCircle2, Copy, Info, Layers, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PLATFORM_CONFIG } from "@/lib/platforms";
 import {
   captionLimitFor,
   canSubmit,
+  resolveCaption,
   validatePostTargets,
   type PostTypeKey,
 } from "@/lib/schemas/post";
+import { Reveal } from "@/components/motion/reveal";
 import { AccountSelector } from "./AccountSelector";
 import { CaptionField } from "./CaptionField";
 import { ScheduleCard, type ComposerAction } from "./ScheduleCard";
@@ -124,10 +126,41 @@ export function Composer({
       }),
     [type, mainCaption, perPlatform, media.length, selectedAccounts],
   );
-  const invalidIds = useMemo(
-    () => new Set(validationErrors.map((e) => e.socialAccountId)),
-    [validationErrors],
-  );
+
+  // Account-specific problems only (caption over a platform's limit, unsupported type, too many
+  // media). These flag the avatar in amber with a tooltip — they're the user's per-account
+  // concern. Missing *shared* content (no image/caption yet) is intentionally excluded here and
+  // surfaced as a single next-step hint instead, so we don't paint every avatar red.
+  const accountIssues = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const a of selectedAccounts) {
+      const { captionMax, mediaMax, supportsStory } = PLATFORM_CONFIG[a.platform].limits;
+      const label = PLATFORM_CONFIG[a.platform].label;
+      const caption = resolveCaption(mainCaption, perPlatform, a.id);
+      const issues: string[] = [];
+      if (!a.capabilities.includes(type)) issues.push(`${label} doesn't support ${type} posts`);
+      if (caption.length > captionMax)
+        issues.push(`Caption is ${caption.length} / ${captionMax} for ${label}`);
+      if (media.length > mediaMax) issues.push(`Max ${mediaMax} media on ${label}`);
+      if (type === "story" && !supportsStory) issues.push(`${label} doesn't support stories`);
+      if (issues.length > 0) map.set(a.id, issues);
+    }
+    return map;
+  }, [selectedAccounts, type, mainCaption, perPlatform, media.length]);
+
+  const accountInvalidIds = useMemo(() => new Set(accountIssues.keys()), [accountIssues]);
+
+  // Shared content the post still needs before it can go out — phrased as a friendly next step.
+  const contentHint = useMemo(() => {
+    if (type === "image" && media.length === 0) return "Add at least one image to continue.";
+    if (type === "video" && media.length === 0) return "Add a video to continue.";
+    if (type === "story") {
+      if (media.length === 0) return "Add one photo or video for your story.";
+      if (media.length > 1) return "Stories allow exactly one media item — remove the extras.";
+    }
+    if (type === "text" && mainCaption.trim().length === 0) return "Write a caption to continue.";
+    return null;
+  }, [type, media.length, mainCaption]);
 
   const submitEnabled = canSubmit({
     type,
@@ -146,6 +179,14 @@ export function Composer({
 
   function toggleAccount(id: string) {
     setTargets((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+  }
+
+  function selectAllAccounts() {
+    setTargets(accounts.map((a) => a.id));
+  }
+
+  function clearAccounts() {
+    setTargets([]);
   }
 
   function setActiveCaption(v: string) {
@@ -354,11 +395,13 @@ export function Composer({
   const disabledReason =
     targets.length === 0
       ? "Select an account to post to"
-      : media.length === 0 && mainCaption.trim().length === 0
-        ? "Add a caption or media"
-        : validationErrors.length > 0
+      : contentHint
+        ? contentHint
+        : accountInvalidIds.size > 0
           ? "Fix the highlighted account(s) before posting"
-          : null;
+          : validationErrors.length > 0
+            ? "Resolve the remaining issues before posting"
+            : null;
 
   const title = isEdit ? TYPE_TITLE[type].replace("Create", "Edit") : TYPE_TITLE[type];
 
@@ -398,14 +441,16 @@ export function Composer({
       )}
 
       {!isEdit && (
-        <div className="mb-6 flex w-fit gap-1 rounded-lg bg-muted p-1 text-sm">
+        <div className="glass mb-6 inline-flex w-fit gap-1 rounded-full p-1 text-sm">
           {TYPE_TABS.map((t) => (
             <Link
               key={t.key}
               href={`/create/${t.key}`}
               className={cn(
-                "rounded-md px-3 py-1.5 font-medium transition-colors",
-                t.key === type ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
+                "press rounded-full px-4 py-1.5 font-medium transition-all",
+                t.key === type
+                  ? "bg-gradient-to-b from-primary to-primary/85 text-primary-foreground glow-primary"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               {t.label}
@@ -414,15 +459,25 @@ export function Composer({
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <Reveal className="grid gap-6 lg:grid-cols-[1fr_320px]">
         {/* ── Left: account row + composer body ── */}
         <div className="flex flex-col gap-6">
           <AccountSelector
             accounts={accounts}
             selected={targets}
-            invalidIds={invalidIds}
+            invalidIds={accountInvalidIds}
+            issues={accountIssues}
             onToggle={toggleAccount}
+            onSelectAll={selectAllAccounts}
+            onClear={clearAccounts}
           />
+
+          {targets.length > 0 && contentHint && (
+            <div className="flex items-center gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5 text-sm font-medium text-amber-600 dark:text-amber-400">
+              <Info className="h-4 w-4 shrink-0" />
+              {contentHint}
+            </div>
+          )}
 
           {type !== "text" && (
             <UploadDropzone
@@ -450,7 +505,7 @@ export function Composer({
                       key={a.id}
                       label={a.handle}
                       active={activeTab === a.id}
-                      invalid={invalidIds.has(a.id)}
+                      invalid={accountInvalidIds.has(a.id)}
                       onClick={() => setActiveTab(a.id)}
                     />
                   ))}
@@ -511,7 +566,7 @@ export function Composer({
           onAction={submit}
           disabledReason={editable ? disabledReason : "This post can no longer be edited"}
         />
-      </div>
+      </Reveal>
     </div>
   );
 }

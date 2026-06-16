@@ -6,6 +6,7 @@ import { PLATFORMS, type PlatformKey } from "@/lib/platforms";
 import { PLATFORM_STYLE } from "@/lib/platform-style";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { Stagger, StaggerItem } from "@/components/motion/reveal";
 import { PlatformRow } from "./PlatformRow";
 import type { AccountVM } from "./AccountChip";
 
@@ -94,22 +95,23 @@ export function ConnectionsView({
         </label>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <Stagger className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {visible.map((p) => (
-          <PlatformRow
-            key={p}
-            platform={p}
-            accounts={byPlatform.get(p) ?? []}
-            showIds={showIds}
-            limitReached={limitReached}
-          />
+          <StaggerItem key={p} className="h-full">
+            <PlatformRow
+              platform={p}
+              accounts={byPlatform.get(p) ?? []}
+              showIds={showIds}
+              limitReached={limitReached}
+            />
+          </StaggerItem>
         ))}
         {visible.length === 0 && (
-          <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+          <p className="col-span-full rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
             No platforms match “{filter}”.
           </p>
         )}
-      </div>
+      </Stagger>
 
       <p className="text-center text-sm text-muted-foreground">
         Need a hand?{" "}

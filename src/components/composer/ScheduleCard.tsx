@@ -1,12 +1,45 @@
 "use client";
 
-import { CalendarClock, Loader2, Send } from "lucide-react";
+import { CalendarClock, CalendarDays, Clock, Loader2, Send } from "lucide-react";
+import { format, startOfToday } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 export type ComposerAction = "draft" | "now" | "schedule" | "queue";
 
 const QUICK_TIMES = ["11:00", "15:00", "19:00"];
+
+/** 30-minute time options as { value: "HH:MM" (24h), label: "h:MM AM/PM" }. */
+const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  const m = i % 2 ? "30" : "00";
+  const value = `${String(h).padStart(2, "0")}:${m}`;
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  const label = `${h12}:${m} ${h < 12 ? "AM" : "PM"}`;
+  return { value, label };
+});
+
+/** "YYYY-MM-DD" ⇄ local Date, kept TZ-safe (no UTC shift). */
+function parseDate(s: string): Date | undefined {
+  if (!s) return undefined;
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+function formatDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function timeLabel(value: string): string {
+  return TIME_OPTIONS.find((t) => t.value === value)?.label ?? value;
+}
 
 /** Right-hand schedule card (doc 01/06): post-now vs schedule (pick-a-time / add-to-queue). */
 export function ScheduleCard({
@@ -39,8 +72,10 @@ export function ScheduleCard({
   const busy = submitting !== null;
   const scheduleReady = scheduleTab === "queue" || (date !== "" && time !== "");
 
+  const selectedDate = parseDate(date);
+
   return (
-    <div className="flex flex-col gap-4 rounded-xl border bg-background p-4">
+    <div className="glass flex flex-col gap-4 rounded-2xl p-4">
       <div className="flex items-center justify-between">
         <span className="text-sm font-semibold">Schedule post</span>
         <button
@@ -92,18 +127,44 @@ export function ScheduleCard({
           {scheduleTab === "time" ? (
             <div className="flex flex-col gap-3">
               <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
-                />
-                <input
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className="rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "flex-1 justify-start font-normal",
+                        !date && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarDays className="h-4 w-4" />
+                      {selectedDate ? format(selectedDate, "MMM d, yyyy") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-2" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(d) => d && setDate(formatDate(d))}
+                      disabled={{ before: startOfToday() }}
+                      defaultMonth={selectedDate}
+                      autoFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <Select value={time} onValueChange={setTime}>
+                  <SelectTrigger className="w-[124px]">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="Time">{timeLabel(time)}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64">
+                    {TIME_OPTIONS.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex gap-2">
                 {QUICK_TIMES.map((q) => (
@@ -121,7 +182,7 @@ export function ScheduleCard({
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">
-                Your post will be posted at {time || "HH:MM"} in your local time.
+                Your post will be posted at {time ? timeLabel(time) : "HH:MM"} in your local time.
               </p>
               <Button
                 className="w-full"

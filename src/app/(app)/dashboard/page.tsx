@@ -4,6 +4,7 @@ import { prisma } from "@/server/db";
 import { getCurrentUser } from "@/server/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -20,39 +21,51 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6 md:p-8">
-      <header>
+      <Reveal>
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back, {firstName}</h1>
         <p className="text-sm text-muted-foreground">Here&apos;s what&apos;s happening in your workspace.</p>
-      </header>
+      </Reveal>
 
       {accountCount === 0 ? (
-        <EmptyState />
+        <Reveal delay={0.08}>
+          <EmptyState />
+        </Reveal>
       ) : (
         <>
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat icon={Link2} label="Connected accounts" value={accountCount} tone="primary" />
-            <Stat icon={Send} label="Scheduled" value={scheduledCount} tone="scheduled" />
-            <Stat icon={FileText} label="Drafts" value={draftCount} tone="draft" />
-            <Stat icon={CalendarDays} label="Posted" value={postedCount} tone="posted" />
-          </section>
+          <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" delayChildren={0.08}>
+            <StaggerItem className="h-full">
+              <Stat icon={Link2} label="Connected accounts" value={accountCount} tone="primary" />
+            </StaggerItem>
+            <StaggerItem className="h-full">
+              <Stat icon={Send} label="Scheduled" value={scheduledCount} tone="scheduled" />
+            </StaggerItem>
+            <StaggerItem className="h-full">
+              <Stat icon={FileText} label="Drafts" value={draftCount} tone="draft" />
+            </StaggerItem>
+            <StaggerItem className="h-full">
+              <Stat icon={CalendarDays} label="Posted" value={postedCount} tone="posted" />
+            </StaggerItem>
+          </Stagger>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Quick actions</CardTitle>
-              <CardDescription>Jump back into your workflow.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link href="/create/text">Create a post</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/calendar">Open calendar</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/connections">Manage connections</Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <Reveal delay={0.28}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Quick actions</CardTitle>
+                <CardDescription>Jump back into your workflow.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-3">
+                <Button asChild>
+                  <Link href="/create/text">Create a post</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/calendar">Open calendar</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/connections">Manage connections</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </Reveal>
         </>
       )}
     </div>

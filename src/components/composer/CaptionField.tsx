@@ -49,7 +49,7 @@ export function CaptionField({
   return (
     <div className="flex flex-col gap-2">
       <span className="text-sm font-medium">{label}</span>
-      <div className="rounded-lg border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+      <div className="rounded-xl border border-border/70 bg-card/40 backdrop-blur-sm transition-shadow focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-ring">
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
