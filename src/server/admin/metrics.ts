@@ -1,5 +1,7 @@
 import "server-only";
+import type { BillingInterval, PlanKey } from "@prisma/client";
 import { prisma } from "@/server/db";
+import { PLANS } from "@/server/plans";
 
 // Admin Overview KPIs (doc 15). One Promise.all of Prisma aggregates, mirroring the
 // customer dashboard's metric pattern. All read-only; never logged.
@@ -80,5 +82,98 @@ export async function getOverviewMetrics(): Promise<OverviewMetrics> {
     postsPublished7d,
     failedTargets,
     connectedAccounts,
+  };
+}
+
+// ─────────────────────────── Billing metrics (doc 17) ───────────────────────────
+
+/**
+ * Monthly-equivalent revenue for one subscription, in cents. Monthly plans contribute
+ * their monthly price; yearly plans contribute their annual price / 12 (rounded). Pure —
+ * exported for unit tests.
+ */
+export function monthlyEquivalentCents(plan: PlanKey, interval: BillingInterval): number {
+  const def = PLANS[plan];
+  return interval === "year"
+    ? Math.round((def.yearly * 100) / 12)
+    : def.monthly * 100;
+}
+
+export interface BillingMetrics {
+  mrrCents: number;
+  arpuCents: number;
+  activeCount: number;
+  trialingCount: number;
+  pastDueCount: number;
+  canceledCount: number;
+  pausedCount: number;
+  churn30d: number;
+  planMix: Record<PlanKey, number>;
+  pendingRefunds: number;
+}
+
+export async function getBillingMetrics(): Promise<BillingMetrics> {
+  const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  const [
+    payingSubs,
+    subsByStatus,
+    planMixRows,
+    canceledIn30d,
+    pendingRefunds,
+  ] = await Promise.all([
+    // MRR base: active + trialing subs (we treat trials as paying-equivalent for MRR).
+    prisma.subscription.findMany({
+      where: { status: { in: ["active", "trialing"] } },
+      select: { plan: true, interval: true },
+    }),
+    prisma.subscription.groupBy({ by: ["status"], _count: { _all: true } }),
+    // Plan mix among non-canceled subs.
+    prisma.subscription.groupBy({
+      by: ["plan"],
+      where: { status: { not: "canceled" } },
+      _count: { _all: true },
+    }),
+    // Subs canceled (updated) in the last 30 days — proxy for churned this window.
+    prisma.subscription.count({
+      where: { status: "canceled", updatedAt: { gte: since30d } },
+    }),
+    prisma.refundRequest.count({ where: { status: "pending" } }),
+  ]);
+
+  const mrrCents = payingSubs.reduce(
+    (sum, s) => sum + monthlyEquivalentCents(s.plan, s.interval),
+    0,
+  );
+  const payingCount = payingSubs.length;
+  const arpuCents = Math.round(mrrCents / Math.max(1, payingCount));
+
+  const counts: Record<string, number> = {};
+  for (const row of subsByStatus) counts[row.status] = row._count._all;
+  const activeCount = counts.active ?? 0;
+  const trialingCount = counts.trialing ?? 0;
+  const pastDueCount = counts.past_due ?? 0;
+  const canceledCount = counts.canceled ?? 0;
+  const pausedCount = counts.paused ?? 0;
+
+  // 30-day churn = canceled-in-window / (currently-active + canceled-in-window). The
+  // denominator approximates the at-risk base over the window (those still active plus
+  // those who left). Guarded against divide-by-zero via max(1, ...).
+  const churn30d = canceledIn30d / Math.max(1, activeCount + canceledIn30d);
+
+  const planMix: Record<PlanKey, number> = { creator: 0, growth: 0, pro: 0 };
+  for (const row of planMixRows) planMix[row.plan] = row._count._all;
+
+  return {
+    mrrCents,
+    arpuCents,
+    activeCount,
+    trialingCount,
+    pastDueCount,
+    canceledCount,
+    pausedCount,
+    churn30d,
+    planMix,
+    pendingRefunds,
   };
 }

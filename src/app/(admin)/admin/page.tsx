@@ -10,7 +10,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import { getOverviewMetrics } from "@/server/admin/metrics";
+import { getBillingMetrics, getOverviewMetrics } from "@/server/admin/metrics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 import { KpiCard } from "@/components/admin/KpiCard";
@@ -18,7 +18,7 @@ import { KpiCard } from "@/components/admin/KpiCard";
 // Admin Overview (doc 15). Real data only from getOverviewMetrics() — no invented
 // fields. Mirrors the customer dashboard layout (max-w-7xl, Reveal/Stagger, KPI grid).
 export default async function AdminOverviewPage() {
-  const m = await getOverviewMetrics();
+  const [m, billing] = await Promise.all([getOverviewMetrics(), getBillingMetrics()]);
 
   const STATUS_BREAKDOWN: { key: keyof typeof m.subscriptions; label: string }[] = [
     { key: "trialing", label: "Trialing" },
@@ -119,10 +119,10 @@ export default async function AdminOverviewPage() {
             <KpiCard
               icon={RotateCcw}
               label="Pending refunds"
-              value={0}
-              tone="draft"
+              value={billing.pendingRefunds}
+              tone={billing.pendingRefunds > 0 ? "failed" : "draft"}
               href="/admin/refunds"
-              sub="No queue yet"
+              sub={billing.pendingRefunds > 0 ? "Awaiting review" : "Queue is clear"}
             />
           </div>
         </section>

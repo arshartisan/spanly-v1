@@ -4,22 +4,17 @@ import { prisma } from "@/server/db";
 import { issueToken } from "@/server/auth";
 import { mailer } from "@/server/mailer";
 import { roleAtLeast } from "@/server/admin/access";
+import { AdminActionError } from "@/server/admin/errors";
 import type { UserListQuery } from "@/lib/schemas/admin-users";
 
 // User-management service layer (doc 16). Pure `buildUserWhere` for unit tests; the
 // rest run Prisma queries. Reads NEVER select `passwordHash` or `encryptedTokens`.
 
-const RESET_TTL_MS = 60 * 60 * 1000; // 1h, matches /api/auth/forgot (doc 03)
+// Re-exported so existing callers (`@/server/admin/users`) keep working after the
+// type was extracted to `@/server/admin/errors` for sharing with the billing service.
+export { AdminActionError } from "@/server/admin/errors";
 
-/** Typed guard failure; routes translate `.status` into the HTTP response code. */
-export class AdminActionError extends Error {
-  readonly status: number;
-  constructor(status: number, message: string) {
-    super(message);
-    this.name = "AdminActionError";
-    this.status = status;
-  }
-}
+const RESET_TTL_MS = 60 * 60 * 1000; // 1h, matches /api/auth/forgot (doc 03)
 
 // ─────────────────────────── Filtering ───────────────────────────
 

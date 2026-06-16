@@ -82,6 +82,15 @@ enum IgConnectMethod {
   facebook
 }
 
+// Refund-request workflow (doc 17). The customer "Request Refund" route records a
+// `pending` row; staff approve (issuing a Stripe refund in live mode) or deny it.
+enum RefundStatus {
+  pending
+  approved
+  denied
+  refunded
+}
+
 // Staff access tiers (doc 15). `user` is a normal customer; support/admin/superadmin
 // are staff. Role gating lives in src/server/admin/access.ts (never on the client).
 enum Role {
@@ -122,6 +131,27 @@ model User {
   auditLogs     AuditLog[]      @relation("AuditActor")
   supportNotes  SupportNote[]   @relation("NoteSubject")
   authoredNotes SupportNote[]   @relation("NoteAuthor")
+  refundRequests RefundRequest[]
+}
+
+// Actionable refund queue (doc 17). Created by the customer refund route (in-policy) or
+// staff-initiated. `amount` is minor units (cents); `decidedById` is the staff user id
+// (no relation — keep it simple). `stripeRefundId` set only when a live refund is issued.
+model RefundRequest {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionId String?
+  amount         Int // minor units (cents)
+  reason         String
+  status         RefundStatus @default(pending)
+  stripeRefundId String?
+  decidedById    String? // staff user id (no relation, keep it simple)
+  decidedAt      DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([status, createdAt])
+  @@index([userId])
 }
 
 // Free-form staff note attached to a customer account (doc 16). Shown on the user

@@ -1,6 +1,7 @@
 import {
   CreditCard,
   FileText,
+  Layers,
   LayoutDashboard,
   Link2,
   ReceiptText,
@@ -29,6 +30,7 @@ export const ADMIN_NAV: NavSection[] = [
       { label: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard },
       { label: "Refunds", href: "/admin/refunds", icon: RotateCcw },
       { label: "Payments", href: "/admin/payments", icon: ReceiptText },
+      { label: "Plans", href: "/admin/plans", icon: Layers },
     ],
   },
   {

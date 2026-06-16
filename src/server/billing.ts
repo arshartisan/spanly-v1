@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import type { BillingInterval, PlanKey, Subscription } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { mailer } from "@/server/mailer";
+import { PLANS } from "@/server/plans";
 import {
   API_ADDON_PRICE,
   appUrl,
@@ -107,6 +108,26 @@ export async function requestRefund(userId: string, email: string): Promise<Refu
   const withinWindow = Date.now() - anchor.getTime() <= REFUND_WINDOW_DAYS * 86_400_000;
   if (!withinWindow) {
     return { ok: false, message: "Refund window has passed (7-day money-back guarantee)." };
+  }
+
+  // In-policy: record an actionable refund request for the admin queue (doc 17). Don't
+  // create a duplicate if one is already pending for this user — still return ok.
+  const existingPending = await prisma.refundRequest.findFirst({
+    where: { userId, status: "pending" },
+    select: { id: true },
+  });
+  if (!existingPending) {
+    const plan = PLANS[sub.plan];
+    const amount = (sub.interval === "year" ? plan.yearly : plan.monthly) * 100;
+    await prisma.refundRequest.create({
+      data: {
+        userId,
+        subscriptionId: sub.id,
+        amount,
+        reason: "Customer requested refund",
+        status: "pending",
+      },
+    });
   }
 
   await mailer.send({

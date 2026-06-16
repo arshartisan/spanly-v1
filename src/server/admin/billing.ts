@@ -1,0 +1,345 @@
+import "server-only";
+import type {
+  BillingInterval,
+  PlanKey,
+  Prisma,
+  RefundRequest,
+  RefundStatus,
+  SubscriptionStatus,
+} from "@prisma/client";
+import { prisma } from "@/server/db";
+import { getStripe, isLiveBilling } from "@/server/stripe";
+import { AdminActionError } from "@/server/admin/errors";
+import { PLANS } from "@/server/plans";
+
+/**
+ * Admin billing service (doc 17). Wraps `src/server/billing.ts` + `src/server/stripe.ts`
+ * for the staff surface: subscriptions oversight, the refund-request workflow, manual
+ * overrides, credits, and a Stripe payments view. In mock mode we NEVER call Stripe —
+ * refunds/overrides mutate the local rows only.
+ */
+
+const REFUND_WINDOW_DAYS = 7;
+
+// ─────────────────────────── Subscriptions ───────────────────────────
+
+export interface SubscriptionFilter {
+  status?: SubscriptionStatus;
+  plan?: PlanKey;
+  interval?: BillingInterval;
+}
+
+/**
+ * Pure mapping from a parsed filter to a Prisma `SubscriptionWhereInput`. No DB calls —
+ * unit-testable in isolation.
+ */
+export function buildSubscriptionWhere(
+  filter: SubscriptionFilter,
+): Prisma.SubscriptionWhereInput {
+  const where: Prisma.SubscriptionWhereInput = {};
+  if (filter.status) where.status = filter.status;
+  if (filter.plan) where.plan = filter.plan;
+  if (filter.interval) where.interval = filter.interval;
+  return where;
+}
+
+const subSelect = {
+  id: true,
+  userId: true,
+  plan: true,
+  interval: true,
+  status: true,
+  trialEndsAt: true,
+  currentPeriodEnd: true,
+  apiAddonActive: true,
+  stripeCustomerId: true,
+  stripeSubId: true,
+  createdAt: true,
+  updatedAt: true,
+  user: { select: { id: true, email: true, displayName: true } },
+} satisfies Prisma.SubscriptionSelect;
+
+export type AdminSubscriptionListItem = Prisma.SubscriptionGetPayload<{
+  select: typeof subSelect;
+}>;
+
+/** Subscriptions joined with safe user fields, newest first. */
+export async function listSubscriptions(
+  filter: SubscriptionFilter,
+): Promise<AdminSubscriptionListItem[]> {
+  return prisma.subscription.findMany({
+    where: buildSubscriptionWhere(filter),
+    select: subSelect,
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+// ─────────────────────────── Refund requests ───────────────────────────
+
+const refundSelect = {
+  id: true,
+  userId: true,
+  subscriptionId: true,
+  amount: true,
+  reason: true,
+  status: true,
+  stripeRefundId: true,
+  decidedById: true,
+  decidedAt: true,
+  createdAt: true,
+  user: { select: { id: true, email: true, displayName: true } },
+} satisfies Prisma.RefundRequestSelect;
+
+type RefundRow = Prisma.RefundRequestGetPayload<{ select: typeof refundSelect }>;
+
+export type AdminRefundListItem = RefundRow & { daysSinceCreated: number };
+
+function daysSince(date: Date): number {
+  return Math.floor((Date.now() - date.getTime()) / 86_400_000);
+}
+
+/** Refund requests + user, newest first, with a computed `daysSinceCreated`. */
+export async function listRefundRequests(
+  status?: RefundStatus,
+): Promise<AdminRefundListItem[]> {
+  const rows = await prisma.refundRequest.findMany({
+    where: status ? { status } : {},
+    select: refundSelect,
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map((r) => ({ ...r, daysSinceCreated: daysSince(r.createdAt) }));
+}
+
+/** Load a refund request or throw 404. */
+async function requireRefund(id: string): Promise<RefundRequest> {
+  const request = await prisma.refundRequest.findUnique({ where: { id } });
+  if (!request) throw new AdminActionError(404, "Refund request not found.");
+  return request;
+}
+
+/** True if the request is older than the policy window from its creation. */
+function isOutOfPolicy(createdAt: Date): boolean {
+  return Date.now() - createdAt.getTime() > REFUND_WINDOW_DAYS * 86_400_000;
+}
+
+export interface ApproveRefundOptions {
+  note?: string;
+  force?: boolean;
+}
+
+/**
+ * Approve a pending refund and issue it. Live mode hits Stripe (latest charge → refund);
+ * mock mode skips Stripe. Out-of-policy approvals require `force` (superadmin-gated at the
+ * route). Returns the updated request.
+ */
+export async function approveRefund(
+  actorId: string,
+  id: string,
+  opts: ApproveRefundOptions,
+): Promise<RefundRequest> {
+  const request = await requireRefund(id);
+  if (request.status !== "pending") {
+    throw new AdminActionError(409, "Refund request is not pending.");
+  }
+
+  if (isOutOfPolicy(request.createdAt) && !opts.force) {
+    throw new AdminActionError(403, "Out of policy — requires force (superadmin).");
+  }
+
+  let stripeRefundId: string | null = null;
+
+  if (isLiveBilling()) {
+    const sub = request.subscriptionId
+      ? await prisma.subscription.findUnique({ where: { id: request.subscriptionId } })
+      : await prisma.subscription.findUnique({ where: { userId: request.userId } });
+    const customerId = sub?.stripeCustomerId;
+    if (!customerId) {
+      throw new AdminActionError(422, "No Stripe charge to refund.");
+    }
+    const stripe = getStripe();
+    const charges = await stripe.charges.list({ customer: customerId, limit: 1 });
+    const charge = charges.data[0];
+    if (!charge) {
+      throw new AdminActionError(422, "No Stripe charge to refund.");
+    }
+    const refund = await stripe.refunds.create({
+      charge: charge.id,
+      amount: request.amount,
+    });
+    stripeRefundId = refund.id;
+  }
+
+  void opts.note; // recorded by the route's audit log, not stored on the request
+  return prisma.refundRequest.update({
+    where: { id },
+    data: {
+      status: "refunded",
+      stripeRefundId,
+      decidedById: actorId,
+      decidedAt: new Date(),
+    },
+  });
+}
+
+/** Deny a pending refund. The note goes to audit metadata, not the row. */
+export async function denyRefund(
+  actorId: string,
+  id: string,
+  note: string,
+): Promise<RefundRequest> {
+  const request = await requireRefund(id);
+  if (request.status !== "pending") {
+    throw new AdminActionError(409, "Refund request is not pending.");
+  }
+  void note;
+  return prisma.refundRequest.update({
+    where: { id },
+    data: { status: "denied", decidedById: actorId, decidedAt: new Date() },
+  });
+}
+
+/** Staff-initiated pending refund request (e.g. a goodwill or off-cycle refund). */
+export async function createStaffRefund(
+  actorId: string,
+  userId: string,
+  amount: number,
+  reason: string,
+): Promise<RefundRequest> {
+  void actorId; // recorded by the route's audit log
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!user) throw new AdminActionError(404, "User not found.");
+  const sub = await prisma.subscription.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+  return prisma.refundRequest.create({
+    data: {
+      userId,
+      subscriptionId: sub?.id ?? null,
+      amount,
+      reason,
+      status: "pending",
+    },
+  });
+}
+
+// ─────────────────────────── Manual overrides ───────────────────────────
+
+export interface SubscriptionOverridePatch {
+  plan?: PlanKey;
+  interval?: BillingInterval;
+  status?: SubscriptionStatus;
+  trialEndsAt?: Date | null;
+}
+
+/**
+ * Superadmin manual subscription override. Mock-safe direct write to the local row; in
+ * live mode this is an admin override that the next webhook may reconcile — that's an
+ * accepted tradeoff for an exceptional, deliberate staff action. Returns the updated sub.
+ */
+export async function overrideSubscription(
+  actorId: string,
+  userId: string,
+  patch: SubscriptionOverridePatch,
+) {
+  void actorId; // recorded by the route's audit log
+  const sub = await prisma.subscription.findUnique({ where: { userId }, select: { id: true } });
+  if (!sub) throw new AdminActionError(404, "Subscription not found.");
+
+  const data: Prisma.SubscriptionUpdateInput = {};
+  if (patch.plan !== undefined) data.plan = patch.plan;
+  if (patch.interval !== undefined) data.interval = patch.interval;
+  if (patch.status !== undefined) data.status = patch.status;
+  if (patch.trialEndsAt !== undefined) data.trialEndsAt = patch.trialEndsAt;
+
+  return prisma.subscription.update({ where: { userId }, data });
+}
+
+/**
+ * Grant account credit (MVP). Live mode applies a negative customer balance transaction
+ * (a credit) when a Stripe customer exists; mock mode is a no-op recorded only via audit.
+ * Never throws in mock mode.
+ */
+export async function grantCredit(
+  actorId: string,
+  userId: string,
+  amountCents: number,
+  reason: string,
+): Promise<{ ok: true }> {
+  void actorId; // recorded by the route's audit log
+  if (isLiveBilling()) {
+    const sub = await prisma.subscription.findUnique({
+      where: { userId },
+      select: { stripeCustomerId: true },
+    });
+    if (sub?.stripeCustomerId) {
+      await getStripe().customers.createBalanceTransaction(sub.stripeCustomerId, {
+        amount: -amountCents,
+        currency: "usd",
+        description: reason,
+      });
+    }
+  }
+  return { ok: true };
+}
+
+// ─────────────────────────── Payments (read) ───────────────────────────
+
+export interface PaymentItem {
+  id: string;
+  amount: number; // minor units
+  currency: string;
+  status: string;
+  description: string | null;
+  created: number; // unix seconds
+  customerId: string | null;
+  receiptUrl: string | null;
+}
+
+export interface PaymentsResult {
+  mockMode: boolean;
+  payments: PaymentItem[];
+}
+
+/**
+ * Recent Stripe charges, scoped to a user when given (else platform-wide). Mock mode
+ * returns an empty list flagged `mockMode: true` (the UI shows a mock banner instead).
+ */
+export async function listPayments(userId?: string): Promise<PaymentsResult> {
+  if (!isLiveBilling()) {
+    return { mockMode: true, payments: [] };
+  }
+
+  const stripe = getStripe();
+  let customerId: string | undefined;
+  if (userId) {
+    const sub = await prisma.subscription.findUnique({
+      where: { userId },
+      select: { stripeCustomerId: true },
+    });
+    if (!sub?.stripeCustomerId) return { mockMode: false, payments: [] };
+    customerId = sub.stripeCustomerId;
+  }
+
+  const charges = await stripe.charges.list({
+    limit: 25,
+    ...(customerId ? { customer: customerId } : {}),
+  });
+
+  const payments: PaymentItem[] = charges.data.map((ch) => ({
+    id: ch.id,
+    amount: ch.amount,
+    currency: ch.currency,
+    status: ch.status,
+    description: ch.description,
+    created: ch.created,
+    customerId: typeof ch.customer === "string" ? ch.customer : (ch.customer?.id ?? null),
+    receiptUrl: ch.receipt_url ?? null,
+  }));
+
+  return { mockMode: false, payments };
+}
+
+// Re-export for convenience so the UI/route layer can map AdminActionError.status.
+export { AdminActionError };
+export { PLANS };

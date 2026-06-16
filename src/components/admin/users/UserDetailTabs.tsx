@@ -19,6 +19,7 @@ import { STATUS_META, TYPE_LABEL, snippet } from "@/lib/post-display";
 import { cn } from "@/lib/utils";
 import { PlanBadge, ROLE_LABEL, STATUS_LABEL } from "./display";
 import { SupportNotes, type SupportNoteVM } from "./SupportNotes";
+import { SubscriptionOverride } from "@/components/admin/billing/SubscriptionOverride";
 
 // Tabbed detail panels for an admin user (doc 16). Accessible custom tab switcher (no
 // shadcn Tabs primitive): role="tablist"/"tab"/"tabpanel" + aria-selected, arrow-key
@@ -37,7 +38,13 @@ const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?
 
 const STRIPE_BASE = "https://dashboard.stripe.com";
 
-export function UserDetailTabs({ user }: { user: AdminUserDetail }) {
+export function UserDetailTabs({
+  user,
+  canManageBilling = false,
+}: {
+  user: AdminUserDetail;
+  canManageBilling?: boolean;
+}) {
   const [active, setActive] = useState<TabKey>("profile");
   const baseId = useId();
 
@@ -100,7 +107,13 @@ export function UserDetailTabs({ user }: { user: AdminUserDetail }) {
         className="focus-visible:outline-none"
       >
         {active === "profile" ? <ProfilePanel user={user} /> : null}
-        {active === "subscription" ? <SubscriptionPanel sub={user.subscription} /> : null}
+        {active === "subscription" ? (
+          <SubscriptionPanel
+            sub={user.subscription}
+            userId={user.id}
+            canManageBilling={canManageBilling}
+          />
+        ) : null}
         {active === "connections" ? <ConnectionsPanel accounts={user.accounts} /> : null}
         {active === "posts" ? <PostsPanel posts={user.posts} /> : null}
         {active === "sessions" ? <SessionsPanel sessions={user.sessions} /> : null}
@@ -173,11 +186,25 @@ function ProfilePanel({ user }: { user: AdminUserDetail }) {
 
 // ─────────────────────────── Subscription ───────────────────────────
 
-function SubscriptionPanel({ sub }: { sub: AdminUserDetail["subscription"] }) {
+function SubscriptionPanel({
+  sub,
+  userId,
+  canManageBilling,
+}: {
+  sub: AdminUserDetail["subscription"];
+  userId: string;
+  canManageBilling: boolean;
+}) {
   if (!sub) {
-    return <EmptyPanel icon={CreditCard} message="No subscription on this account." />;
+    return (
+      <div className="flex flex-col gap-4">
+        <EmptyPanel icon={CreditCard} message="No subscription on this account." />
+        {canManageBilling ? <SubscriptionOverride userId={userId} /> : null}
+      </div>
+    );
   }
   return (
+    <div className="flex flex-col gap-4">
     <Panel>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <PlanBadge plan={sub.plan} status={sub.status} />
@@ -225,6 +252,8 @@ function SubscriptionPanel({ sub }: { sub: AdminUserDetail["subscription"] }) {
         </Field>
       </dl>
     </Panel>
+      {canManageBilling ? <SubscriptionOverride userId={userId} /> : null}
+    </div>
   );
 }
 

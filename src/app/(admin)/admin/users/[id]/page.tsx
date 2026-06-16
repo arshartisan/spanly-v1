@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { ArrowLeft, Ban } from "lucide-react";
 import { getUserDetail } from "@/server/admin/users";
+import { requireStaff, roleAtLeast } from "@/server/admin/access";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Reveal } from "@/components/motion/reveal";
 import { UserActions } from "@/components/admin/users/UserActions";
@@ -21,6 +22,8 @@ export default async function AdminUserDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const viewer = await requireStaff();
+  const canManageBilling = roleAtLeast(viewer.role, "superadmin");
   const user = await getUserDetail(id);
   if (!user) notFound();
 
@@ -91,7 +94,7 @@ export default async function AdminUserDetailPage({
       </Reveal>
 
       <Reveal delay={0.1}>
-        <UserDetailTabs user={user} />
+        <UserDetailTabs user={user} canManageBilling={canManageBilling} />
       </Reveal>
     </div>
   );
