@@ -3,6 +3,7 @@ import { getProvider } from "@/providers/registry";
 import { FacebookProvider } from "@/providers/facebook";
 import { InstagramProvider } from "@/providers/instagram";
 import { TiktokProvider } from "@/providers/tiktok";
+import { YoutubeProvider } from "@/providers/youtube";
 
 describe("MockProvider (registry)", () => {
   it("returns a provider for every platform in mock mode", () => {
@@ -205,6 +206,91 @@ describe("TiktokProvider (live)", () => {
   it("validate accepts a well-formed video post", () => {
     expect(
       tt.validate({ type: "video", caption: "clip", media: [{ kind: "video", url: "u", order: 0 }] }).ok,
+    ).toBe(true);
+  });
+});
+
+describe("YoutubeProvider (live)", () => {
+  const yt = new YoutubeProvider();
+
+  it("getAuthUrl points at Google OAuth with offline access and youtube.upload scope", () => {
+    process.env.YOUTUBE_CLIENT_ID = "yt-test-id";
+    const url = new URL(yt.getAuthUrl({ state: "csrf123", redirectUri: "https://app/cb" }));
+    expect(url.hostname).toContain("accounts.google.com");
+    expect(url.searchParams.get("client_id")).toBe("yt-test-id");
+    expect(url.searchParams.get("redirect_uri")).toBe("https://app/cb");
+    expect(url.searchParams.get("state")).toBe("csrf123");
+    expect(url.searchParams.get("response_type")).toBe("code");
+    // Force a refresh token to be returned.
+    expect(url.searchParams.get("access_type")).toBe("offline");
+    expect(url.searchParams.get("prompt")).toBe("consent");
+    // Google uses space-separated scopes.
+    expect(url.searchParams.get("scope")).toMatch(/youtube\.upload/);
+    expect(url.searchParams.get("scope")).toContain(" ");
+  });
+
+  it("getAuthUrl throws when neither YOUTUBE_CLIENT_ID nor GOOGLE_CLIENT_ID is set", () => {
+    delete process.env.YOUTUBE_CLIENT_ID;
+    delete process.env.GOOGLE_CLIENT_ID;
+    expect(() => yt.getAuthUrl({ state: "s", redirectUri: "r" })).toThrow(/YOUTUBE_CLIENT_ID/);
+  });
+
+  it("getAuthUrl falls back to GOOGLE_CLIENT_ID when YOUTUBE_CLIENT_ID is unset", () => {
+    delete process.env.YOUTUBE_CLIENT_ID;
+    process.env.GOOGLE_CLIENT_ID = "google-test-id";
+    const url = new URL(yt.getAuthUrl({ state: "s", redirectUri: "https://app/cb" }));
+    expect(url.searchParams.get("client_id")).toBe("google-test-id");
+  });
+
+  it("refresh throws without a stored refresh token", async () => {
+    await expect(yt.refresh({ accessToken: "t", scopes: [] })).rejects.toThrow(/refresh token/);
+  });
+
+  it("validate rejects an over-limit caption (max 5000)", () => {
+    const res = yt.validate({
+      type: "video",
+      caption: "x".repeat(5001),
+      media: [{ kind: "video", url: "u", order: 0 }],
+    });
+    expect(res.ok).toBe(false);
+    expect(res.errors.join(" ")).toMatch(/5000/);
+  });
+
+  it("validate rejects video posts with no media", () => {
+    expect(yt.validate({ type: "video", caption: "hi", media: [] }).ok).toBe(false);
+  });
+
+  it("validate rejects more than one media item (max 1)", () => {
+    const res = yt.validate({
+      type: "video",
+      caption: "clip",
+      media: [
+        { kind: "video", url: "a", order: 0 },
+        { kind: "video", url: "b", order: 1 },
+      ],
+    });
+    expect(res.ok).toBe(false);
+  });
+
+  it("validate rejects non-video media", () => {
+    const res = yt.validate({
+      type: "video",
+      caption: "clip",
+      media: [{ kind: "image", url: "u", order: 0 }],
+    });
+    expect(res.ok).toBe(false);
+  });
+
+  it("validate rejects unsupported types (text/image/story)", () => {
+    expect(yt.validate({ type: "text", caption: "hi", media: [] }).ok).toBe(false);
+    expect(yt.validate({ type: "image", caption: "hi", media: [{ kind: "image", url: "u", order: 0 }] }).ok).toBe(
+      false,
+    );
+  });
+
+  it("validate accepts a well-formed video post", () => {
+    expect(
+      yt.validate({ type: "video", caption: "clip", media: [{ kind: "video", url: "u", order: 0 }] }).ok,
     ).toBe(true);
   });
 });
