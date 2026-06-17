@@ -9,7 +9,7 @@ import {
   type PaypalSubscription,
 } from "@/server/billing";
 
-// POST /api/webhooks/paypal — PayPal event sink (doc 10). No auth: identity is the signature,
+// POST /api/webhooks/paypal - PayPal event sink (doc 10). No auth: identity is the signature,
 // verified via PayPal's verify-webhook-signature API. PayPal is the source of truth in live
 // mode; subscriptions upsert idempotently keyed by our userId (carried in `custom_id`).
 // Raw body is required for verification, so we read req.text() and parse it ourselves.
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
   return NextResponse.json({ received: true });
 }
 
-/** Append a WebhookEvent row; returns its id (or null on failure). Best-effort — never throws. */
+/** Append a WebhookEvent row; returns its id (or null on failure). Best-effort - never throws. */
 async function logWebhookEvent(
   type: string,
   status: string,
@@ -75,7 +75,7 @@ async function logWebhookEvent(
   }
 }
 
-/** Update a previously-logged WebhookEvent's status/error. Best-effort — never throws. */
+/** Update a previously-logged WebhookEvent's status/error. Best-effort - never throws. */
 async function markWebhookEvent(
   id: string | null,
   status: string,
@@ -165,7 +165,7 @@ async function handleEvent(event: PaypalWebhookEvent): Promise<void> {
     }
 
     case "PAYMENT.SALE.COMPLETED": {
-      // A recurring charge succeeded — refresh the local period end from the parent sub.
+      // A recurring charge succeeded - refresh the local period end from the parent sub.
       const subId = resource.billing_agreement_id;
       if (!subId) return;
       const row = await prisma.subscription.findFirst({

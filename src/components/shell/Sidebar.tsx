@@ -60,7 +60,7 @@ export function Sidebar({ user, planLabel, isStaff }: SidebarProps) {
       <div className="flex flex-col gap-3 p-3">
         <Link
           href="/dashboard"
-          aria-label="Spanlyfy — go to dashboard"
+          aria-label="Spanlyfy - go to dashboard"
           className="press flex items-center px-1.5 pt-1"
         >
           <Logo className="h-7" />

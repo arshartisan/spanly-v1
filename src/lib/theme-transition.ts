@@ -56,6 +56,6 @@ export function switchTheme(
       );
     })
     .catch(() => {
-      /* transition skipped/interrupted — theme already applied */
+      /* transition skipped/interrupted - theme already applied */
     });
 }

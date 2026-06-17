@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 // /api/admin/settings/flags/[key] with { enabled }, optimistically flips, reverts on
 // failure with an inline error, and router.refresh()es the RSC on success. Mirrors the
 // <RunMaintenance/> action pattern. `disabled` is set for global kill switches when the
-// viewer is not a superadmin (the API also enforces this — never trust the client).
+// viewer is not a superadmin (the API also enforces this - never trust the client).
 
 export function FlagToggle({
   flagKey,

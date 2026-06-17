@@ -103,7 +103,10 @@ export function validatePostTargets(input: {
     const caption = resolveCaption(input.mainCaption, input.perPlatform, account.id);
     const errors: string[] = [];
 
-    if (!account.capabilities.includes(input.type)) {
+    // Enforce the live platform config (not just the account's stored capabilities): a
+    // connection made before a capability was withdrawn (e.g. LinkedIn video) keeps a stale
+    // DB value, so checking cfg here self-heals those without a data migration.
+    if (!cfg.capabilities.includes(input.type) || !account.capabilities.includes(input.type)) {
       errors.push(`${cfg.label} doesn't support ${input.type} posts`);
     }
     if (caption.length > captionMax) {

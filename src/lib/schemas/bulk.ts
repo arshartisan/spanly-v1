@@ -104,7 +104,7 @@ export interface BulkCommitResult {
 export const SAMPLE_CSV = [
   "caption,type,platforms,date,time,media_url",
   '"Hello world from Spanlyfy 👋",text,"x,linkedin",,,',
-  '"New blog post is live — link in bio",text,facebook,2026-06-20,09:30,',
+  '"New blog post is live - link in bio",text,facebook,2026-06-20,09:30,',
   '"Behind the scenes shot",image,"instagram,facebook",2026-06-21,14:00,https://example.com/photo.jpg',
   '"Launch teaser",video,youtube,,,https://example.com/teaser.mp4',
 ].join("\n");

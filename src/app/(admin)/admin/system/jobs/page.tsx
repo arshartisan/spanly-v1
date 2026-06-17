@@ -15,7 +15,7 @@ import { JobsFilters } from "@/components/admin/system/JobsFilters";
 import { JobActions } from "@/components/admin/system/JobActions";
 import { cn } from "@/lib/utils";
 
-// Admin failed/active job list (doc 19) — RSC + client actions. Lenient-parses queue+state
+// Admin failed/active job list (doc 19) - RSC + client actions. Lenient-parses queue+state
 // from the URL, then calls listJobs() INSIDE a try/catch: a Redis-down 503 renders an error
 // panel ("Queue backend unavailable") instead of crashing the page. Admins get Retry/Remove.
 
@@ -86,7 +86,7 @@ export default async function AdminSystemJobsPage({
 
       <Reveal delay={0.12}>
         {queueDown ? (
-          <ErrorPanel>Queue backend unavailable — is Redis running?</ErrorPanel>
+          <ErrorPanel>Queue backend unavailable - is Redis running?</ErrorPanel>
         ) : errorMessage ? (
           <ErrorPanel>{errorMessage}</ErrorPanel>
         ) : jobs && jobs.length > 0 ? (
@@ -139,7 +139,7 @@ function JobRow({
       <Td>
         <div className="flex min-w-0 flex-col">
           <span className="truncate font-medium text-foreground">{job.name}</span>
-          <span className="font-mono text-xs text-muted-foreground">#{job.id ?? "—"}</span>
+          <span className="font-mono text-xs text-muted-foreground">#{job.id ?? "-"}</span>
           {target ? (
             <span className="truncate font-mono text-[11px] text-muted-foreground/80">
               {target}
@@ -152,7 +152,7 @@ function JobRow({
         {job.failedReason ? (
           <span className="line-clamp-2 text-status-failed/90">{job.failedReason}</span>
         ) : (
-          <span className="text-xs text-muted-foreground">—</span>
+          <span className="text-xs text-muted-foreground">-</span>
         )}
       </Td>
       <Td className="whitespace-nowrap text-muted-foreground">{fmtTs(job.timestamp)}</Td>
@@ -162,7 +162,7 @@ function JobRow({
           {job.id ? (
             <JobActions queue={queue} jobId={job.id} />
           ) : (
-            <span className="text-xs text-muted-foreground">—</span>
+            <span className="text-xs text-muted-foreground">-</span>
           )}
         </Td>
       ) : null}
@@ -171,7 +171,7 @@ function JobRow({
 }
 
 function fmtTs(ms: number | null): string {
-  return ms ? format(new Date(ms), "d MMM yyyy, HH:mm") : "—";
+  return ms ? format(new Date(ms), "d MMM yyyy, HH:mm") : "-";
 }
 
 function Th({ children, className }: { children: React.ReactNode; className?: string }) {

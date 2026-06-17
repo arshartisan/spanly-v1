@@ -5,7 +5,7 @@ import { addToQueue } from "@/server/posts";
 
 const bodySchema = z.object({ targets: z.array(z.string().min(1)).min(1) });
 
-// POST /api/posts/[id]/queue — drop into the next open queue slot
+// POST /api/posts/[id]/queue - drop into the next open queue slot
 // (docs/implementation/06 + 08).
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;

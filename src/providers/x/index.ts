@@ -1,10 +1,10 @@
 /**
- * XProvider — real X (Twitter) integration (docs/implementation/02 + 06 + 09).
+ * XProvider - real X (Twitter) integration (docs/implementation/02 + 06 + 09).
  *
  * OAuth 2.0 Authorization Code + PKCE (X requires PKCE even for confidential web apps).
  * We hold no server-side store for the PKCE code_verifier; instead it is derived
  * deterministically from the signed CSRF `state` via HMAC(NEXTAUTH_SECRET, state). The
- * verifier never leaves the server — only the SHA-256 code_challenge is sent to X — so an
+ * verifier never leaves the server - only the SHA-256 code_challenge is sent to X - so an
  * intercepted redirect cannot reconstruct it without NEXTAUTH_SECRET.
  *
  * Endpoints:
@@ -32,7 +32,7 @@ import type {
 } from "@/providers/types";
 
 // Use the x.com domain (not twitter.com) for the authorize step so the user's existing
-// x.com login session is recognized directly — the cross-domain twitter.com→x.com bridge
+// x.com login session is recognized directly - the cross-domain twitter.com→x.com bridge
 // otherwise dumps users on a blank `/i/jf/onboarding/web/sso` interstitial.
 const AUTHORIZE_URL = "https://x.com/i/oauth2/authorize";
 const TOKEN_URL = "https://api.twitter.com/2/oauth2/token";
@@ -235,7 +235,7 @@ export class XProvider implements PlatformProvider {
     }
   }
 
-  /** Chunked upload (INIT → APPEND → FINALIZE → STATUS) — works for images and video. */
+  /** Chunked upload (INIT → APPEND → FINALIZE → STATUS) - works for images and video. */
   private async uploadMedia(media: PublishMedia, accessToken: string): Promise<string> {
     if (media.kind === "pdf") throw new Error("X does not support PDF media");
 

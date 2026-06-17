@@ -5,7 +5,7 @@ import { AdminActionError, runMaintenance } from "@/server/admin/ops";
 import { maintenanceTaskSchema } from "@/lib/schemas/admin-ops";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/system/maintenance/:task — enqueue a one-off sweep (doc 19). Role: admin.
+// POST /api/admin/system/maintenance/:task - enqueue a one-off sweep (doc 19). Role: admin.
 export async function POST(req: Request, { params }: { params: Promise<{ task: string }> }) {
   try {
     const actor = await requireRole("admin");

@@ -1,7 +1,7 @@
 /**
  * Help center content (Phase 13). Static, structured articles grouped by category. Kept as
  * typed data (not MDX) so it's trivially searchable on the client and rendered by a small block
- * renderer — no markdown pipeline or extra dependency. Articles map 1:1 to shipped features.
+ * renderer - no markdown pipeline or extra dependency. Articles map 1:1 to shipped features.
  *
  * Topic coverage is modeled on a mature social-scheduler help center but written originally for
  * Spanlyfy: only the six supported platforms (Facebook, Instagram, LinkedIn, TikTok, YouTube, X),
@@ -70,9 +70,9 @@ export const HELP_ARTICLES: HelpArticle[] = [
     body: [
       { type: "p", text: "Spanlyfy gives you three ways to line up content before it goes live, so you can batch your work and stay consistent." },
       { type: "ul", items: [
-        "Pick a time — schedule any post for a specific date and time.",
-        "Queue — define recurring weekly slots and drop posts into the next open one.",
-        "Bulk import — upload a CSV to create many scheduled posts at once.",
+        "Pick a time - schedule any post for a specific date and time.",
+        "Queue - define recurring weekly slots and drop posts into the next open one.",
+        "Bulk import - upload a CSV to create many scheduled posts at once.",
       ] },
       { type: "p", text: "Everything you schedule shows up on the calendar in month or week view, so you can see your whole plan at a glance and spot gaps." },
     ],
@@ -83,7 +83,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "getting-started",
     excerpt: "Write one main caption, then override it per platform where needed.",
     body: [
-      { type: "p", text: "By default every selected account uses your main caption. When you want a different message for one platform — say a shorter line for X — you can override just that account." },
+      { type: "p", text: "By default every selected account uses your main caption. When you want a different message for one platform - say a shorter line for X - you can override just that account." },
       { type: "ol", items: [
         "Select two or more accounts in the composer.",
         "A tab appears for each platform above the caption.",
@@ -101,7 +101,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     excerpt: "Link Facebook, Instagram, LinkedIn, TikTok, YouTube, and X.",
     body: [
       { type: "p", text: "Open Connections from the sidebar. Each platform has a Connect button that takes you through a secure authorization flow; once you approve, the account appears with its handle." },
-      { type: "p", text: "Spanlyfy never sees or stores your social passwords — you authorize access on the platform's own screen, and we keep only the access tokens needed to publish on your behalf, encrypted at rest." },
+      { type: "p", text: "Spanlyfy never sees or stores your social passwords - you authorize access on the platform's own screen, and we keep only the access tokens needed to publish on your behalf, encrypted at rest." },
       { type: "h", text: "Reconnecting" },
       { type: "p", text: "If an account's access expires, reconnect it from the same row. Reconnecting an existing platform never uses an extra account slot." },
     ],
@@ -114,8 +114,8 @@ export const HELP_ARTICLES: HelpArticle[] = [
     body: [
       { type: "p", text: "When you connect Instagram, Spanlyfy asks which method to use:" },
       { type: "ul", items: [
-        "Instagram — authorize directly with your Instagram account.",
-        "Facebook Page — connect an Instagram account that's managed through a linked Facebook Page.",
+        "Instagram - authorize directly with your Instagram account.",
+        "Facebook Page - connect an Instagram account that's managed through a linked Facebook Page.",
       ] },
       { type: "p", text: "Pick whichever matches how your account is set up. If you manage the account from Facebook's business tools, use the Facebook Page method; otherwise connect directly." },
       { type: "p", text: "Instagram supports image, video, and story posts. Stories require exactly one media item." },
@@ -127,7 +127,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "connections",
     excerpt: "Spanlyfy publishes to Facebook Pages you manage.",
     body: [
-      { type: "p", text: "Spanlyfy connects to Facebook Pages — the business/brand presences you manage — rather than a personal timeline. During authorization, grant access to the Page you want to post to." },
+      { type: "p", text: "Spanlyfy connects to Facebook Pages - the business/brand presences you manage - rather than a personal timeline. During authorization, grant access to the Page you want to post to." },
       { type: "p", text: "If a Page doesn't appear, make sure your account has a manager or admin role on it, then try connecting again." },
       { type: "p", text: "Facebook supports text, image, and video posts, with the most generous caption length of any platform." },
     ],
@@ -146,10 +146,10 @@ export const HELP_ARTICLES: HelpArticle[] = [
     slug: "connect-tiktok-youtube",
     title: "Connecting TikTok and YouTube",
     category: "connections",
-    excerpt: "Video-first platforms — what each one accepts.",
+    excerpt: "Video-first platforms - what each one accepts.",
     body: [
       { type: "h", text: "TikTok" },
-      { type: "p", text: "TikTok accepts image and video posts. Some accounts may need to be a Business or Creator account to allow third-party publishing — if a connection or post is rejected, check your account type in TikTok." },
+      { type: "p", text: "TikTok accepts image and video posts. Some accounts may need to be a Business or Creator account to allow third-party publishing - if a connection or post is rejected, check your account type in TikTok." },
       { type: "h", text: "YouTube" },
       { type: "p", text: "YouTube is video-only in Spanlyfy. Connect the channel you want to upload to and authorize access. Each YouTube post is a single video." },
     ],
@@ -172,19 +172,19 @@ export const HELP_ARTICLES: HelpArticle[] = [
     body: [
       { type: "p", text: "Your plan sets how many social accounts you can connect at once:" },
       { type: "ul", items: [
-        "Creator — up to 15 connected accounts.",
-        "Growth — up to 50 connected accounts.",
-        "Pro — unlimited connected accounts.",
+        "Creator - up to 15 connected accounts.",
+        "Growth - up to 50 connected accounts.",
+        "Pro - unlimited connected accounts.",
       ] },
       { type: "p", text: "Reconnecting an account you already have never counts as a new connection. If you're at your limit, disconnect an account or upgrade to add more." },
       { type: "h", text: "What each platform supports" },
       { type: "ul", items: [
-        "X — text, image, video. Up to 4 media; 280-character captions.",
-        "LinkedIn — text, image, video. Up to 9 media; 3,000-character captions.",
-        "Facebook — text, image, video. Up to 10 media; 5,000-character captions.",
-        "Instagram — image, video, story. Up to 10 media; 2,200-character captions.",
-        "TikTok — image, video. Up to 35 media; 2,200-character captions.",
-        "YouTube — video only. One video; 5,000-character captions.",
+        "X - text, image, video. Up to 4 media; 280-character captions.",
+        "LinkedIn - text, image, video. Up to 9 media; 3,000-character captions.",
+        "Facebook - text, image, video. Up to 10 media; 5,000-character captions.",
+        "Instagram - image, video, story. Up to 10 media; 2,200-character captions.",
+        "TikTok - image, video. Up to 35 media; 2,200-character captions.",
+        "YouTube - video only. One video; 5,000-character captions.",
       ] },
     ],
   },
@@ -195,7 +195,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     excerpt: "Publish the same post to several accounts in one step.",
     body: [
       { type: "p", text: "Select as many accounts as you like in the composer and Spanlyfy fans the post out to each one. Every account publishes independently, so a problem with one never blocks the others." },
-      { type: "p", text: "Only accounts that can handle your post type are selectable — for example, a text post won't offer YouTube, which is video-only." },
+      { type: "p", text: "Only accounts that can handle your post type are selectable - for example, a text post won't offer YouTube, which is video-only." },
       { type: "p", text: "On the publishing screen you'll see a separate result for each account, with its own link or error." },
     ],
   },
@@ -220,10 +220,10 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "p", text: "From Create post, write your caption and select the accounts to publish to. The character counter follows the strictest limit among the platforms you've selected." },
       { type: "h", text: "When to publish" },
       { type: "ul", items: [
-        "Post now — publishes immediately.",
-        "Pick a time — schedules for a specific date and time in your timezone.",
-        "Add to queue — drops it into your next open queue slot.",
-        "Save to drafts — keep it to finish later.",
+        "Post now - publishes immediately.",
+        "Pick a time - schedules for a specific date and time in your timezone.",
+        "Add to queue - drops it into your next open queue slot.",
+        "Save to drafts - keep it to finish later.",
       ] },
       { type: "p", text: "You can edit or reschedule a post any time before it publishes from the calendar or your posts lists." },
     ],
@@ -232,14 +232,14 @@ export const HELP_ARTICLES: HelpArticle[] = [
     slug: "post-types",
     title: "Post types and platform limits",
     category: "posting",
-    excerpt: "Text, image, video, and story — and what each platform allows.",
+    excerpt: "Text, image, video, and story - and what each platform allows.",
     body: [
       { type: "p", text: "Each post has a type, and each platform supports a different mix. The composer only lets you select accounts that can handle the chosen type." },
       { type: "ul", items: [
-        "Text — supported on X, LinkedIn, and Facebook.",
-        "Image — all platforms except YouTube.",
-        "Video — every platform.",
-        "Story — Instagram only, exactly one media item.",
+        "Text - supported on X, LinkedIn, and Facebook.",
+        "Image - all platforms except YouTube.",
+        "Video - every platform.",
+        "Story - Instagram only, exactly one media item.",
       ] },
       { type: "p", text: "Caption length and media counts are enforced per platform when you publish, so you'll see an error before anything goes out if a target can't accept the post." },
     ],
@@ -252,11 +252,11 @@ export const HELP_ARTICLES: HelpArticle[] = [
     body: [
       { type: "p", text: "For image and video posts you can attach multiple media items, and the platform renders them as a gallery or carousel. The maximum number of items depends on the platform." },
       { type: "ul", items: [
-        "Instagram & Facebook — up to 10 items.",
-        "LinkedIn — up to 9 items.",
-        "TikTok — up to 35 items.",
-        "X — up to 4 items.",
-        "YouTube — a single video.",
+        "Instagram & Facebook - up to 10 items.",
+        "LinkedIn - up to 9 items.",
+        "TikTok - up to 35 items.",
+        "X - up to 4 items.",
+        "YouTube - a single video.",
       ] },
       { type: "p", text: "Drag to reorder media in the composer; the order you set is the order followers see." },
     ],
@@ -267,7 +267,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "posting",
     excerpt: "Stories are Instagram-only and take exactly one media item.",
     body: [
-      { type: "p", text: "Choose the Story type to publish to Instagram stories. A story must have exactly one media item — one image or one video — and only Instagram supports it." },
+      { type: "p", text: "Choose the Story type to publish to Instagram stories. A story must have exactly one media item - one image or one video - and only Instagram supports it." },
       { type: "p", text: "If you select the Story type, other platforms are filtered out of the account picker automatically." },
     ],
   },
@@ -295,7 +295,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
         "Set your timezone (slots are interpreted in it).",
         "Use Add to queue from the composer or bulk import.",
       ] },
-      { type: "p", text: "Two queued posts never land on the same slot — each takes the next available one." },
+      { type: "p", text: "Two queued posts never land on the same slot - each takes the next available one." },
     ],
   },
   {
@@ -318,17 +318,17 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h", text: "Columns" },
       { type: "code", text: "caption,type,platforms,date,time,media_url" },
       { type: "ul", items: [
-        "caption — the post text (required).",
-        "type — text, image, video, or story (defaults to text).",
-        "platforms — platform names like \"x, linkedin\"; leave blank to use your default accounts.",
-        "date / time — used in Schedule mode, interpreted in your timezone.",
-        "media_url — a link to an image or video for media posts.",
+        "caption - the post text (required).",
+        "type - text, image, video, or story (defaults to text).",
+        "platforms - platform names like \"x, linkedin\"; leave blank to use your default accounts.",
+        "date / time - used in Schedule mode, interpreted in your timezone.",
+        "media_url - a link to an image or video for media posts.",
       ] },
       { type: "h", text: "Modes" },
       { type: "ul", items: [
-        "Save as drafts — create drafts to finish later.",
-        "Schedule — each row needs a date and time.",
-        "Add to queue — fill your next open queue slots in order.",
+        "Save as drafts - create drafts to finish later.",
+        "Schedule - each row needs a date and time.",
+        "Add to queue - fill your next open queue slots in order.",
       ] },
       { type: "p", text: "The preview flags any invalid rows with a reason; only valid rows are imported, and you can download a sample CSV to start from." },
     ],
@@ -341,7 +341,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     body: [
       { type: "p", text: "When a post goes out, Spanlyfy publishes to each selected account independently and shows a live progress screen with a result card per account." },
       { type: "h", text: "If a target fails" },
-      { type: "p", text: "A failed account shows the error and a Retry button. Retrying only re-sends the failed account — accounts that already succeeded are never re-posted, so you can't accidentally double-post." },
+      { type: "p", text: "A failed account shows the error and a Retry button. Retrying only re-sends the failed account - accounts that already succeeded are never re-posted, so you can't accidentally double-post." },
       { type: "p", text: "If an account's access expired, you'll see a Reconnect prompt instead; reconnect it and retry." },
     ],
   },
@@ -355,14 +355,14 @@ export const HELP_ARTICLES: HelpArticle[] = [
     body: [
       { type: "p", text: "Upload images and videos directly in the composer. Each platform caps video length, so the same clip may be fine on one network and too long on another:" },
       { type: "ul", items: [
-        "X — up to ~140 seconds.",
-        "YouTube (Shorts-style) — up to ~60 seconds.",
-        "Instagram — up to ~90 seconds.",
-        "TikTok — up to ~10 minutes.",
-        "LinkedIn — up to ~10 minutes.",
-        "Facebook — up to ~20 minutes.",
+        "X - up to ~140 seconds.",
+        "YouTube (Shorts-style) - up to ~60 seconds.",
+        "Instagram - up to ~90 seconds.",
+        "TikTok - up to ~10 minutes.",
+        "LinkedIn - up to ~10 minutes.",
+        "Facebook - up to ~20 minutes.",
       ] },
-      { type: "p", text: "If a video exceeds a selected platform's limit, you'll see an error before the post goes out — trim it or deselect that platform." },
+      { type: "p", text: "If a video exceeds a selected platform's limit, you'll see an error before the post goes out - trim it or deselect that platform." },
     ],
   },
   {
@@ -371,7 +371,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "media",
     excerpt: "How aspect ratios are handled across platforms.",
     body: [
-      { type: "p", text: "Different platforms favor different aspect ratios — square and portrait for Instagram and TikTok, landscape for YouTube, and flexible ratios for X, Facebook, and LinkedIn." },
+      { type: "p", text: "Different platforms favor different aspect ratios - square and portrait for Instagram and TikTok, landscape for YouTube, and flexible ratios for X, Facebook, and LinkedIn." },
       { type: "p", text: "Some platforms crop images that don't match their preferred ratio. To keep the important part of an image visible everywhere, use a centered composition or upload a version sized for the platform that matters most." },
     ],
   },
@@ -383,12 +383,12 @@ export const HELP_ARTICLES: HelpArticle[] = [
     body: [
       { type: "p", text: "Spanlyfy enforces each platform's limits when you publish. For reference:" },
       { type: "ul", items: [
-        "X — 280-character caption, up to 4 media.",
-        "LinkedIn — 3,000-character caption, up to 9 media.",
-        "Facebook — 5,000-character caption, up to 10 media.",
-        "Instagram — 2,200-character caption, up to 10 media (stories: 1).",
-        "TikTok — 2,200-character caption, up to 35 media.",
-        "YouTube — 5,000-character caption, a single video.",
+        "X - 280-character caption, up to 4 media.",
+        "LinkedIn - 3,000-character caption, up to 9 media.",
+        "Facebook - 5,000-character caption, up to 10 media.",
+        "Instagram - 2,200-character caption, up to 10 media (stories: 1).",
+        "TikTok - 2,200-character caption, up to 35 media.",
+        "YouTube - 5,000-character caption, a single video.",
       ] },
       { type: "p", text: "When several platforms are selected, the composer's character counter uses the strictest caption limit among them." },
     ],
@@ -403,9 +403,9 @@ export const HELP_ARTICLES: HelpArticle[] = [
     body: [
       { type: "h", text: "Plans" },
       { type: "ul", items: [
-        "Creator — $29/mo, up to 15 connected accounts.",
-        "Growth — $49/mo, up to 50 connected accounts.",
-        "Pro — $99/mo, unlimited connected accounts.",
+        "Creator - $29/mo, up to 15 connected accounts.",
+        "Growth - $49/mo, up to 50 connected accounts.",
+        "Pro - $99/mo, unlimited connected accounts.",
       ] },
       { type: "p", text: "Plans are billed by the number of connected accounts. Every plan starts with a 7-day trial, and there's a 7-day money-back window." },
       { type: "h", text: "API add-on" },
@@ -420,7 +420,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     body: [
       { type: "p", text: "Open Settings → Plans to switch plans or toggle between monthly and yearly billing. Upgrades take effect immediately so you can connect more accounts." },
       { type: "h", text: "Downgrading below your account count" },
-      { type: "p", text: "If a downgrade would leave you with more connected accounts than the new plan allows, nothing is deleted — your accounts stay connected. You simply can't add new ones until you're under the new limit, and the Plans screen shows an over-limit notice." },
+      { type: "p", text: "If a downgrade would leave you with more connected accounts than the new plan allows, nothing is deleted - your accounts stay connected. You simply can't add new ones until you're under the new limit, and the Plans screen shows an over-limit notice." },
     ],
   },
   {
@@ -457,7 +457,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "ol", items: [
         "Enter the new email and your current password.",
         "We send a confirmation link to the new address.",
-        "Click the link to confirm — your sign-in email updates once verified.",
+        "Click the link to confirm - your sign-in email updates once verified.",
       ] },
     ],
   },
@@ -467,7 +467,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "account-billing",
     excerpt: "What to do if a payment didn't unlock your account.",
     body: [
-      { type: "p", text: "If you were charged but your plan didn't activate, first sign out and back in — the subscription state refreshes on sign-in. Then check Settings → Billing to confirm the plan and status." },
+      { type: "p", text: "If you were charged but your plan didn't activate, first sign out and back in - the subscription state refreshes on sign-in. Then check Settings → Billing to confirm the plan and status." },
       { type: "p", text: "If you see a duplicate charge or the plan still isn't active, contact support at support@spanly.app with the email on your account and we'll sort it out, including reversing any duplicate." },
     ],
   },
@@ -524,15 +524,15 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "developers",
     excerpt: "Create keys and call the Spanlyfy API programmatically.",
     body: [
-      { type: "p", text: "With the API add-on enabled, create a key under API Keys. The full key is shown once at creation — copy it then; afterwards only a masked preview is stored." },
+      { type: "p", text: "With the API add-on enabled, create a key under API Keys. The full key is shown once at creation - copy it then; afterwards only a masked preview is stored." },
       { type: "h", text: "Authenticating" },
       { type: "p", text: "Send your key as a bearer token:" },
       { type: "code", text: "Authorization: Bearer spb_live_…" },
       { type: "h", text: "Endpoints" },
       { type: "ul", items: [
-        "GET /api/v1/me — your account and plan.",
-        "GET /api/v1/accounts — your connected accounts.",
-        "POST /api/v1/posts — create and publish or schedule a text post.",
+        "GET /api/v1/me - your account and plan.",
+        "GET /api/v1/accounts - your connected accounts.",
+        "POST /api/v1/posts - create and publish or schedule a text post.",
       ] },
       { type: "p", text: "Revoke a key at any time from the same screen; revoked keys stop working immediately." },
     ],
@@ -561,9 +561,9 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "code", text: "POST {your-app-url}/api/mcp\nAuthorization: Bearer spb_live_…" },
       { type: "h", text: "Available tools" },
       { type: "ul", items: [
-        "list_accounts — your connected accounts.",
-        "create_post — publish or schedule a text post.",
-        "get_post_status — check a post's per-account results.",
+        "list_accounts - your connected accounts.",
+        "create_post - publish or schedule a text post.",
+        "get_post_status - check a post's per-account results.",
       ] },
       { type: "p", text: "Create an API key under API Keys, enable the API add-on if you haven't, and point your MCP client at the endpoint with the key as a bearer token." },
     ],

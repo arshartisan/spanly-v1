@@ -22,7 +22,7 @@ import { SubscriptionOverride, type PlanOption } from "@/components/admin/billin
 
 // Tabbed detail panels for an admin user (doc 16). Accessible custom tab switcher (no
 // shadcn Tabs primitive): role="tablist"/"tab"/"tabpanel" + aria-selected, arrow-key
-// roving focus. All data arrives pre-fetched from the RSC as props — never refetched here.
+// roving focus. All data arrives pre-fetched from the RSC as props - never refetched here.
 
 type TabKey = "profile" | "subscription" | "connections" | "posts" | "sessions" | "activity";
 
@@ -155,7 +155,7 @@ function EmptyPanel({ icon: Icon, message }: { icon: React.ComponentType<{ class
 }
 
 function fmtDate(d: Date | string | null | undefined): string {
-  if (!d) return "—";
+  if (!d) return "-";
   return format(new Date(d), "d MMM yyyy, HH:mm");
 }
 
@@ -169,7 +169,7 @@ function ProfilePanel({ user }: { user: AdminUserDetail }) {
           <span className="font-mono text-xs">{user.id}</span>
         </Field>
         <Field label="Email">{user.email}</Field>
-        <Field label="Display name">{user.displayName ?? "—"}</Field>
+        <Field label="Display name">{user.displayName ?? "-"}</Field>
         <Field label="Role">{ROLE_LABEL[user.role]}</Field>
         <Field label="Timezone">{user.timezone}</Field>
         <Field label="Email verified">
@@ -229,14 +229,14 @@ function SubscriptionPanel({
           {sub.providerCustomerId ? (
             <span className="font-mono text-xs">{sub.providerCustomerId}</span>
           ) : (
-            "—"
+            "-"
           )}
         </Field>
         <Field label="PayPal subscription">
           {sub.providerSubId ? (
             <span className="font-mono text-xs">{sub.providerSubId}</span>
           ) : (
-            "—"
+            "-"
           )}
         </Field>
       </dl>

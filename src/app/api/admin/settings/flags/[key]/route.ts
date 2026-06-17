@@ -6,7 +6,7 @@ import { getFlag, setFlag } from "@/server/settings/flags";
 import { flagPatchSchema } from "@/lib/schemas/admin-settings";
 import { clientIp } from "@/server/rate-limit";
 
-// PATCH /api/admin/settings/flags/:key — toggle a feature flag (doc 20). Role: admin, BUT the
+// PATCH /api/admin/settings/flags/:key - toggle a feature flag (doc 20). Role: admin, BUT the
 // global kill switches (signups, publishing) + maintenance-mode require superadmin. Audited
 // with before/after { key, enabled }.
 const SUPERADMIN_ONLY = new Set(["maintenance-mode", "signups", "publishing"]);

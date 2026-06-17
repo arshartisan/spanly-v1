@@ -5,7 +5,7 @@ import { AdminActionError, denyRefund } from "@/server/admin/billing";
 import { denyRefundSchema } from "@/lib/schemas/admin-billing";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/refunds/:id/deny — deny a pending refund (doc 17). Role: admin.
+// POST /api/admin/refunds/:id/deny - deny a pending refund (doc 17). Role: admin.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const actor = await requireRole("admin");

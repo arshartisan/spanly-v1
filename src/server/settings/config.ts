@@ -5,7 +5,7 @@ import { prisma } from "@/server/db";
  * Platform config defaults store (doc 20 sibling of flags.ts). DB-backed, admin-editable
  * scalars that used to be hardcoded consts: trial length, refund window, signups default.
  * Read from the PlatformConfig table with the same short-TTL in-process cache + fallback
- * pattern as flags.ts. Reads NEVER throw — a missing row or an unreachable DB falls back to
+ * pattern as flags.ts. Reads NEVER throw - a missing row or an unreachable DB falls back to
  * the documented default so signup / billing keep working.
  */
 
@@ -47,7 +47,7 @@ export function parseBoolConfig(value: unknown, fallback: boolean): boolean {
   return fallback;
 }
 
-/** Read a raw config value (cached). Returns null on absent row or DB error — never throws. */
+/** Read a raw config value (cached). Returns null on absent row or DB error - never throws. */
 async function readConfig(key: string): Promise<unknown> {
   const now = Date.now();
   const hit = cache.get(key);
@@ -58,7 +58,7 @@ async function readConfig(key: string): Promise<unknown> {
     const row = await prisma.platformConfig.findUnique({ where: { key } });
     value = row?.value ?? null;
   } catch {
-    value = null; // DB unreachable — fall through to the caller's fallback.
+    value = null; // DB unreachable - fall through to the caller's fallback.
   }
   cache.set(key, { value, exp: now + CACHE_TTL_MS });
   return value;
@@ -88,7 +88,7 @@ export interface EditableDefaults {
   signupsDefault: boolean;
 }
 
-/** A partial patch of the editable defaults — only the provided keys are written. */
+/** A partial patch of the editable defaults - only the provided keys are written. */
 export interface EditableDefaultsPatch {
   trialDays?: number;
   refundWindowDays?: number;

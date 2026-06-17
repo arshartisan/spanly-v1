@@ -1,7 +1,7 @@
 /**
- * YoutubeProvider — real YouTube (Shorts) publishing (docs/implementation/02 + 06 + 09).
+ * YoutubeProvider - real YouTube (Shorts) publishing (docs/implementation/02 + 06 + 09).
  *
- * OAuth 2.0 Authorization Code (no PKCE — this is a confidential web app with a client
+ * OAuth 2.0 Authorization Code (no PKCE - this is a confidential web app with a client
  * secret). Google only returns a refresh_token when the consent screen is forced, so the
  * auth URL requests `access_type=offline` + `prompt=consent`; access tokens otherwise expire
  * in ~1h and refresh() relies on that long-lived refresh_token. The signed CSRF `state` is
@@ -68,7 +68,7 @@ function clientSecret(): string {
   return secret;
 }
 
-/** public (default) | unlisted | private — overridable per deployment. */
+/** public (default) | unlisted | private - overridable per deployment. */
 function privacyStatus(): string {
   const v = process.env.YOUTUBE_PRIVACY_STATUS;
   return v === "private" || v === "unlisted" ? v : "public";
@@ -213,7 +213,7 @@ export class YoutubeProvider implements PlatformProvider {
       const contentType = fileRes.headers.get("content-type") ?? "video/mp4";
       const bytes = Buffer.from(await fileRes.arrayBuffer());
 
-      // Step 1 — start a resumable upload session with the video metadata.
+      // Step 1 - start a resumable upload session with the video metadata.
       const metadata = {
         snippet: {
           title: deriveTitle(input.caption),
@@ -243,7 +243,7 @@ export class YoutubeProvider implements PlatformProvider {
         return { ok: false, error: "YouTube did not return a resumable upload URL", retryable: true };
       }
 
-      // Step 2 — PUT the bytes to the session URL in a single request.
+      // Step 2 - PUT the bytes to the session URL in a single request.
       const putRes = await fetch(sessionUrl, {
         method: "PUT",
         headers: {

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Admin audit-log validation (doc 15). Shared by the API route and the admin UI.
 // The list query is parsed from URLSearchParams, so every field is optional + coercible.
-// Audit rows are append-only — this is the only (read) schema; there is no edit/delete.
+// Audit rows are append-only - this is the only (read) schema; there is no edit/delete.
 
 // from/to arrive as ISO date strings on the URL; coerce to Date for the pure where-builder.
 const isoDate = z

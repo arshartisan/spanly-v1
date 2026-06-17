@@ -35,7 +35,7 @@ function extractGraphError(raw: string): GraphError | null {
       return parsed.error;
     }
   } catch {
-    /* not JSON — fall through */
+    /* not JSON - fall through */
   }
   return null;
 }
@@ -103,7 +103,7 @@ export function humanizePublishError(raw: string | null | undefined): FriendlyPu
       };
     }
 
-    // Known Graph error, but not one we special-case — at least show its clean message.
+    // Known Graph error, but not one we special-case - at least show its clean message.
     return {
       message: msg,
       kind: graph.type === "OAuthException" ? "permission" : "generic",

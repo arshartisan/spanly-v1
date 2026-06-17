@@ -1,5 +1,5 @@
 /**
- * InstagramProvider — real Instagram content publishing (docs/implementation/02 + 06 + 09).
+ * InstagramProvider - real Instagram content publishing (docs/implementation/02 + 06 + 09).
  *
  * Instagram can be connected two ways (the user picks in InstagramMethodModal, forwarded as
  * `opts.method` and echoed back in the signed state):
@@ -26,7 +26,7 @@
  *   3. POST .../media_publish   → the published media id
  * Carousels create one child container per item, then a CAROUSEL container referencing them.
  *
- * Note: image_url / video_url must be PUBLICLY reachable — Instagram fetches the bytes itself.
+ * Note: image_url / video_url must be PUBLICLY reachable - Instagram fetches the bytes itself.
  */
 import { PLATFORM_CONFIG } from "@/lib/platforms";
 import type {
@@ -348,7 +348,7 @@ export class InstagramProvider implements PlatformProvider {
         });
       }
 
-      // Videos/reels are processed asynchronously — wait for the container to be ready.
+      // Videos/reels are processed asynchronously - wait for the container to be ready.
       await this.waitForContainer(base, token, creationId);
 
       const mediaId = await this.publishContainer(base, igUserId, token, creationId);

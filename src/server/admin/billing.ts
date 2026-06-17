@@ -15,7 +15,7 @@ import { PLANS, type PlanKey } from "@/server/plans";
 /**
  * Admin billing service (doc 17). Wraps `src/server/billing.ts` + `src/server/paypal.ts`
  * for the staff surface: subscriptions oversight, the refund-request workflow, manual
- * overrides, credits, and a payments view. In mock mode we NEVER call PayPal —
+ * overrides, credits, and a payments view. In mock mode we NEVER call PayPal -
  * refunds/overrides mutate the local rows only.
  */
 
@@ -52,7 +52,7 @@ export interface SubscriptionFilter {
 }
 
 /**
- * Pure mapping from a parsed filter to a Prisma `SubscriptionWhereInput`. No DB calls —
+ * Pure mapping from a parsed filter to a Prisma `SubscriptionWhereInput`. No DB calls -
  * unit-testable in isolation.
  */
 export function buildSubscriptionWhere(
@@ -166,7 +166,7 @@ export async function approveRefund(
   }
 
   if (isOutOfPolicy(request.createdAt) && !opts.force) {
-    throw new AdminActionError(403, "Out of policy — requires force (superadmin).");
+    throw new AdminActionError(403, "Out of policy - requires force (superadmin).");
   }
 
   let providerRefundId: string | null = null;
@@ -264,7 +264,7 @@ export interface SubscriptionOverridePatch {
 
 /**
  * Superadmin manual subscription override. Mock-safe direct write to the local row; in
- * live mode this is an admin override that the next webhook may reconcile — that's an
+ * live mode this is an admin override that the next webhook may reconcile - that's an
  * accepted tradeoff for an exceptional, deliberate staff action. Returns the updated sub.
  */
 export async function overrideSubscription(
@@ -287,7 +287,7 @@ export async function overrideSubscription(
 
 /**
  * Grant account credit (MVP). PayPal has no customer-balance-credit equivalent (unlike
- * Stripe), so this is a recorded no-op in both modes — the audit log at the route captures
+ * Stripe), so this is a recorded no-op in both modes - the audit log at the route captures
  * actor/user/amount/reason, and any actual credit is issued out-of-band (e.g. a refund or a
  * comped period via an override). Kept with the same shape so callers don't change.
  */
@@ -325,7 +325,7 @@ export interface PaymentsResult {
 /**
  * Recent PayPal subscription transactions for a user. Mock mode returns an empty list flagged
  * `mockMode: true` (the UI shows a mock banner). PayPal has no platform-wide charge listing
- * like Stripe, so a call without `userId` returns an empty list — the payments view is
+ * like Stripe, so a call without `userId` returns an empty list - the payments view is
  * per-user (reachable from a user's detail page).
  */
 export async function listPayments(userId?: string): Promise<PaymentsResult> {

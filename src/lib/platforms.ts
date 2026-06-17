@@ -1,7 +1,7 @@
 /**
  * Single source of truth for the 6 supported platforms: capabilities + publishing limits.
  * Used by the composer (doc 06), provider abstraction (doc 02), and the seed.
- * Values are seed defaults — refine against each real platform API in Phase 6.
+ * Values are seed defaults - refine against each real platform API in Phase 6.
  */
 export const PLATFORMS = ["facebook", "instagram", "linkedin", "tiktok", "youtube", "x"] as const;
 export type PlatformKey = (typeof PLATFORMS)[number];
@@ -34,8 +34,10 @@ export const PLATFORM_CONFIG: Record<PlatformKey, PlatformConfig> = {
   linkedin: {
     key: "linkedin",
     label: "LinkedIn",
-    capabilities: ["text", "image", "video"],
-    limits: { captionMax: 3000, mediaMax: 9, videoMaxSeconds: 600, supportsStory: false },
+    // Video is intentionally NOT supported: our LinkedIn live publishing handles image
+    // media only (see providers/linkedin publishImage), so we don't advertise video here.
+    capabilities: ["text", "image"],
+    limits: { captionMax: 3000, mediaMax: 9, supportsStory: false },
   },
   facebook: {
     key: "facebook",

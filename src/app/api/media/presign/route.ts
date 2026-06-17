@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/server/auth";
 import { presignUpload } from "@/server/storage";
 import { presignSchema } from "@/lib/schemas/post";
 
-// POST /api/media/presign (docs/implementation/06) — hand the browser a short-lived PUT URL
+// POST /api/media/presign (docs/implementation/06) - hand the browser a short-lived PUT URL
 // for a direct-to-S3 upload. We don't persist anything yet; that happens in /finalize.
 export async function POST(req: Request) {
   const user = await getCurrentUser();

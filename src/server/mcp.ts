@@ -5,7 +5,7 @@ import { createApiTextPost, getPublishingState } from "@/server/posts";
 
 /**
  * Minimal MCP (Model Context Protocol) server (Phase 11). Exposes a small set of Spanlyfy tools
- * to AI agents over the Streamable-HTTP transport — i.e. JSON-RPC 2.0 messages POSTed to
+ * to AI agents over the Streamable-HTTP transport - i.e. JSON-RPC 2.0 messages POSTed to
  * `/api/mcp`. The transport stays stateless: each request is authenticated by API key (same
  * Bearer + add-on gate as the public v1 API, doc 12) and answered with a single JSON response.
  *

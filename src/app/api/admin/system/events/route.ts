@@ -5,7 +5,7 @@ import { webhookEventQuerySchema } from "@/lib/schemas/admin-ops";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/admin/system/events?source= — webhook/PayPal event log (doc 19). Role: support.
+// GET /api/admin/system/events?source= - webhook/PayPal event log (doc 19). Role: support.
 export async function GET(req: Request) {
   try {
     await requireRole("support");

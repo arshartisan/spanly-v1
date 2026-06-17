@@ -3,7 +3,7 @@ import { requireRole } from "@/server/admin/access";
 import { listSubscriptions } from "@/server/admin/billing";
 import { subscriptionListQuerySchema } from "@/lib/schemas/admin-billing";
 
-// GET /api/admin/subscriptions — list subscriptions with optional filters (doc 17). Role: support.
+// GET /api/admin/subscriptions - list subscriptions with optional filters (doc 17). Role: support.
 export async function GET(req: Request) {
   try {
     await requireRole("support");

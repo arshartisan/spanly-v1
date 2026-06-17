@@ -5,7 +5,7 @@ import { AdminActionError, overrideSubscription } from "@/server/admin/billing";
 import { overrideSubscriptionSchema } from "@/lib/schemas/admin-billing";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/users/:id/subscription — manual subscription override (doc 17). Role: superadmin.
+// POST /api/admin/users/:id/subscription - manual subscription override (doc 17). Role: superadmin.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const actor = await requireRole("superadmin");

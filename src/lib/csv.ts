@@ -1,7 +1,7 @@
 /**
  * Dependency-free CSV parser (RFC 4180-ish) for bulk import (Phase 9 / doc 12 follow-on).
  * Handles quoted fields, embedded commas/newlines, and "" escaped quotes. We avoid a CSV
- * library to keep the dependency surface small — this is the only place we parse CSV.
+ * library to keep the dependency surface small - this is the only place we parse CSV.
  */
 
 /** Parse raw CSV text into rows of string cells. Blank trailing lines are dropped. */

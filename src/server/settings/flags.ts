@@ -7,7 +7,7 @@ import { PLATFORMS } from "@/lib/platforms";
  * Platform settings & feature-flag store (doc 20). A DB-backed kill-switch / config
  * layer read by both the admin UI and the customer app's gates.
  *
- * THE #1 RULE: a MISSING / unknown flag row defaults to ENABLED — an absent flag must
+ * THE #1 RULE: a MISSING / unknown flag row defaults to ENABLED - an absent flag must
  * NEVER block the product (no row should ever break signup or publishing). The single
  * exception is `maintenance-mode`, which defaults to OFF (absent = not in maintenance);
  * see DEFAULT_OFF below.
@@ -56,7 +56,7 @@ function defaultEnabled(key: string): boolean {
 
 // ─────────────────────────── In-process cache ───────────────────────────
 
-const CACHE_TTL_MS = 20_000; // 20s — long enough to cheapen the gates, short enough that a kill switch lands fast.
+const CACHE_TTL_MS = 20_000; // 20s - long enough to cheapen the gates, short enough that a kill switch lands fast.
 
 interface CachedFlag {
   enabled: boolean;
@@ -77,7 +77,7 @@ function invalidate(key?: string): void {
 /**
  * Whether a flag is enabled. Served from the cache; a missing/unknown row defaults to
  * `true` (except `maintenance-mode` → false). This default rule is the kill-switch
- * safety net — never let an absent row break the product.
+ * safety net - never let an absent row break the product.
  */
 export async function isEnabled(key: string): Promise<boolean> {
   const now = Date.now();
@@ -165,7 +165,7 @@ export async function activeAnnouncements(user: AudienceUser): Promise<Announcem
   return rows.filter((a) => matchesAudience(a.audience, user));
 }
 
-/** All announcements, newest first (admin list — no window/audience filtering). */
+/** All announcements, newest first (admin list - no window/audience filtering). */
 export async function listAnnouncements(): Promise<Announcement[]> {
   return prisma.announcement.findMany({ orderBy: { createdAt: "desc" } });
 }

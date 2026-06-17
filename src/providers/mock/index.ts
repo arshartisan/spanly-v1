@@ -1,5 +1,5 @@
 /**
- * MockProvider (docs/implementation/02) — drives the whole app with no real platform
+ * MockProvider (docs/implementation/02) - drives the whole app with no real platform
  * credentials. getAuthUrl points at an internal mock consent page; publish simulates a
  * post and can be forced to fail per-platform via MOCK_FAIL_PLATFORMS.
  */

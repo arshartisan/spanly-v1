@@ -23,7 +23,7 @@ vi.mock("@/server/db", () => ({
   },
 }));
 
-// config.ts' exported surface — re-bound fresh in beforeEach so the module-level cache resets.
+// config.ts' exported surface - re-bound fresh in beforeEach so the module-level cache resets.
 type ConfigModule = typeof import("./config");
 let config: ConfigModule;
 

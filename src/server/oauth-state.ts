@@ -8,7 +8,7 @@ import type { PlatformKey } from "@/lib/platforms";
  * verified in the callback. Format: base64url(payload).hmacSha256(payload).
  *
  * HMAC keyed by NEXTAUTH_SECRET (already required by the app). State is opaque to the
- * provider and carries no secrets — only who started the flow and for which platform.
+ * provider and carries no secrets - only who started the flow and for which platform.
  */
 const STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 

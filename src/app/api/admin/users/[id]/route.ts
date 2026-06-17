@@ -7,7 +7,7 @@ import { updateUserSchema } from "@/lib/schemas/admin-users";
 import { gdprActionSchema } from "@/lib/schemas/admin-support";
 import { clientIp } from "@/server/rate-limit";
 
-// PATCH /api/admin/users/:id — update displayName/email (doc 16). Role: admin.
+// PATCH /api/admin/users/:id - update displayName/email (doc 16). Role: admin.
 // Email is non-secret and safe to audit; a staff email change resets emailVerified.
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -38,7 +38,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 }
 
-// DELETE /api/admin/users/:id — GDPR hard delete (doc 21). Role: superadmin.
+// DELETE /api/admin/users/:id - GDPR hard delete (doc 21). Role: superadmin.
 // Blocked for self, superadmins, and users with an active paid subscription (cancel first).
 // Cascades per Prisma relations; audits the reason only.
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {

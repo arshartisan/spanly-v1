@@ -25,7 +25,7 @@ export type PlanAdminRow = Plan & { subscriberCount: number };
  * Every plan (incl. inactive), ordered by `rank`, each with its live subscriber count
  * (active | trialing | past_due). The counts are fetched in ONE `groupBy` and mapped, so
  * this is a single extra query regardless of how many plans exist. accountLimit -1 is left
- * as -1 so the UI can render "Unlimited" (not converted to Infinity — JSON-unsafe).
+ * as -1 so the UI can render "Unlimited" (not converted to Infinity - JSON-unsafe).
  */
 export async function listPlansAdmin(): Promise<PlanAdminRow[]> {
   const [plans, grouped] = await Promise.all([
@@ -82,7 +82,7 @@ export async function createPlan(actorId: string, input: PlanCreateInput): Promi
 }
 
 /**
- * Patch a plan (only the provided fields). `key` is immutable — it's never accepted here,
+ * Patch a plan (only the provided fields). `key` is immutable - it's never accepted here,
  * since changing it would orphan every subscription on the old key. Guards: 404 if missing.
  * Invalidates the catalog cache. Returns the updated row (the route logs before/after).
  */
@@ -102,7 +102,7 @@ export async function updatePlan(
 }
 
 /**
- * Delete a plan tier. Guards (critical — must never silently break existing subscribers):
+ * Delete a plan tier. Guards (critical - must never silently break existing subscribers):
  *  - 404 if the plan does not exist;
  *  - 409 if ANY live subscriber is on it (guides the admin to set `active:false` instead);
  *  - 409 if it is the LAST active plan (never leave the catalog with zero active tiers).
@@ -117,7 +117,7 @@ export async function deletePlan(actorId: string, key: string): Promise<void> {
   if (subscribers > 0) {
     throw new AdminActionError(
       409,
-      `${subscribers} subscriber${subscribers === 1 ? " is" : "s are"} on this plan — migrate or cancel them first, or set the plan inactive instead of deleting it.`,
+      `${subscribers} subscriber${subscribers === 1 ? " is" : "s are"} on this plan - migrate or cancel them first, or set the plan inactive instead of deleting it.`,
     );
   }
 
@@ -128,7 +128,7 @@ export async function deletePlan(actorId: string, key: string): Promise<void> {
     if (otherActive === 0) {
       throw new AdminActionError(
         409,
-        "Cannot delete the last active plan — create or activate another plan first.",
+        "Cannot delete the last active plan - create or activate another plan first.",
       );
     }
   }

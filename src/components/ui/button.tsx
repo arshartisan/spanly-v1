@@ -42,7 +42,7 @@ export interface ButtonProps
   /**
    * Shows a leading spinner and disables the button while an async action is in
    * flight, so it can't be triggered twice. Also sets `aria-busy`. Ignored for
-   * `asChild` (Slot requires a single child — those are navigation, not actions).
+   * `asChild` (Slot requires a single child - those are navigation, not actions).
    * For buttons with their own leading icon, hide it while loading
    * (`{!loading && <Icon />}`) so the spinner takes its place instead of stacking.
    */

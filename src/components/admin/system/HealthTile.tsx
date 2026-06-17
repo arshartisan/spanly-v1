@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import type { DependencyHealth } from "@/server/admin/ops";
 
 // Presentational dependency-health tile for /admin/system (doc 19). Green when the probe is
-// "ok", red when "error" — with the measured latency in ms. Keeps the System page tidy.
+// "ok", red when "error" - with the measured latency in ms. Keeps the System page tidy.
 
 export function HealthTile({
   icon: Icon,

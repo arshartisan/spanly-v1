@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   const user = await prisma.user.findUnique({ where: { email: parsed.data.email.toLowerCase() } });
 
   // Only send when the user exists, but ALWAYS respond 200 (don't leak which
-  // emails are registered — doc 03).
+  // emails are registered - doc 03).
   if (user) {
     const token = await issueToken(user.id, "reset_password", RESET_TTL_MS);
     const resetUrl = `${process.env.APP_URL ?? "http://localhost:3000"}/reset?token=${token}`;

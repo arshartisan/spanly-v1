@@ -14,7 +14,7 @@ import {
 } from "@/components/admin/content/display";
 import { TYPE_LABEL } from "@/lib/post-display";
 
-// Admin post detail (doc 18) — RSC. Reads the full post via getPostDetail() and renders the
+// Admin post detail (doc 18) - RSC. Reads the full post via getPostDetail() and renders the
 // author, caption, media thumbnails, and per-target status/URL/error. Admins additionally get
 // the Cancel/Takedown moderation actions. 404s on a missing id. Never leaks tokens.
 

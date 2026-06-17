@@ -5,7 +5,7 @@ import { Instagram, Facebook, X } from "lucide-react";
 /**
  * Instagram connect-method chooser (docs/implementation/05 + 14). Instagram can be linked
  * either directly ("Login with Instagram") or via a connected Facebook Page
- * ("Login with Facebook" — Business/Creator accounts). The choice is forwarded as ?method=.
+ * ("Login with Facebook" - Business/Creator accounts). The choice is forwarded as ?method=.
  * Lightweight modal (no Radix Dialog dependency).
  */
 export function InstagramMethodModal({ open, onClose }: { open: boolean; onClose: () => void }) {

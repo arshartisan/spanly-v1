@@ -1,5 +1,5 @@
 /**
- * TiktokProvider — real TikTok Content Posting (docs/implementation/02 + 06 + 09).
+ * TiktokProvider - real TikTok Content Posting (docs/implementation/02 + 06 + 09).
  *
  * OAuth 2.0 Authorization Code + PKCE (TikTok Login Kit). Like XProvider we hold no
  * server-side store for the PKCE code_verifier; it is derived deterministically from the
@@ -23,7 +23,7 @@
  *   4. poll status/fetch on the publish_id until PUBLISH_COMPLETE / FAILED
  *
  * Videos use FILE_UPLOAD (we fetch the bytes and push them) so no developer-portal domain
- * verification is needed. Photos only support PULL_FROM_URL — the media URL's domain must be
+ * verification is needed. Photos only support PULL_FROM_URL - the media URL's domain must be
  * verified in the TikTok app settings for those to succeed.
  *
  * Requires (env): TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET, NEXTAUTH_SECRET (app-wide).
@@ -51,7 +51,7 @@ const CONTENT_INIT_URL = "https://open.tiktokapis.com/v2/post/publish/content/in
 const STATUS_URL = "https://open.tiktokapis.com/v2/post/publish/status/fetch/";
 
 const SCOPES = ["user.info.basic", "video.publish"];
-const CHUNK_SIZE = 64 * 1024 * 1024; // 64 MB — TikTok's max chunk size for FILE_UPLOAD
+const CHUNK_SIZE = 64 * 1024 * 1024; // 64 MB - TikTok's max chunk size for FILE_UPLOAD
 
 function clientKey(): string {
   const key = process.env.TIKTOK_CLIENT_KEY;
@@ -107,7 +107,7 @@ interface TokenResponse {
   token_type?: string;
 }
 
-/** TikTok wraps every API response in { data, error } — error.code === "ok" means success. */
+/** TikTok wraps every API response in { data, error } - error.code === "ok" means success. */
 interface TiktokEnvelope<T> {
   data?: T;
   error?: { code: string; message?: string; log_id?: string };
@@ -255,7 +255,7 @@ export class TiktokProvider implements PlatformProvider {
     const data = await this.postJson<{ privacy_level_options?: string[] }>(CREATOR_INFO_URL, token, {});
     const options = data?.privacy_level_options ?? [];
     // Public when the account allows it (audited app + public account). Otherwise prefer
-    // SELF_ONLY ("Only me") — this is the only level an unaudited/sandbox client may use, and
+    // SELF_ONLY ("Only me") - this is the only level an unaudited/sandbox client may use, and
     // it's the safest default for a private account rather than silently posting follower-visible.
     if (options.includes("PUBLIC_TO_EVERYONE")) return "PUBLIC_TO_EVERYONE";
     if (options.includes("SELF_ONLY")) return "SELF_ONLY";
@@ -381,7 +381,7 @@ export class TiktokProvider implements PlatformProvider {
     display_name?: string;
     avatar_url?: string;
   }> {
-    // Only request fields covered by user.info.basic — `username` needs user.info.profile,
+    // Only request fields covered by user.info.basic - `username` needs user.info.profile,
     // and asking for a field outside the granted scopes makes the whole request error out.
     const res = await fetch(`${USER_INFO_URL}?${new URLSearchParams({
       fields: "open_id,union_id,avatar_url,display_name",

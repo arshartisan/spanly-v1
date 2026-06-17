@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ops.ts imports "server-only" (a Next build alias, not a real module in a plain vitest
 // run). Stub it. We mock @/server/db (prisma), @/server/redis (the ioredis client), the
-// BullMQ producer clients in @/server/queue, and the bare `bullmq` Queue constructor — so
+// BullMQ producer clients in @/server/queue, and the bare `bullmq` Queue constructor - so
 // the unit under test never touches a real Redis/DB. Every queue handle is a plain spy.
 vi.mock("server-only", () => ({}));
 
 // All spies live in a single vi.hoisted() block so the (hoisted) vi.mock factories below
-// can safely reference them — top-level `const`s would not be initialized yet when the
+// can safely reference them - top-level `const`s would not be initialized yet when the
 // hoisted factories run. One bag of spies per queue. publish + maintenance come from
 // @/server/queue; the `media` queue is built lazily inside ops.ts via `new Queue(...)`, so
 // we also mock the bare `bullmq` constructor to return the same media spy bag. Every code
@@ -117,7 +117,7 @@ function allQueuesHealthy() {
 }
 
 // ═══════════════════════════ PURE: classifyError ═══════════════════════════
-// Acceptance: failed jobs grouped by error class — this is the per-error normalizer.
+// Acceptance: failed jobs grouped by error class - this is the per-error normalizer.
 
 describe("classifyError (pure → coarse error class)", () => {
   it("null → 'Unknown' (the impl's sentinel)", () => {
@@ -253,7 +253,7 @@ describe("buildWebhookEventWhere (pure → Prisma.WebhookEventWhereInput)", () =
 // ═══════════════════════════ getSystemHealth (mock prisma + redis) ═══════════════════════════
 // Acceptance: "Health tiles flip red when a dependency is down." + degrade, never throw.
 
-describe("getSystemHealth (defensive — degrades, never throws)", () => {
+describe("getSystemHealth (defensive - degrades, never throws)", () => {
   it("db ok + redis ok → healthy:true, both 'ok', latencyMs is a number ≥ 0", async () => {
     queryRaw.mockResolvedValue([{ "?column?": 1 }]);
     redisPing.mockResolvedValue("PONG");
@@ -318,7 +318,7 @@ describe("getSystemHealth (defensive — degrades, never throws)", () => {
 });
 
 // ═══════════════════════════ getQueueCounts (mock queues + redis) ═══════════════════════════
-// Edge case: "handle Redis-down gracefully" — degrade per queue, never throw.
+// Edge case: "handle Redis-down gracefully" - degrade per queue, never throw.
 
 describe("getQueueCounts (defensive per-queue counts)", () => {
   it("all queues return counts → redisOk:true, each entry has populated counts", async () => {
@@ -536,7 +536,7 @@ describe("removeJob", () => {
 });
 
 // ═══════════════════════════ runMaintenance ═══════════════════════════
-// Edge case: triggering a sweep is safe/repeatable — uses a UNIQUE manual jobId, not the
+// Edge case: triggering a sweep is safe/repeatable - uses a UNIQUE manual jobId, not the
 // repeatable id, so it can never dedup against the scheduled repeatable.
 
 describe("runMaintenance", () => {
@@ -572,7 +572,7 @@ describe("runMaintenance", () => {
 
   it("two manual runs of the same task get distinct jobIds (no dedup)", async () => {
     maintenanceSpies.add.mockResolvedValue({});
-    // Date.now()-keyed jobId — drive the clock so the two ids are guaranteed distinct.
+    // Date.now()-keyed jobId - drive the clock so the two ids are guaranteed distinct.
     const nowSpy = vi.spyOn(Date, "now");
     nowSpy.mockReturnValueOnce(1000).mockReturnValueOnce(2000);
 

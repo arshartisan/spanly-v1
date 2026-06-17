@@ -290,7 +290,7 @@ describe("listPosts (cursor pagination)", () => {
 // ─────────────────────────── cancelPost ───────────────────────────
 
 describe("cancelPost (guards + partial-outcome honesty)", () => {
-  it("throws 404 when the post is missing — no queue/transaction work", async () => {
+  it("throws 404 when the post is missing - no queue/transaction work", async () => {
     postFindUnique.mockResolvedValue(null);
     const err = await catchThrown(() => cancelPost("u_admin", "p_x", "spam"));
     expect((err as AdminActionError).status).toBe(404);
@@ -299,7 +299,7 @@ describe("cancelPost (guards + partial-outcome honesty)", () => {
   });
 
   it.each(["posted", "draft", "canceled", "removed", "failed"] as const)(
-    "throws 409 when status is %s (not cancelable) — never queues or transacts",
+    "throws 409 when status is %s (not cancelable) - never queues or transacts",
     async (status) => {
       postFindUnique.mockResolvedValue({ id: "p_1", status });
       const err = await catchThrown(() => cancelPost("u_admin", "p_1", "spam"));
@@ -428,14 +428,14 @@ describe("takedownPost (post → removed, pending canceled, success untouched)",
 // ─────────────────────────── forceDisconnect ───────────────────────────
 
 describe("forceDisconnect (soft-delete guards + token safety)", () => {
-  it("throws 404 when the account is not found — no update", async () => {
+  it("throws 404 when the account is not found - no update", async () => {
     accountFindUnique.mockResolvedValue(null);
     const err = await catchThrown(() => forceDisconnect("u_admin", "acc_x", "abuse"));
     expect((err as AdminActionError).status).toBe(404);
     expect(accountUpdate).not.toHaveBeenCalled();
   });
 
-  it("throws 409 when already disconnected (disconnectedAt set) — no update", async () => {
+  it("throws 409 when already disconnected (disconnectedAt set) - no update", async () => {
     accountFindUnique.mockResolvedValue({
       id: "acc_1",
       disconnectedAt: new Date("2026-01-01T00:00:00.000Z"),

@@ -14,7 +14,7 @@ import {
   VerifiedPill,
 } from "@/components/admin/users/display";
 
-// Admin user list (doc 16) — RSC. Parses the URL query with the shared Zod schema,
+// Admin user list (doc 16) - RSC. Parses the URL query with the shared Zod schema,
 // reads via listUsers(), and renders a glass table with the same warm-dark styling as
 // the rest of the admin surface. Filters live in the client <UserFilters/>; pagination
 // is a plain "Load more" link that appends the returned cursor.

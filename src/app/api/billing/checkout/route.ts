@@ -8,7 +8,7 @@ const schema = z.object({
   interval: z.enum(["month", "year"]),
 });
 
-// POST /api/billing/checkout — start a subscription checkout (doc 10). Returns { url } for the
+// POST /api/billing/checkout - start a subscription checkout (doc 10). Returns { url } for the
 // client to redirect to (live: PayPal subscription approval; mock: internal mock checkout page).
 export async function POST(req: Request) {
   const user = await getCurrentUser();

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/server/admin/access";
 import { listFlags } from "@/server/settings/flags";
 
-// GET /api/admin/settings/flags — list stored feature-flag rows (doc 20). Role: admin.
+// GET /api/admin/settings/flags - list stored feature-flag rows (doc 20). Role: admin.
 // The UI merges these with KNOWN_FLAGS so unseeded keys still show as default-enabled.
 export async function GET() {
   try {

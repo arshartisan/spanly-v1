@@ -15,13 +15,13 @@ import {
 // Authenticated shell (doc 04). Server component: full DB session validation here
 // (middleware only checked cookie presence). Wraps every /(app)/* page. Also surfaces the
 // platform-settings banners (doc 20): active customer announcements + a maintenance-mode
-// notice. Staff are never blocked — the maintenance banner is informational only here;
+// notice. Staff are never blocked - the maintenance banner is informational only here;
 // read-only enforcement of mutations is out of scope for this UI task (banner only).
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getSessionContext();
   // No valid session. If a (now-invalid) session cookie is still present, middleware lets
   // protected routes through on cookie *presence* alone, then bounces /login back here on the
-  // same cookie — an infinite 307 loop. Route through the logout endpoint, which clears the
+  // same cookie - an infinite 307 loop. Route through the logout endpoint, which clears the
   // stale cookie server-side, so /login is reached cookie-free and renders normally.
   if (!ctx) redirect("/api/auth/logout");
   const { user, impersonatorId } = ctx;
@@ -66,7 +66,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               >
                 <Wrench className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 <p className="leading-snug">
-                  Spanlyfy is in maintenance mode. Some actions may be temporarily unavailable —
+                  Spanlyfy is in maintenance mode. Some actions may be temporarily unavailable -
                   thanks for your patience.
                 </p>
               </div>

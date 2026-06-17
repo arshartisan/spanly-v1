@@ -12,7 +12,7 @@ import { PlatformChip, PostStatusBadge } from "@/components/admin/content/displa
 import { TYPE_LABEL, snippet } from "@/lib/post-display";
 import { cn } from "@/lib/utils";
 
-// Admin cross-user content list (doc 18) — RSC. Parses the URL query with the shared Zod
+// Admin cross-user content list (doc 18) - RSC. Parses the URL query with the shared Zod
 // schema, reads via listPosts(), and renders the subscriptions-style glass table. Filters
 // live in the client <ContentFilters/>; pagination is a plain "Load more" link that appends
 // the returned cursor (mirrors the users list page).
@@ -157,7 +157,7 @@ function ContentRow({ post }: { post: AdminPostListItem }) {
             ))}
           </div>
         ) : (
-          <span className="text-xs text-muted-foreground">—</span>
+          <span className="text-xs text-muted-foreground">-</span>
         )}
       </Td>
       <Td className="whitespace-nowrap text-muted-foreground">
@@ -166,7 +166,7 @@ function ContentRow({ post }: { post: AdminPostListItem }) {
         ) : post.publishAt ? (
           <span>{format(new Date(post.publishAt), "d MMM yyyy, HH:mm")}</span>
         ) : (
-          <span className="text-xs">—</span>
+          <span className="text-xs">-</span>
         )}
       </Td>
       <Td className="text-right">

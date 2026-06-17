@@ -31,7 +31,7 @@ export function ModeToggle() {
   );
 }
 
-// Reusable theme rows — also embedded inside other menus (e.g. AccountMenu).
+// Reusable theme rows - also embedded inside other menus (e.g. AccountMenu).
 export function ThemeItems() {
   const { setTheme, theme } = useTheme();
   const options = [

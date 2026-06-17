@@ -21,7 +21,7 @@ import { parseCsvWithHeader } from "@/lib/csv";
 /**
  * Bulk-import service (Phase 9). Parses a CSV into many posts, reusing the exact composer
  * rules (validatePostTargets) and the same create/schedule/queue paths as the single-post
- * flow — so a bulk import can never bypass per-platform limits, capability checks, or the
+ * flow - so a bulk import can never bypass per-platform limits, capability checks, or the
  * future-time rule. `validate` is a pure preview (no writes); `commit` performs the writes.
  */
 

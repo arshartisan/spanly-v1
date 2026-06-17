@@ -31,7 +31,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   weeklyPostingGoal: 0,
 };
 
-// PATCH /api/settings — partial update of profile columns + settings JSON. All optional.
+// PATCH /api/settings - partial update of profile columns + settings JSON. All optional.
 export const settingsPatchSchema = z.object({
   displayName: z.string().min(1).max(60).optional(),
   avatarUrl: z.string().url().nullable().optional(),

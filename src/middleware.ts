@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-// Edge middleware: cheap gate on the session-cookie's PRESENCE only — no DB/Prisma
+// Edge middleware: cheap gate on the session-cookie's PRESENCE only - no DB/Prisma
 // on the edge (D-012). The (app) layout does full DB validation and will bounce a
 // stale/invalid cookie to /login. Authed users hitting an auth page go to /dashboard.
 

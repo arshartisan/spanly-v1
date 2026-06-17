@@ -5,7 +5,7 @@ import { getCurrentUser, hashPassword, verifyPassword } from "@/server/auth";
 import { SESSION_COOKIE } from "@/server/auth";
 import { cookies } from "next/headers";
 
-// POST /api/auth/change-password — change password from the Security/Password card (doc 11A).
+// POST /api/auth/change-password - change password from the Security/Password card (doc 11A).
 // Requires the current password; invalidates all OTHER sessions but keeps this one signed in.
 export async function POST(req: Request) {
   const user = await getCurrentUser();

@@ -5,7 +5,7 @@ import { AdminActionError, forceDisconnect } from "@/server/admin/content";
 import { moderationActionSchema } from "@/lib/schemas/admin-content";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/connections/:id/disconnect — force soft-delete an account (doc 18). Role: admin.
+// POST /api/admin/connections/:id/disconnect - force soft-delete an account (doc 18). Role: admin.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const actor = await requireRole("admin");

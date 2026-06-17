@@ -6,7 +6,7 @@ import { mailer } from "@/server/mailer";
 
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
 
-// POST /api/auth/change-email — change email from the Email card (doc 11A). Requires the
+// POST /api/auth/change-email - change email from the Email card (doc 11A). Requires the
 // password; sets the new email unverified and sends a re-verification link (D-013 mailer).
 export async function POST(req: Request) {
   const user = await getCurrentUser();

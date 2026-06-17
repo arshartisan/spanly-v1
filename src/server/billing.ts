@@ -53,7 +53,7 @@ export async function getPaypalSubscription(id: string): Promise<PaypalSubscript
 
 /**
  * Start a subscription checkout for (plan, interval).
- * - live: create a PayPal subscription and return its approval URL. No local row is written —
+ * - live: create a PayPal subscription and return its approval URL. No local row is written -
  *   the BILLING.SUBSCRIPTION.ACTIVATED webhook creates/updates it (PayPal is the truth).
  * - mock: redirect to the internal mock checkout page (which completes via /api/billing/mock).
  */
@@ -94,7 +94,7 @@ export async function createCheckout(
  * billing page reflects the new plan/add-on immediately, instead of waiting for the async
  * ACTIVATED webhook (which races the redirect and leaves the page stale until a manual refresh).
  *
- * Idempotent and safe to run alongside the webhook — both funnel through the same upserts. The
+ * Idempotent and safe to run alongside the webhook - both funnel through the same upserts. The
  * `custom_id` guard prevents a crafted `?subscription_id` from syncing someone else's
  * subscription onto the current account. No-op in mock mode or for unmappable subscriptions.
  */
@@ -172,7 +172,7 @@ export async function toggleApiAddon(userId: string, enable: boolean): Promise<A
       });
       const url = approveLink(created.links);
       if (!url) throw new Error("PayPal did not return an approval URL for the add-on.");
-      // Not active yet — the webhook sets apiAddonActive=true once the add-on sub activates.
+      // Not active yet - the webhook sets apiAddonActive=true once the add-on sub activates.
       return { enabled: false, url };
     }
     if (sub.providerAddonSubId) {
@@ -197,7 +197,7 @@ export type RefundResult = { ok: true; message: string } | { ok: false; message:
 
 /**
  * Request a refund (D-016). Within the refund window we record the request + notify support;
- * outside it we deny. No automatic PayPal refund here — staff issue it from the admin queue.
+ * outside it we deny. No automatic PayPal refund here - staff issue it from the admin queue.
  */
 export async function requestRefund(userId: string, email: string): Promise<RefundResult> {
   const sub = await prisma.subscription.findUnique({ where: { userId } });
@@ -217,7 +217,7 @@ export async function requestRefund(userId: string, email: string): Promise<Refu
   }
 
   // In-policy: record an actionable refund request for the admin queue (doc 17). Don't
-  // create a duplicate if one is already pending for this user — still return ok.
+  // create a duplicate if one is already pending for this user - still return ok.
   const existingPending = await prisma.refundRequest.findFirst({
     where: { userId, status: "pending" },
     select: { id: true },
@@ -239,10 +239,10 @@ export async function requestRefund(userId: string, email: string): Promise<Refu
 
   await mailer.send({
     to: "support@spanly.app",
-    subject: `Refund request — ${email}`,
+    subject: `Refund request - ${email}`,
     text: `User ${userId} (${email}) requested a refund on plan ${sub.plan}/${sub.interval}.`,
   });
-  return { ok: true, message: "Refund request received — our team will process it within 2 business days." };
+  return { ok: true, message: "Refund request received - our team will process it within 2 business days." };
 }
 
 // ─────────────────────────── Subscription sync (shared) ───────────────────────────
@@ -328,7 +328,7 @@ export function mapPaypalStatus(s: string): Subscription["status"] {
       return "active";
     case "APPROVAL_PENDING":
     case "APPROVED":
-      return "trialing"; // pending activation — treated as in-trial until ACTIVATED
+      return "trialing"; // pending activation - treated as in-trial until ACTIVATED
     case "SUSPENDED":
       return "paused";
     default:

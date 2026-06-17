@@ -5,7 +5,7 @@ import { createAnnouncement, listAnnouncements } from "@/server/settings/flags";
 import { announcementCreateSchema } from "@/lib/schemas/admin-settings";
 import { clientIp } from "@/server/rate-limit";
 
-// GET /api/admin/settings/announcements — list all announcements (doc 20). Role: admin.
+// GET /api/admin/settings/announcements - list all announcements (doc 20). Role: admin.
 export async function GET() {
   try {
     await requireRole("admin");
@@ -17,7 +17,7 @@ export async function GET() {
   }
 }
 
-// POST /api/admin/settings/announcements — create an announcement (doc 20). Role: admin.
+// POST /api/admin/settings/announcements - create an announcement (doc 20). Role: admin.
 export async function POST(req: Request) {
   try {
     const actor = await requireRole("admin");

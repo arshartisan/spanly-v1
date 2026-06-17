@@ -41,7 +41,7 @@ export function ImpersonationBanner({ email }: { email: string }) {
         <Eye className="h-4 w-4 shrink-0" aria-hidden />
         <span className="leading-snug">
           You are viewing as{" "}
-          <span className="font-semibold text-amber-100">{email}</span> — staff impersonation.
+          <span className="font-semibold text-amber-100">{email}</span> - staff impersonation.
         </span>
         {error ? <span className="text-xs text-status-failed">{error}</span> : null}
       </div>

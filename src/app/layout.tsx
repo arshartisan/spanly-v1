@@ -11,7 +11,7 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-// Neue Machina — display/title face (Pangram Pangram, personal-use license).
+// Neue Machina - display/title face (Pangram Pangram, personal-use license).
 const neueMachina = localFont({
   src: [
     { path: "./fonts/neuemachina-light.otf", weight: "300", style: "normal" },
@@ -23,7 +23,7 @@ const neueMachina = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Spanlyfy — Social scheduling, simplified",
+  title: "Spanlyfy - Social scheduling, simplified",
   description:
     "Schedule and publish content across Facebook, Instagram, LinkedIn, TikTok, YouTube, and X from one place.",
 };

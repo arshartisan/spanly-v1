@@ -5,7 +5,7 @@ import { AdminActionError, grantCredit } from "@/server/admin/billing";
 import { grantCreditSchema } from "@/lib/schemas/admin-billing";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/users/:id/credit — grant account credit (doc 17). Role: superadmin.
+// POST /api/admin/users/:id/credit - grant account credit (doc 17). Role: superadmin.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const actor = await requireRole("superadmin");

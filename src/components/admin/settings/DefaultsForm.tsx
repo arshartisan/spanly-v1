@@ -70,7 +70,7 @@ export function DefaultsForm({ initial }: { initial: EditableDefaults }) {
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <p className="text-xs text-muted-foreground">
-        These were previously code constants. Edits take effect within seconds — no deploy
+        These were previously code constants. Edits take effect within seconds - no deploy
         required.
       </p>
 

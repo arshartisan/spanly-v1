@@ -103,17 +103,17 @@ export function BillingPanel({
     <div className="flex flex-col gap-4">
       {mode === "mock" && <MockNotice />}
       {params.get("subscribed") === "1" && (
-        <Banner tone="success">Subscribed — your 7-day trial has started.</Banner>
+        <Banner tone="success">Subscribed - your 7-day trial has started.</Banner>
       )}
       {params.get("canceled") === "1" && <Banner tone="muted">Your subscription was canceled.</Banner>}
       {params.get("addon") === "1" && (
-        <Banner tone="success">API add-on approved — it&apos;ll activate shortly.</Banner>
+        <Banner tone="success">API add-on approved - it&apos;ll activate shortly.</Banner>
       )}
 
       {subscription.interval === "month" && !isCanceled && (
         <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 p-4">
           <p className="text-sm">
-            Save ~2 months with annual billing —{" "}
+            Save ~2 months with annual billing -{" "}
             <span className="font-medium">${def?.yearly ?? 0}/yr</span>.
           </p>
           <Button asChild size="sm" variant="outline">
@@ -190,7 +190,7 @@ export function BillingPanel({
               {addon ? "Active" : "Inactive"}
             </span>
           </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">API add-on — $5/mo.</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">API add-on - $5/mo.</p>
         </div>
         <Button
           variant="outline"
@@ -221,7 +221,7 @@ export function BillingPanel({
 function MockNotice() {
   return (
     <div className="rounded-lg border border-dashed bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-      Billing is in <span className="font-medium">mock mode</span> — checkout uses an internal
+      Billing is in <span className="font-medium">mock mode</span> - checkout uses an internal
       stand-in (no PayPal account needed). Set <code>BILLING_MODE=live</code> + PayPal keys to
       switch on real payments.
     </div>

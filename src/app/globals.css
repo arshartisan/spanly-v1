@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /*
- * Spanlyfy theme — warm orange accent on deep charcoal surfaces with a glassmorphism
+ * Spanlyfy theme - warm orange accent on deep charcoal surfaces with a glassmorphism
  * treatment. HSL channels (space-separated) are consumed by tailwind.config.ts +
  * shadcn/ui, and re-used directly via hsl(var(--token) / <alpha>) in the glass utilities.
  */
@@ -41,7 +41,7 @@
 
     --radius: 0.875rem;
 
-    /* Status colors — badges/chips (doc 14) */
+    /* Status colors - badges/chips (doc 14) */
     --status-posted: 142 68% 42%; /* green */
     --status-scheduled: 217 91% 60%; /* blue */
     --status-draft: 38 92% 50%; /* amber */
@@ -49,7 +49,7 @@
   }
 
   .dark {
-    /* Deep warm charcoal — near-black with an orange undertone */
+    /* Deep warm charcoal - near-black with an orange undertone */
     --background: 20 14% 5%;
     --foreground: 30 25% 96%;
 
@@ -67,11 +67,11 @@
     --secondary: 24 12% 16%;
     --secondary-foreground: 30 25% 96%;
 
-    /* Page background — the deepest surface so cards/sidebar layer above it */
+    /* Page background - the deepest surface so cards/sidebar layer above it */
     --muted: 20 14% 4%;
     --muted-foreground: 30 8% 62%;
 
-    /* Warm orange-tinted dark — active nav / hover surfaces */
+    /* Warm orange-tinted dark - active nav / hover surfaces */
     --accent: 24 40% 16%;
     --accent-foreground: 26 96% 68%;
 
@@ -82,7 +82,7 @@
     --input: 26 16% 18%;
     --ring: 24 94% 54%;
 
-    /* Status colors — badges/chips (doc 14) */
+    /* Status colors - badges/chips (doc 14) */
     --status-posted: 142 64% 45%; /* green */
     --status-scheduled: 217 91% 62%; /* blue */
     --status-draft: 38 92% 52%; /* amber */
@@ -101,7 +101,7 @@
    * Neue Machina for all titles; Inter (font-sans) stays the body face. The display face is
    * only licensed/loaded at 300/400/800, so a `font-bold` (700) on a heading snaps up to the
    * 800 ultrabold cut and reads far too heavy. The brand calls for Regular titles everywhere,
-   * so we pin headings to weight 400 with `!important` — this intentionally overrides any
+   * so we pin headings to weight 400 with `!important` - this intentionally overrides any
    * `font-bold`/`font-semibold` utility on a heading (utilities otherwise beat the base layer).
    * Body-copy weights (Inter) are unaffected. `font-synthesis: none` prevents faux-bold.
    */

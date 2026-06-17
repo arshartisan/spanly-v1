@@ -5,7 +5,7 @@ import { AdminActionError, addSupportNote } from "@/server/admin/users";
 import { noteSchema } from "@/lib/schemas/admin-users";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/users/:id/notes — add a support note (doc 16). Role: support.
+// POST /api/admin/users/:id/notes - add a support note (doc 16). Role: support.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const actor = await requireRole("support");

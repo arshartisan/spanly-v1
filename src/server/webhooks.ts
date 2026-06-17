@@ -67,7 +67,7 @@ export interface PostWebhookPayload {
 /**
  * Deliver the post-completion webhook for a terminal post, exactly once. Loads the owner's
  * webhook config; if present and not already sent, POSTs a signed payload and stamps
- * `webhookSentAt`. Safe to call on every rollup — the idempotency guard makes repeats no-ops.
+ * `webhookSentAt`. Safe to call on every rollup - the idempotency guard makes repeats no-ops.
  */
 export async function deliverPostWebhook(postId: string): Promise<void> {
   const post = await prisma.post.findUnique({
@@ -137,7 +137,7 @@ export async function deliverPostWebhook(postId: string): Promise<void> {
 /**
  * Append a WebhookEvent row for an attempted user-webhook delivery (doc 19, admin event log).
  * Best-effort: never throw, so a logging failure can't block publishing. Records only the event
- * type / post id / status — never the webhook URL, secret, or signature.
+ * type / post id / status - never the webhook URL, secret, or signature.
  */
 async function logWebhookDelivery(
   type: string,

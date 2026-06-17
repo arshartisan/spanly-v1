@@ -3,7 +3,7 @@ import { planLabel } from "@/server/plans";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
 // Staff-only admin shell (doc 15), mirroring (app)/layout.tsx. `requireStaff()`
-// does the REAL authorization (redirects non-staff/suspended) — middleware only
+// does the REAL authorization (redirects non-staff/suspended) - middleware only
 // checked cookie presence. Wraps every /(admin)/* page.
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const staff = await requireStaff();

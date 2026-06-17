@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/server/auth";
 import { retryAllFailed } from "@/server/posts";
 
-// POST /api/posts/[id]/retry-all — re-publish every failed target of a post (the "Retry all"
+// POST /api/posts/[id]/retry-all - re-publish every failed target of a post (the "Retry all"
 // affordance for a failed post, docs/implementation/09). Successful targets are left as-is.
 export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;

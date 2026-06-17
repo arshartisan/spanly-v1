@@ -11,7 +11,7 @@ vi.mock("server-only", () => ({}));
 const redirect = vi.fn((_path: string): never => {
   // The real next/navigation redirect throws a special NEXT_REDIRECT error to
   // abort rendering. We mimic "control never returns" so callers downstream of
-  // a redirect() don't keep executing — the throw is caught in each test.
+  // a redirect() don't keep executing - the throw is caught in each test.
   throw new Error(`NEXT_REDIRECT:${_path}`);
 });
 vi.mock("next/navigation", () => ({
@@ -28,7 +28,7 @@ import { roleAtLeast, requireRole, requireStaff } from "./access";
 
 const ROLES: Role[] = ["user", "support", "admin", "superadmin"];
 
-/** Minimal typed fake user — only role/suspendedAt matter to the unit. */
+/** Minimal typed fake user - only role/suspendedAt matter to the unit. */
 function makeUser(role: Role, opts: { suspendedAt?: Date | null } = {}): CurrentUser {
   return {
     id: `u_${role}`,
@@ -88,7 +88,7 @@ async function catchThrown<T>(fn: () => Promise<T>): Promise<unknown> {
   throw new Error("expected the call to throw, but it resolved");
 }
 
-describe("requireRole (API gate — throws Response on deny)", () => {
+describe("requireRole (API gate - throws Response on deny)", () => {
   it("throws a 401 Response when there is no session", async () => {
     getCurrentUser.mockResolvedValue(null);
     const err = await catchThrown(() => requireRole("support"));
@@ -140,7 +140,7 @@ describe("requireRole (API gate — throws Response on deny)", () => {
   });
 });
 
-describe("requireStaff (RSC gate — redirects on deny)", () => {
+describe("requireStaff (RSC gate - redirects on deny)", () => {
   it("redirects to /login when there is no user", async () => {
     getCurrentUser.mockResolvedValue(null);
     await catchThrown(() => requireStaff());

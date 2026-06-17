@@ -4,7 +4,7 @@ import { logAdminAction } from "@/server/admin/audit";
 import { AdminActionError, removeJob } from "@/server/admin/ops";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/system/jobs/:queue/:jobId/remove — delete a job (doc 19). Role: admin.
+// POST /api/admin/system/jobs/:queue/:jobId/remove - delete a job (doc 19). Role: admin.
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ queue: string; jobId: string }> },

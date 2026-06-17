@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/server/auth";
 import { prisma } from "@/server/db";
 import { finalizeSchema } from "@/lib/schemas/post";
 
-// POST /api/media/finalize (docs/implementation/06) — after the browser PUTs the bytes,
+// POST /api/media/finalize (docs/implementation/06) - after the browser PUTs the bytes,
 // persist the Media row. Server-side processing (ffmpeg normalize/thumbnail) is Phase 5;
 // for now processed=false and the public URL is used directly.
 export async function POST(req: Request) {

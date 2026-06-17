@@ -3,7 +3,7 @@ import { signAuthState } from "@/server/auth-oauth-state";
 import { googleAuthUrl } from "@/server/google-auth";
 import { publicOrigin } from "@/server/public-url";
 
-// GET /api/auth/google/start — begin Google sign-in / sign-up.
+// GET /api/auth/google/start - begin Google sign-in / sign-up.
 // Mirrors the connect start flow: sign a short-lived CSRF state (carrying the post-login
 // `next` deep-link) and 302 to Google's consent screen.
 export async function GET(req: Request) {

@@ -19,7 +19,7 @@ const RESET_TTL_MS = 60 * 60 * 1000; // 1h, matches /api/auth/forgot (doc 03)
 // ─────────────────────────── Filtering ───────────────────────────
 
 /**
- * Pure mapping from a parsed list filter to a Prisma `UserWhereInput`. No DB calls —
+ * Pure mapping from a parsed list filter to a Prisma `UserWhereInput`. No DB calls -
  * unit-testable in isolation. `query` matches email/displayName (case-insensitive
  * contains) or an exact id.
  */

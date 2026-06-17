@@ -4,7 +4,7 @@ import { getSystemHealth } from "@/server/admin/ops";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/admin/system/health — DB/Redis/provider/billing health (doc 19). Role: support.
+// GET /api/admin/system/health - DB/Redis/provider/billing health (doc 19). Role: support.
 export async function GET() {
   try {
     await requireRole("support");

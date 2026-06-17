@@ -10,7 +10,7 @@ const schema = z.object({
   publishAt: z.string().datetime().optional(),
 });
 
-// POST /api/v1/posts — create + publish (or schedule) a text post via API key.
+// POST /api/v1/posts - create + publish (or schedule) a text post via API key.
 export async function POST(req: Request) {
   const auth = await authorizeApiRequest(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });

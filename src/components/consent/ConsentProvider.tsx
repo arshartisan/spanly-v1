@@ -19,13 +19,13 @@ import { CookieConsentBanner } from "./CookieConsentBanner";
 import { CookiePreferencesDialog } from "./CookiePreferencesDialog";
 
 // App-wide cookie-consent state. Mounted once at the root (inside ThemeProvider) so the
-// banner shows on every surface — marketing, auth, legal, and the app shell — and any
+// banner shows on every surface - marketing, auth, legal, and the app shell - and any
 // component can read the current consent or re-open the preferences dialog via useConsent().
 //
 // Why client-read (vs. reading the cookie in the server layout): keeping it on the client
 // avoids forcing every page into dynamic rendering, and mirrors the existing AnnouncementBanner
 // pattern (gate render on a `ready` flag to dodge a hydration flash). When real analytics are
-// added they load client-side after `consent.analytics` is true — see AnalyticsScripts.tsx.
+// added they load client-side after `consent.analytics` is true - see AnalyticsScripts.tsx.
 
 interface ConsentContextValue {
   /** True once the stored cookie has been read in the browser (avoids SSR flash). */

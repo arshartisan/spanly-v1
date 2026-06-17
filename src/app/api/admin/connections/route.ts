@@ -3,7 +3,7 @@ import { requireRole } from "@/server/admin/access";
 import { listConnections } from "@/server/admin/content";
 import { connectionListQuerySchema } from "@/lib/schemas/admin-content";
 
-// GET /api/admin/connections — all social accounts across users with filters (doc 18). Role: support.
+// GET /api/admin/connections - all social accounts across users with filters (doc 18). Role: support.
 export async function GET(req: Request) {
   try {
     await requireRole("support");

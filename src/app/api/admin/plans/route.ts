@@ -5,7 +5,7 @@ import { AdminActionError, createPlan, listPlansAdmin } from "@/server/admin/pla
 import { planCreateSchema } from "@/lib/schemas/admin-plans";
 import { clientIp } from "@/server/rate-limit";
 
-// GET /api/admin/plans — list all plan tiers (incl. inactive) with subscriber counts. Role: admin.
+// GET /api/admin/plans - list all plan tiers (incl. inactive) with subscriber counts. Role: admin.
 export async function GET() {
   try {
     await requireRole("admin");
@@ -17,7 +17,7 @@ export async function GET() {
   }
 }
 
-// POST /api/admin/plans — create a plan tier. Role: admin. Audited as `plan.create`.
+// POST /api/admin/plans - create a plan tier. Role: admin. Audited as `plan.create`.
 export async function POST(req: Request) {
   try {
     const actor = await requireRole("admin");

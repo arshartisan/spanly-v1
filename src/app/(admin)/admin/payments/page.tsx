@@ -6,7 +6,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { formatCents } from "@/lib/admin-format";
 import { cn } from "@/lib/utils";
 
-// Admin payments view (doc 17) — RSC. In mock billing mode there is no PayPal data, so we show
+// Admin payments view (doc 17) - RSC. In mock billing mode there is no PayPal data, so we show
 // an info banner. PayPal has no platform-wide charge feed (unlike Stripe), so per-subscriber
 // payment history lives on each user's detail page; this platform view stays empty in live mode.
 
@@ -35,7 +35,7 @@ export default async function AdminPaymentsPage() {
       <Reveal>
         <h1 className="text-2xl font-semibold tracking-tight">Payments</h1>
         <p className="text-sm text-muted-foreground">
-          Per-subscriber payment history from PayPal — view it on a user&apos;s detail page.
+          Per-subscriber payment history from PayPal - view it on a user&apos;s detail page.
         </p>
       </Reveal>
 
@@ -108,7 +108,7 @@ function PaymentRow({ payment }: { payment: PaymentItem }) {
       </Td>
       <Td className="max-w-sm">
         <span className="block truncate text-foreground/90" title={payment.description ?? undefined}>
-          {payment.description ?? <span className="text-muted-foreground">—</span>}
+          {payment.description ?? <span className="text-muted-foreground">-</span>}
         </span>
       </Td>
       <Td className="text-right">
@@ -151,7 +151,7 @@ function EmptyState() {
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-semibold">No payments yet</h2>
           <p className="max-w-sm text-sm text-muted-foreground">
-            No platform-wide charge feed in PayPal — see a user&apos;s detail page for their payments.
+            No platform-wide charge feed in PayPal - see a user&apos;s detail page for their payments.
           </p>
         </div>
       </div>

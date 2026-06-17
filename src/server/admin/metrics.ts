@@ -89,7 +89,7 @@ export async function getOverviewMetrics(): Promise<OverviewMetrics> {
 
 /**
  * Monthly-equivalent revenue for one subscription, in cents. Monthly plans contribute
- * their monthly price; yearly plans contribute their annual price / 12 (rounded). Pure —
+ * their monthly price; yearly plans contribute their annual price / 12 (rounded). Pure -
  * exported for unit tests.
  */
 export function monthlyEquivalentCents(plan: PlanKey, interval: BillingInterval): number {
@@ -134,7 +134,7 @@ export async function getBillingMetrics(): Promise<BillingMetrics> {
       where: { status: { not: "canceled" } },
       _count: { _all: true },
     }),
-    // Subs canceled (updated) in the last 30 days — proxy for churned this window.
+    // Subs canceled (updated) in the last 30 days - proxy for churned this window.
     prisma.subscription.count({
       where: { status: "canceled", updatedAt: { gte: since30d } },
     }),

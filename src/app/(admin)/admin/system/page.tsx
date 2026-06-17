@@ -26,7 +26,7 @@ import { QueueCard } from "@/components/admin/system/QueueCard";
 import { RunMaintenance } from "@/components/admin/system/RunMaintenance";
 import { cn } from "@/lib/utils";
 
-// Admin System Health & Operations (doc 19) — RSC. Parallel-fetches health, queue counts, and
+// Admin System Health & Operations (doc 19) - RSC. Parallel-fetches health, queue counts, and
 // the failed-publish summary, each isolated via Promise.allSettled so one failing probe can't
 // blank the whole page. Redis-down degrades to red tiles / "queue backend unavailable" cards.
 
@@ -99,7 +99,7 @@ export default async function AdminSystemPage() {
             {!queues.redisOk ? (
               <div className="mb-3 flex items-center gap-2 rounded-lg border border-status-failed/30 bg-status-failed/10 px-3 py-2 text-xs text-status-failed">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
-                Redis is unreachable — queue counts are unavailable. Is Redis running?
+                Redis is unreachable - queue counts are unavailable. Is Redis running?
               </div>
             ) : null}
             <Stagger className="grid gap-4 md:grid-cols-3" delayChildren={0.04}>

@@ -4,7 +4,7 @@ import "server-only";
 /**
  * Signed, expiring `state` for the Google SIGN-IN flow (login/signup), the auth-side
  * sibling of `oauth-state.ts` (which is for the logged-in platform-connect flow). The user
- * is NOT authenticated yet when this is signed, so the payload carries no userId — only the
+ * is NOT authenticated yet when this is signed, so the payload carries no userId - only the
  * post-login `next` redirect plus a nonce/expiry for CSRF. Format:
  * base64url(payload).hmacSha256(payload), keyed by NEXTAUTH_SECRET.
  */

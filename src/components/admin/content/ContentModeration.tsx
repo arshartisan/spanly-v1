@@ -59,7 +59,7 @@ export function ContentModeration({
   if (!canCancel && !canTakedown) {
     return (
       <p className="text-xs text-muted-foreground">
-        This post is {status === "removed" ? "removed" : "canceled"} — no further moderation
+        This post is {status === "removed" ? "removed" : "canceled"} - no further moderation
         actions are available.
       </p>
     );
@@ -100,7 +100,7 @@ export function ContentModeration({
           }
           title="Takedown post"
           description="Marks the post removed and cancels any pending targets."
-          caveat="A takedown cannot un-publish a post already sent to a platform — Spanlyfy only relays content. Already-published targets stay live; remove them from the platform directly."
+          caveat="A takedown cannot un-publish a post already sent to a platform - Spanlyfy only relays content. Already-published targets stay live; remove them from the platform directly."
           confirmLabel="Take down"
           pending={pending === "takedown"}
           disabled={pending !== null}

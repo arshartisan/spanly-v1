@@ -27,7 +27,7 @@ const STATUS: Record<
 /**
  * Dashboard "Connected accounts" panel: a preview of the live social accounts publishing from
  * this workspace, each shown with its avatar + brand badge and connection status. Links through
- * to /connections to manage. `total` may exceed the previewed list — the extra is surfaced as a
+ * to /connections to manage. `total` may exceed the previewed list - the extra is surfaced as a
  * "view all" tile so the dashboard stays compact.
  */
 export function ConnectedAccounts({

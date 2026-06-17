@@ -25,7 +25,7 @@ function GoogleIcon() {
 }
 
 /**
- * "Continue with Google" — a link (not a form action) to the server-side start route, which
+ * "Continue with Google" - a link (not a form action) to the server-side start route, which
  * 302s on to Google. `next` forwards the post-login deep-link from the login page.
  */
 export function GoogleButton({

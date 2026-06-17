@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/server/auth";
 import { readSettings, updateSettings } from "@/server/settings";
 import { settingsPatchSchema } from "@/lib/schemas/settings";
 
-// GET /api/settings — current user's resolved settings + profile fields (doc 11A).
+// GET /api/settings - current user's resolved settings + profile fields (doc 11A).
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -17,7 +17,7 @@ export async function GET() {
   });
 }
 
-// PATCH /api/settings — partial update of profile columns + settings JSON (doc 11A).
+// PATCH /api/settings - partial update of profile columns + settings JSON (doc 11A).
 export async function PATCH(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });

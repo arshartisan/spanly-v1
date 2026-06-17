@@ -12,7 +12,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { EventFilters } from "@/components/admin/system/EventFilters";
 import { cn } from "@/lib/utils";
 
-// Admin webhook/PayPal event log (doc 19) — RSC. Lenient-parses the source filter, reads via
+// Admin webhook/PayPal event log (doc 19) - RSC. Lenient-parses the source filter, reads via
 // listWebhookEvents(), and renders the glass table with a cursor "Load more" link (mirrors the
 // content list). Status renders as a badge: received/processed/delivered = ok-ish, failed = red.
 
@@ -139,7 +139,7 @@ function EventRow({ event }: { event: WebhookEventItem }) {
             {event.refId}
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground">—</span>
+          <span className="text-xs text-muted-foreground">-</span>
         )}
       </Td>
       <Td className="tabular-nums text-muted-foreground">{event.attempts}</Td>
@@ -147,7 +147,7 @@ function EventRow({ event }: { event: WebhookEventItem }) {
         {event.error ? (
           <span className="line-clamp-2 text-status-failed/90">{event.error}</span>
         ) : (
-          <span className="text-xs text-muted-foreground">—</span>
+          <span className="text-xs text-muted-foreground">-</span>
         )}
       </Td>
       <Td className="whitespace-nowrap text-muted-foreground">

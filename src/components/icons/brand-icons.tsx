@@ -2,7 +2,7 @@ import type { ReactElement, SVGProps } from "react";
 
 /**
  * Accurate social-media brand-logo glyphs as local SVG components (sourced to match
- * icons8 / simple-icons brand marks). These replace the approximate lucide glyphs —
+ * icons8 / simple-icons brand marks). These replace the approximate lucide glyphs -
  * lucide has no real TikTok or X logo (it shipped a music note and the old Twitter bird).
  *
  * All icons use a 24x24 viewBox and `fill="currentColor"`, so they size with

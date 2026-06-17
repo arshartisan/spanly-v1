@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/server/auth";
 import { createDraft } from "@/server/posts";
 import { createPostSchema } from "@/lib/schemas/post";
 
-// POST /api/posts (docs/implementation/06 + 12) — create a draft. Schedule/publish/queue
+// POST /api/posts (docs/implementation/06 + 12) - create a draft. Schedule/publish/queue
 // transitions happen on the dedicated sub-routes once the draft exists.
 export async function POST(req: Request) {
   const user = await getCurrentUser();

@@ -11,14 +11,14 @@ import {
   type PostTypeKey,
   type UpdatePostInput,
 } from "@/lib/schemas/post";
-import type { Capability, PlatformKey } from "@/lib/platforms";
+import { PLATFORM_CONFIG, type Capability, type PlatformKey } from "@/lib/platforms";
 import type { Post, Prisma } from "@prisma/client";
 
 /**
  * Post/composer service (docs/implementation/06 + 08). Owns the Post + PostTarget +
  * PostMedia write model. On publish/schedule/queue we fan a Post out to one PostTarget per
  * selected account, each carrying its resolved caption and a unique idempotencyKey
- * (`<postId>:<accountId>`). Actual job dispatch + publishing land in Phase 5/6 — here we only
+ * (`<postId>:<accountId>`). Actual job dispatch + publishing land in Phase 5/6 - here we only
  * establish the durable records and the correct status/publishAt.
  */
 
@@ -40,7 +40,11 @@ export async function eligibleAccounts(
     where: { userId, disconnectedAt: null, status: "active", capabilities: { has: type } },
     orderBy: { connectedAt: "asc" },
   });
-  return accounts.map((a) => ({
+  return accounts
+    // Re-check against the live config so connections with stale stored capabilities
+    // (e.g. a LinkedIn account connected before video was withdrawn) drop out here.
+    .filter((a) => PLATFORM_CONFIG[a.platform as PlatformKey].capabilities.includes(type))
+    .map((a) => ({
     id: a.id,
     platform: a.platform as PlatformKey,
     handle: a.handle,
@@ -266,7 +270,7 @@ export async function retryAllFailed(userId: string, postId: string): Promise<Re
 async function enqueueDispatch(postId: string, publishAt: Date): Promise<void> {
   // Publishing kill switch (doc 20). HOLD-NOT-DROP: when publishing is paused we leave the
   // targets `pending` (the Post already carries publishing/scheduled status + publishAt) and
-  // simply skip enqueuing. Nothing is lost — re-enabling `publishing` plus the missed-run
+  // simply skip enqueuing. Nothing is lost - re-enabling `publishing` plus the missed-run
   // sweep (admin maintenance) re-dispatches these held targets. Absent flag → enabled.
   if (!(await isEnabled("publishing"))) return;
 

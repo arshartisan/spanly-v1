@@ -29,7 +29,7 @@ export function CookieConsentBanner() {
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
               We use strictly necessary cookies to keep you signed in and the Service secure.
               With your consent we also use analytics cookies to understand and improve how
-              Spanlyfy is used. You can accept, reject, or choose per category — and change your
+              Spanlyfy is used. You can accept, reject, or choose per category - and change your
               mind anytime. See our{" "}
               <Link href="/cookies" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
                 Cookie Policy

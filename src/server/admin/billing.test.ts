@@ -38,7 +38,7 @@ vi.mock("@/server/db", () => ({
 // ─────────────────────────── PayPal mock ───────────────────────────
 // `isLiveBilling` is read live on each call inside the service, so toggling the mock's
 // return value between tests flips the live/mock branch deterministically. `paypalFetch`
-// is the single REST entrypoint — tests route by request path (transactions vs refund).
+// is the single REST entrypoint - tests route by request path (transactions vs refund).
 const isLiveBilling = vi.fn<() => boolean>();
 const paypalFetch = vi.fn();
 
@@ -194,7 +194,7 @@ describe("buildSubscriptionWhere (pure → Prisma.SubscriptionWhereInput)", () =
 // ─────────────────────────── approveRefund guards ───────────────────────────
 
 describe("approveRefund (guards + mock/live branch)", () => {
-  it("throws 409 when the request is not pending — never updates", async () => {
+  it("throws 409 when the request is not pending - never updates", async () => {
     refundFindUnique.mockResolvedValue(refundRow({ status: "refunded" }));
     const err = await catchThrown(() => approveRefund("u_admin", "rr_1", {}));
     expect(err).toBeInstanceOf(AdminActionError);
@@ -312,7 +312,7 @@ describe("approveRefund (guards + mock/live branch)", () => {
 // ─────────────────────────── denyRefund ───────────────────────────
 
 describe("denyRefund", () => {
-  it("throws 409 when not pending — never updates", async () => {
+  it("throws 409 when not pending - never updates", async () => {
     refundFindUnique.mockResolvedValue(refundRow({ status: "denied" }));
     const err = await catchThrown(() => denyRefund("u_admin", "rr_1", "no"));
     expect((err as AdminActionError).status).toBe(409);
@@ -361,7 +361,7 @@ describe("grantCredit", () => {
 
     expect(result).toEqual({ ok: true });
     expect(paypalFetch).not.toHaveBeenCalled();
-    // No subscription lookup either — it's a pure recorded no-op.
+    // No subscription lookup either - it's a pure recorded no-op.
     expect(subFindUnique).not.toHaveBeenCalled();
   });
 });

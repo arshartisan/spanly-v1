@@ -3,7 +3,7 @@ import { requireRole } from "@/server/admin/access";
 import { listPosts } from "@/server/admin/content";
 import { postListQuerySchema } from "@/lib/schemas/admin-content";
 
-// GET /api/admin/content — cross-user post list with filters + cursor paging (doc 18). Role: support.
+// GET /api/admin/content - cross-user post list with filters + cursor paging (doc 18). Role: support.
 export async function GET(req: Request) {
   try {
     await requireRole("support");

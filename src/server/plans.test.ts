@@ -20,7 +20,7 @@ vi.mock("@/server/db", () => ({
 
 import { DEFAULT_PLAN_DEFS } from "@/lib/plan-defaults";
 
-// plans.ts' exported surface — re-bound fresh in beforeEach so the module-level cache resets.
+// plans.ts' exported surface - re-bound fresh in beforeEach so the module-level cache resets.
 type PlansModule = typeof import("./plans");
 let plans: PlansModule;
 
@@ -128,7 +128,7 @@ describe("getPlanCatalog (DB rows → PlanDef, fallback, never throws)", () => {
     expect(catalog.length).toBeGreaterThan(0);
   });
 
-  it("DB throw → falls back to DEFAULT_PLAN_DEFS (never throws — product keeps working)", async () => {
+  it("DB throw → falls back to DEFAULT_PLAN_DEFS (never throws - product keeps working)", async () => {
     planFindMany.mockRejectedValue(new Error("db down"));
     const catalog = await plans.getPlanCatalog();
     expect(catalog).toBe(plans.DEFAULT_PLAN_DEFS);
@@ -205,7 +205,7 @@ describe("getPlanAtLeast (rank comparison off the live catalog)", () => {
   });
 });
 
-describe("requirePlanGate (live enforcement gate — deny path is load-bearing)", () => {
+describe("requirePlanGate (live enforcement gate - deny path is load-bearing)", () => {
   beforeEach(() => {
     planFindMany.mockResolvedValue([
       dbRow({ key: "creator", rank: 0, name: "Creator" }),
@@ -261,14 +261,14 @@ describe("getPlanLabel (name + status suffix; unknown key → key)", () => {
   });
 
   it("appends the status suffix for trialing / past_due / canceled", async () => {
-    expect(await plans.getPlanLabel("creator", "trialing")).toBe("Creator — Trial");
-    expect(await plans.getPlanLabel("creator", "past_due")).toBe("Creator — Past due");
-    expect(await plans.getPlanLabel("creator", "canceled")).toBe("Creator — Canceled");
+    expect(await plans.getPlanLabel("creator", "trialing")).toBe("Creator - Trial");
+    expect(await plans.getPlanLabel("creator", "past_due")).toBe("Creator - Past due");
+    expect(await plans.getPlanLabel("creator", "canceled")).toBe("Creator - Canceled");
   });
 
   it("unknown key → falls back to the raw key", async () => {
     expect(await plans.getPlanLabel("ghost")).toBe("ghost");
-    expect(await plans.getPlanLabel("ghost", "trialing")).toBe("ghost — Trial");
+    expect(await plans.getPlanLabel("ghost", "trialing")).toBe("ghost - Trial");
   });
 });
 

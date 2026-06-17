@@ -6,7 +6,7 @@ import { AdminActionError, deletePlan, updatePlan } from "@/server/admin/plans";
 import { planUpdateSchema } from "@/lib/schemas/admin-plans";
 import { clientIp } from "@/server/rate-limit";
 
-// PATCH /api/admin/plans/:key — patch a plan tier (key immutable). Role: admin.
+// PATCH /api/admin/plans/:key - patch a plan tier (key immutable). Role: admin.
 // Audited as `plan.update` with { key, before, after }.
 export async function PATCH(req: Request, { params }: { params: Promise<{ key: string }> }) {
   try {
@@ -43,7 +43,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ key: s
   }
 }
 
-// DELETE /api/admin/plans/:key — delete a plan tier. Role: superadmin (destructive).
+// DELETE /api/admin/plans/:key - delete a plan tier. Role: superadmin (destructive).
 // Audited as `plan.delete`. Guards in deletePlan: 404 missing, 409 has subscribers / last active.
 export async function DELETE(req: Request, { params }: { params: Promise<{ key: string }> }) {
   try {

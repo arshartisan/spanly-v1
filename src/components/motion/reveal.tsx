@@ -6,9 +6,9 @@ import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
  * Entrance-animation primitives following Emil Kowalski's principles: subtle (small rise +
  * fade), fast, one consistent ease-out spring curve, and fully disabled under reduced motion.
  *
- * - <Reveal>        — a single element eases in on mount (optional delay).
- * - <Stagger>       — a container whose <StaggerItem> children cascade in sequence.
- * - <StaggerItem>   — one cascading child (use inside <Stagger>).
+ * - <Reveal>        - a single element eases in on mount (optional delay).
+ * - <Stagger>       - a container whose <StaggerItem> children cascade in sequence.
+ * - <StaggerItem>   - one cascading child (use inside <Stagger>).
  */
 
 const EASE = [0.32, 0.72, 0, 1] as const;

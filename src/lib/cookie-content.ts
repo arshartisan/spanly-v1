@@ -42,13 +42,13 @@ export const COOKIE_CATEGORIES: CookieCategoryMeta[] = [
     title: "Analytics",
     required: false,
     description:
-      "Help us understand how Spanlyfy is used — which features are used and where people run into trouble — so we can improve it. This data is aggregated and used only to operate and improve the Service; we do not use it for advertising or sell it. These are off until you turn them on.",
+      "Help us understand how Spanlyfy is used - which features are used and where people run into trouble - so we can improve it. This data is aggregated and used only to operate and improve the Service; we do not use it for advertising or sell it. These are off until you turn them on.",
   },
 ];
 
 /**
  * The cookies we actually set today. Spanlyfy currently uses only strictly necessary
- * cookies — there are no analytics or advertising cookies in production yet. The analytics
+ * cookies - there are no analytics or advertising cookies in production yet. The analytics
  * category and toggle exist so that consent is in place the moment such cookies are added.
  */
 export const COOKIES: CookieRow[] = [
@@ -86,9 +86,9 @@ export const COOKIE_POLICY = {
     "Cookies are small text files placed on your device when you visit a website. We also use comparable browser storage (such as localStorage) for the same purposes; we refer to all of these as \"cookies\" here.",
     "We group cookies into the categories below. Strictly necessary cookies are always active because the Service cannot run without them. All other categories are off until you opt in, and you can change your choices at any time using the “Manage cookies” control below or in our footer.",
   ],
-  /** How users withdraw or change consent — required disclosure under PECR/GDPR. */
+  /** How users withdraw or change consent - required disclosure under PECR/GDPR. */
   manage: [
     "You can accept or reject non-essential cookies when you first visit, and revisit your choice anytime via “Manage cookies.” Rejecting is always as easy as accepting.",
-    "You can also control cookies through your browser settings — blocking or deleting them — though strictly necessary cookies are needed for sign-in and core features to work.",
+    "You can also control cookies through your browser settings - blocking or deleting them - though strictly necessary cookies are needed for sign-in and core features to work.",
   ],
 } as const;

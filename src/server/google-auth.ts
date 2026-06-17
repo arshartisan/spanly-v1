@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * Google OAuth 2.0 helper for USER SIGN-IN (not YouTube publishing — that uses the separate
+ * Google OAuth 2.0 helper for USER SIGN-IN (not YouTube publishing - that uses the separate
  * GOOGLE_CLIENT_ID/SECRET via the provider registry). Plain `fetch`, no SDK, matching the
  * repo's provider style. Credentials come from a dedicated OAuth client so sign-in scopes and
  * redirect URIs stay isolated from publishing.
@@ -86,7 +86,7 @@ export async function exchangeGoogleCode(opts: {
   return {
     sub: info.sub,
     email: info.email.toLowerCase(),
-    // userinfo returns a boolean; id_token payloads sometimes stringify it — accept both.
+    // userinfo returns a boolean; id_token payloads sometimes stringify it - accept both.
     emailVerified: info.email_verified === true || info.email_verified === "true",
     name: info.name ?? null,
     picture: info.picture ?? null,

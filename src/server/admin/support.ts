@@ -13,9 +13,9 @@ import {
 } from "@/server/auth";
 
 /**
- * Advanced support powers service (doc 21) — the highest-blast-radius admin actions:
+ * Advanced support powers service (doc 21) - the highest-blast-radius admin actions:
  * impersonation, broadcast email, and GDPR anonymize/delete. Every caller route is
- * `superadmin`-gated and audited (the route does the audit, never this layer — and never
+ * `superadmin`-gated and audited (the route does the audit, never this layer - and never
  * with PII/token/secret payloads). Re-exports the shared guard type so routes can map
  * `.status` to an HTTP code, matching the billing/users services.
  */
@@ -29,7 +29,7 @@ const BROADCAST_CHUNK = 50; // send in bounded chunks; structured to allow queue
 
 /**
  * Start impersonating `targetId` as `actor` (doc 21). Guards: target must exist (404),
- * cannot impersonate self (400), cannot impersonate any staff member — support/admin/
+ * cannot impersonate self (400), cannot impersonate any staff member - support/admin/
  * superadmin (403). Creates a NEW short-lived session for the TARGET carrying the
  * impersonator id and swaps the cookie to it; the actor's own staff session row is left
  * intact so `stopImpersonation` can restore it.
@@ -96,7 +96,7 @@ export interface BroadcastInput {
 }
 
 /**
- * Pure mapping from the audience grammar to a Prisma `UserWhereInput` — no DB calls, so it
+ * Pure mapping from the audience grammar to a Prisma `UserWhereInput` - no DB calls, so it
  * is unit-testable in isolation. Grammar: `all` | `trialing` | `plan:<key>` |
  * `ids:<comma ids>`. Unknown shapes throw `AdminActionError(400)` (the Zod schema already
  * guards the route, this is defence-in-depth + the source of truth for tests).
@@ -143,8 +143,8 @@ export async function resolveAudience(
  * send) is exactly what a queue producer would do, so this can be moved behind a queue
  * later without changing callers.
  *
- * Email opt-outs: there is no broadcast/marketing opt-out field — `settings.emailPrefs`
- * only covers transactional product notifications (automation/failureAlerts/summary) — so
+ * Email opt-outs: there is no broadcast/marketing opt-out field - `settings.emailPrefs`
+ * only covers transactional product notifications (automation/failureAlerts/summary) - so
  * none is honored here. Add a dedicated opt-out flag if broadcasts ever become marketing.
  *
  * The actor and the message body are NOT logged here; the route audits only audience +
@@ -190,11 +190,11 @@ async function requireGdprTarget(targetId: string) {
 }
 
 /**
- * Anonymize a user (doc 21, GDPR erasure — preferred over hard delete). Guards: 404 if
+ * Anonymize a user (doc 21, GDPR erasure - preferred over hard delete). Guards: 404 if
  * missing, cannot anonymize self (400) or a superadmin (403). In one transaction: scrub PII
  * (email → hashed placeholder, displayName/avatarUrl null, settings → {}), suspend the
  * account, revoke all sessions + api keys, and soft-delete every social connection
- * (`disconnectedAt` + `status="error"`) — which inertly purges the encrypted OAuth tokens
+ * (`disconnectedAt` + `status="error"`) - which inertly purges the encrypted OAuth tokens
  * from active use WITHOUT ever reading or logging them. Subscription/refund/audit rows are
  * retained for financial + audit-trail reasons. The reason is audited by the route (no PII).
  */
@@ -233,7 +233,7 @@ export async function anonymizeUser(
 }
 
 /**
- * Hard-delete a user (doc 21 — only when legally required). Guards: 404 if missing, cannot
+ * Hard-delete a user (doc 21 - only when legally required). Guards: 404 if missing, cannot
  * delete self (400) or a superadmin (403), and cannot delete a user with an active paid
  * subscription (`active`/`past_due`) until it is canceled (409). The delete cascades per the
  * Prisma relations. The reason is audited by the route (no PII).

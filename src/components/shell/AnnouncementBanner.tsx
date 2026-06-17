@@ -39,7 +39,7 @@ export function AnnouncementBanner({ announcements }: { announcements: BannerAnn
       try {
         if (localStorage.getItem(STORAGE_PREFIX + a.id) === "1") next.add(a.id);
       } catch {
-        // localStorage unavailable (private mode) — show the banner.
+        // localStorage unavailable (private mode) - show the banner.
       }
     }
     setDismissed(next);

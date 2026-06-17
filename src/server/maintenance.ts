@@ -1,6 +1,6 @@
 /**
  * Maintenance jobs (docs/implementation/07 + 08), run by the worker on a repeatable schedule.
- * No `server-only` import — this executes in the standalone worker process.
+ * No `server-only` import - this executes in the standalone worker process.
  */
 import { prisma } from "@/server/db";
 import { enqueuePublish } from "@/server/queue";

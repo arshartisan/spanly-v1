@@ -57,7 +57,7 @@ function mock(platform: PlatformKey): MockProvider {
   return p;
 }
 
-// Platforms that always use the real provider — the mock/demo connection is removed for
+// Platforms that always use the real provider - the mock/demo connection is removed for
 // these regardless of PROVIDER_MODE or the per-platform live flag.
 const ALWAYS_LIVE = new Set<PlatformKey>(["linkedin", "instagram", "tiktok"]);
 
@@ -76,7 +76,7 @@ export function getProvider(platform: PlatformKey): PlatformProvider {
   if (isLive(platform)) {
     const live = liveProvider(platform);
     if (live) return live;
-    // Flag is on but no real provider yet — fall back to mock rather than break.
+    // Flag is on but no real provider yet - fall back to mock rather than break.
   }
   return mock(platform);
 }

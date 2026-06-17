@@ -41,7 +41,7 @@ import {
   announcementUpdateSchema,
 } from "@/lib/schemas/admin-settings";
 
-// flags.ts' exported surface — re-bound fresh in beforeEach so the module-level cache resets.
+// flags.ts' exported surface - re-bound fresh in beforeEach so the module-level cache resets.
 type FlagsModule = typeof import("./flags");
 let flags: FlagsModule;
 
@@ -84,9 +84,9 @@ async function catchThrown<T>(fn: () => Promise<T>): Promise<unknown> {
 }
 
 // ═══════════════════════════ isEnabled: the default-true safety net ═══════════════════════════
-// Acceptance: "unknown flag keys default to enabled" — an absent row must never block the product.
+// Acceptance: "unknown flag keys default to enabled" - an absent row must never block the product.
 
-describe("isEnabled (default rule — absent row must never break the product)", () => {
+describe("isEnabled (default rule - absent row must never break the product)", () => {
   it("unknown/absent key (prisma → null) → true", async () => {
     flagFindUnique.mockResolvedValue(null);
     expect(await flags.isEnabled("signups")).toBe(true);
@@ -126,7 +126,7 @@ describe("isEnabled (in-process cache: TTL + invalidation)", () => {
     flagFindUnique.mockResolvedValue({ key: "publishing", enabled: true, value: null });
 
     expect(await flags.isEnabled("publishing")).toBe(true);
-    // Still inside the TTL — must NOT hit prisma again.
+    // Still inside the TTL - must NOT hit prisma again.
     vi.advanceTimersByTime(CACHE_TTL_MS - 1);
     expect(await flags.isEnabled("publishing")).toBe(true);
 
@@ -241,7 +241,7 @@ describe("setFlag (upsert, returns row, seeds known description)", () => {
 });
 
 // ═══════════════════════════ PURE: matchesAudience ═══════════════════════════
-// Pure targeting matcher — fail-closed for an unknown audience (matches no one).
+// Pure targeting matcher - fail-closed for an unknown audience (matches no one).
 
 describe("matchesAudience (pure → boolean)", () => {
   const growth = { subscription: { plan: "growth", status: "active" } };
@@ -298,7 +298,7 @@ describe("activeAnnouncements (DB window WHERE + in-memory audience filter)", ()
     };
     expect(arg.where.active).toBe(true);
     expect(arg.orderBy).toEqual({ createdAt: "desc" });
-    // startsAt: null OR <= now ; endsAt: null OR >= now — null bounds keep a window open.
+    // startsAt: null OR <= now ; endsAt: null OR >= now - null bounds keep a window open.
     expect(arg.where.AND).toEqual([
       { OR: [{ startsAt: null }, { startsAt: { lte: NOW } }] },
       { OR: [{ endsAt: null }, { endsAt: { gte: NOW } }] },
@@ -394,7 +394,7 @@ describe("createAnnouncement", () => {
 // ═══════════════════════════ updateAnnouncement ═══════════════════════════
 
 describe("updateAnnouncement (missing id → null; otherwise patch only provided fields)", () => {
-  it("returns null when the announcement does not exist — never calls update", async () => {
+  it("returns null when the announcement does not exist - never calls update", async () => {
     annFindUnique.mockResolvedValue(null);
     const result = await flags.updateAnnouncement("a_missing", { active: false });
     expect(result).toBeNull();

@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-// Danger zone — superadmin (doc 21). Three high-blast-radius support powers, each behind a
+// Danger zone - superadmin (doc 21). Three high-blast-radius support powers, each behind a
 // Popover requiring a typed reason (mirrors SuspendPopover in UserActions.tsx): impersonate,
 // GDPR anonymize, and hard delete. Each POSTs/DELETEs to its API route, shows per-action
 // pending + inline feedback, and surfaces server errors (e.g. the 409 active-subscription
@@ -105,7 +105,7 @@ export function SupportPowers({
       setFeedback({ kind: "error", message: err });
       return false;
     }
-    // The detail page no longer exists — navigate back to the list.
+    // The detail page no longer exists - navigate back to the list.
     window.location.href = "/admin/users";
     return true;
   }
@@ -115,7 +115,7 @@ export function SupportPowers({
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2 text-sm font-semibold text-status-failed">
           <ShieldAlert className="h-4 w-4" />
-          Danger zone — superadmin
+          Danger zone - superadmin
         </div>
         <p className="text-xs text-muted-foreground">
           High-blast-radius support powers. Every action is audited and requires a typed reason.
@@ -389,11 +389,11 @@ function DeletePopover({
           description={
             <>
               Permanently deletes the user and cascades all related data. This is blocked while a
-              paid subscription is still active — cancel it first. Prefer Anonymize unless deletion
+              paid subscription is still active - cancel it first. Prefer Anonymize unless deletion
               is legally required.
             </>
           }
-          placeholder="e.g. Legal erasure order — case #9012"
+          placeholder="e.g. Legal erasure order - case #9012"
           confirmLabel="Delete account"
           inputId="delete-reason"
           pending={pending}

@@ -200,7 +200,7 @@ function DayBox({
                 );
               })}
             </span>
-            <span className="truncate">{snippet(chip.caption, 24) || "—"}</span>
+            <span className="truncate">{snippet(chip.caption, 24) || "-"}</span>
           </Link>
         ))}
       </div>

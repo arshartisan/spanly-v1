@@ -25,7 +25,7 @@ describe("humanizePublishError", () => {
   });
 
   it("detects auth wording in plain (non-Graph) error strings", () => {
-    expect(humanizePublishError("Token expired — please reconnect.").kind).toBe("auth");
+    expect(humanizePublishError("Token expired - please reconnect.").kind).toBe("auth");
   });
 
   it("falls back to a generic message and never throws on junk", () => {

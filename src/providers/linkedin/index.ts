@@ -1,7 +1,7 @@
 /**
- * LinkedinProvider — real LinkedIn integration (docs/implementation/02 + 06 + 09).
+ * LinkedinProvider - real LinkedIn integration (docs/implementation/02 + 06 + 09).
  *
- * OAuth 2.0 Authorization Code (no PKCE — LinkedIn is a confidential web app and does not
+ * OAuth 2.0 Authorization Code (no PKCE - LinkedIn is a confidential web app and does not
  * support/require PKCE). The signed CSRF `state` is echoed back and verified by the caller.
  *
  * Endpoints:
@@ -40,7 +40,7 @@ const SCOPES = ["openid", "profile", "email", "w_member_social"];
 /**
  * LinkedIn requires a monthly API version (YYYYMM) and only keeps each one active for ~12
  * months, so this must be a recent, still-active version. Override via env as it rolls forward
- * (a 426 NONEXISTENT_VERSION error means this value has aged out — bump it).
+ * (a 426 NONEXISTENT_VERSION error means this value has aged out - bump it).
  */
 const LINKEDIN_VERSION = process.env.LINKEDIN_VERSION ?? "202601";
 

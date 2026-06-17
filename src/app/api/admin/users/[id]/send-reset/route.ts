@@ -4,7 +4,7 @@ import { logAdminAction } from "@/server/admin/audit";
 import { AdminActionError, sendPasswordResetFor } from "@/server/admin/users";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/users/:id/send-reset — issue + email a reset token (doc 16). Role: support.
+// POST /api/admin/users/:id/send-reset - issue + email a reset token (doc 16). Role: support.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const actor = await requireRole("support");

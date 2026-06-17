@@ -26,7 +26,7 @@ export async function rateLimit(
       resetSeconds: ttl >= 0 ? ttl : windowSeconds,
     };
   } catch {
-    // Fail open — never block auth on a Redis hiccup.
+    // Fail open - never block auth on a Redis hiccup.
     return { ok: true, remaining: limit, resetSeconds: windowSeconds };
   }
 }

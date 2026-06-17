@@ -19,9 +19,9 @@ import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 import { FlagToggle } from "@/components/admin/settings/FlagToggle";
 import { DefaultsForm } from "@/components/admin/settings/DefaultsForm";
 
-// Admin Platform Settings — feature flags / kill switches + read-only defaults (doc 20). RSC.
+// Admin Platform Settings - feature flags / kill switches + read-only defaults (doc 20). RSC.
 // View is gated at `admin`; the global kill switches (signups, publishing, maintenance-mode)
-// are superadmin-only — those toggles are disabled for non-superadmins with a hint, and the
+// are superadmin-only - those toggles are disabled for non-superadmins with a hint, and the
 // API enforces the same rule. Mirrors the /admin/system page structure.
 
 export const dynamic = "force-dynamic";
@@ -93,7 +93,7 @@ export default async function AdminSettingsPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">
           Feature flags, kill switches, and customer-facing announcements. Changes take effect
-          within seconds — no deploy required.
+          within seconds - no deploy required.
         </p>
       </Reveal>
 

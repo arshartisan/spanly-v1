@@ -1,6 +1,6 @@
 import type { LegalBlock, LegalDocument as LegalDoc } from "@/lib/legal-content";
 
-// Renders a structured legal document (Terms / Privacy). Pure/server — mirrors the help
+// Renders a structured legal document (Terms / Privacy). Pure/server - mirrors the help
 // ArticleBody renderer so legal pages share the app's reading style with no markdown pipeline.
 
 function Block({ block }: { block: LegalBlock }) {

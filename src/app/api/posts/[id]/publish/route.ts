@@ -5,7 +5,7 @@ import { publishNow } from "@/server/posts";
 
 const bodySchema = z.object({ targets: z.array(z.string().min(1)).min(1) });
 
-// POST /api/posts/[id]/publish — "Post now". Creates targets + marks publishing
+// POST /api/posts/[id]/publish - "Post now". Creates targets + marks publishing
 // (docs/implementation/06 + 08). Actual dispatch is the Phase 5 worker.
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;

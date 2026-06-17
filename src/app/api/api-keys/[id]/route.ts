@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/server/auth";
 import { revokeApiKey } from "@/server/api-keys";
 
-// DELETE /api/api-keys/[id] — revoke a key (doc 12). Revoked keys stop authenticating at once.
+// DELETE /api/api-keys/[id] - revoke a key (doc 12). Revoked keys stop authenticating at once.
 export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });

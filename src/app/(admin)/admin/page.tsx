@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 import { KpiCard } from "@/components/admin/KpiCard";
 
-// Admin Overview (doc 15). Real data only from getOverviewMetrics() — no invented
+// Admin Overview (doc 15). Real data only from getOverviewMetrics() - no invented
 // fields. Mirrors the customer dashboard layout (max-w-7xl, Reveal/Stagger, KPI grid).
 export default async function AdminOverviewPage() {
   const [m, billing] = await Promise.all([getOverviewMetrics(), getBillingMetrics()]);

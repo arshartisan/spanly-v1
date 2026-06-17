@@ -4,7 +4,7 @@ import { logAdminAction } from "@/server/admin/audit";
 import { AdminActionError, signOutAllFor } from "@/server/admin/users";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/users/:id/signout-all — delete the target's sessions (doc 16). Role: support.
+// POST /api/admin/users/:id/signout-all - delete the target's sessions (doc 16). Role: support.
 // Uses an admin-safe delete that never touches the acting admin's own cookie.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

@@ -5,7 +5,7 @@ import type { CurrentUser } from "@/server/auth";
 // vitest run). Stub it. We mock @/server/db (prisma) so the service runs with no real DB,
 // @/server/mailer so broadcast `send` is a spy we assert on (no SMTP), and @/server/auth so
 // the impersonation/session helpers (createImpersonationSession/createSession/
-// getSessionContext) are spies — letting us test the support service in isolation without
+// getSessionContext) are spies - letting us test the support service in isolation without
 // touching next/headers cookies or a real session row.
 vi.mock("server-only", () => ({}));
 
@@ -105,7 +105,7 @@ async function catchThrown<T>(fn: () => Promise<T>): Promise<unknown> {
   throw new Error("expected the call to throw, but it resolved");
 }
 
-/** Minimal CurrentUser actor — only `.id` is read by the service. */
+/** Minimal CurrentUser actor - only `.id` is read by the service. */
 function actor(id: string): CurrentUser {
   return { id } as CurrentUser;
 }
@@ -236,7 +236,7 @@ describe("assertNotImpersonating (blocks destructive actions while impersonating
 
 // ═══════════════════════════ PURE: buildAudienceWhere ═══════════════════════════
 // Source of truth for the audience grammar → Prisma.UserWhereInput. Unknown/malformed
-// shapes MUST throw (400) — a match-everyone where on bad input would be a broadcast defect.
+// shapes MUST throw (400) - a match-everyone where on bad input would be a broadcast defect.
 
 describe("buildAudienceWhere (pure → Prisma.UserWhereInput)", () => {
   it('"all" → {} (matches everyone, intentionally)', () => {
@@ -259,7 +259,7 @@ describe("buildAudienceWhere (pure → Prisma.UserWhereInput)", () => {
     expect(buildAudienceWhere("ids:a, b ,c")).toEqual({ id: { in: ["a", "b", "c"] } });
   });
 
-  it('an empty plan key ("plan:") throws 400 — never a match-everyone where', () => {
+  it('an empty plan key ("plan:") throws 400 - never a match-everyone where', () => {
     const err = (() => {
       try {
         buildAudienceWhere("plan:");
@@ -271,7 +271,7 @@ describe("buildAudienceWhere (pure → Prisma.UserWhereInput)", () => {
     expect((err as AdminActionError).status).toBe(400);
   });
 
-  it('an empty id list ("ids:") throws 400 — never matches everyone', () => {
+  it('an empty id list ("ids:") throws 400 - never matches everyone', () => {
     const err = (() => {
       try {
         buildAudienceWhere("ids:");
@@ -349,7 +349,7 @@ describe("sendBroadcast (mailer fan-out + recipient count)", () => {
       text: "Publishing degraded.",
     });
 
-    // The audit-relevant return is JUST the count — no email addresses.
+    // The audit-relevant return is JUST the count - no email addresses.
     expect(result).toEqual({ recipientCount: 3 });
     expect(JSON.stringify(result)).not.toContain("@x.com");
   });
@@ -447,7 +447,7 @@ describe("anonymizeUser (PII scrub, access revoke, financial/audit retained)", (
     expect(saArg.data.status).toBe("error");
   });
 
-  it("PRESERVES financial + audit records — no deleteMany on subscription/refund/auditLog", async () => {
+  it("PRESERVES financial + audit records - no deleteMany on subscription/refund/auditLog", async () => {
     userFindUnique.mockResolvedValue({ id: "u_user", role: "user", subscription: null });
     await anonymizeUser("u_admin", "u_user", "gdpr");
     expect(subscriptionDeleteMany).not.toHaveBeenCalled();

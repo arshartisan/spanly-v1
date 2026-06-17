@@ -73,7 +73,7 @@ export function PlanActions({
           {hasSubscribers ? (
             <p className="rounded-lg border border-status-draft/30 bg-status-draft/10 px-3 py-2 text-[11px] text-status-draft">
               {subscriberCount} subscriber{subscriberCount === 1 ? " is" : "s are"} on this plan.
-              Deleting is blocked — set the plan inactive instead so existing subscribers keep
+              Deleting is blocked - set the plan inactive instead so existing subscribers keep
               working.
             </p>
           ) : null}

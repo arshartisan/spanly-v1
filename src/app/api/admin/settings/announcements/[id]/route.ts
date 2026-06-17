@@ -5,7 +5,7 @@ import { deleteAnnouncement, updateAnnouncement } from "@/server/settings/flags"
 import { announcementUpdateSchema } from "@/lib/schemas/admin-settings";
 import { clientIp } from "@/server/rate-limit";
 
-// PATCH /api/admin/settings/announcements/:id — patch an announcement (doc 20). Role: admin.
+// PATCH /api/admin/settings/announcements/:id - patch an announcement (doc 20). Role: admin.
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const actor = await requireRole("admin");
@@ -40,7 +40,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 }
 
-// DELETE /api/admin/settings/announcements/:id — delete an announcement (doc 20). Role: admin.
+// DELETE /api/admin/settings/announcements/:id - delete an announcement (doc 20). Role: admin.
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const actor = await requireRole("admin");

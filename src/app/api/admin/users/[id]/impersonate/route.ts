@@ -4,7 +4,7 @@ import { logAdminAction } from "@/server/admin/audit";
 import { AdminActionError, startImpersonation } from "@/server/admin/support";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/users/:id/impersonate — start impersonating a user (doc 21). Role: superadmin.
+// POST /api/admin/users/:id/impersonate - start impersonating a user (doc 21). Role: superadmin.
 // On success the session cookie is swapped to the target; the client navigates to /dashboard.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

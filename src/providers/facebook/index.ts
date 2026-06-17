@@ -1,7 +1,7 @@
 /**
- * FacebookProvider — real Facebook Page integration (docs/implementation/02 + 06 + 09).
+ * FacebookProvider - real Facebook Page integration (docs/implementation/02 + 06 + 09).
  *
- * OAuth 2.0 Authorization Code (no PKCE — Facebook is a confidential web app). The signed
+ * OAuth 2.0 Authorization Code (no PKCE - Facebook is a confidential web app). The signed
  * CSRF `state` is echoed back and verified by the caller.
  *
  * Unlike X/LinkedIn (single user + single token), Meta publishes as a **Page**, not the
@@ -14,7 +14,7 @@
  * token in `tokens.extra.userToken` so refresh() can re-derive a fresh Page token.
  *
  * The connected Page is the ExternalAccount (externalId/pageId = Page id). Page selection UI
- * (when a user manages several) is a follow-up — for now we take the first Page returned.
+ * (when a user manages several) is a follow-up - for now we take the first Page returned.
  *
  * Endpoints (vVERSION):
  *   authorize  https://www.facebook.com/<v>/dialog/oauth

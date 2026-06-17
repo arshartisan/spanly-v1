@@ -1,4 +1,4 @@
-// Client-safe plan catalog defaults — NO `server-only`, NO prisma, so this is importable
+// Client-safe plan catalog defaults - NO `server-only`, NO prisma, so this is importable
 // from client components AND the server. It is the single source of the static fallback
 // catalog used by the server's DB-backed catalog (`src/server/plans.ts`) and by client
 // display/filter components until the live catalog is passed down as props.
@@ -87,8 +87,8 @@ export const DEFAULT_PLAN_KEYS: string[] = DEFAULT_PLAN_DEFS.map((p) => p.key);
 /** Client-safe label formatter (pure). Falls back to the raw key for unknown/custom plans. */
 export function defaultPlanLabel(plan: PlanKey, status?: string): string {
   const name = DEFAULT_PLANS[plan]?.name ?? plan;
-  if (status === "trialing") return `${name} — Trial`;
-  if (status === "past_due") return `${name} — Past due`;
-  if (status === "canceled") return `${name} — Canceled`;
+  if (status === "trialing") return `${name} - Trial`;
+  if (status === "past_due") return `${name} - Past due`;
+  if (status === "canceled") return `${name} - Canceled`;
   return name;
 }

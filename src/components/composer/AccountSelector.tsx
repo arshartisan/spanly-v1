@@ -10,7 +10,7 @@ import type { ComposerAccount } from "./types";
  * select-all / clear, then a row of avatars. Selecting toggles membership in `targets`.
  *
  * Only *account-specific* problems (caption over a platform's limit, unsupported type) flag an
- * avatar — shown in amber with a tooltip reason, never the alarming red that used to read like
+ * avatar - shown in amber with a tooltip reason, never the alarming red that used to read like
  * "account disconnected". Missing shared content (no image/caption yet) is surfaced separately
  * by the composer as a next-step hint, not on every avatar.
  */
@@ -82,7 +82,7 @@ export function AccountSelector({
           const isInvalid = isSelected && invalidIds.has(a.id);
           const reasons = issues?.get(a.id);
           const title = reasons?.length
-            ? `${a.handle} — ${reasons.join(" · ")}`
+            ? `${a.handle} - ${reasons.join(" · ")}`
             : `${a.handle} (${style.label})`;
           return (
             <button

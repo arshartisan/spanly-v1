@@ -11,7 +11,7 @@ import { ForceDisconnect } from "@/components/admin/content/ForceDisconnect";
 import { AccountStatusBadge, PlatformChip } from "@/components/admin/content/display";
 import { cn } from "@/lib/utils";
 
-// Admin cross-user connections list (doc 18) — RSC. Parses the URL query with the shared Zod
+// Admin cross-user connections list (doc 18) - RSC. Parses the URL query with the shared Zod
 // schema, reads via listConnections(), and renders the subscriptions-style glass table.
 // Filters live in the client <ConnectionFilters/>. Admins get a force-disconnect action per
 // live account. Tokens are never selected or rendered.
@@ -161,7 +161,7 @@ function ConnectionRow({
       {canModerate ? (
         <Td className="text-right">
           {disconnected ? (
-            <span className="text-xs text-muted-foreground">—</span>
+            <span className="text-xs text-muted-foreground">-</span>
           ) : (
             <ForceDisconnect
               accountId={account.id}

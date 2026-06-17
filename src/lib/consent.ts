@@ -1,12 +1,12 @@
 /**
- * Cookie-consent model — the single source of truth for what categories exist, how the
+ * Cookie-consent model - the single source of truth for what categories exist, how the
  * choice is persisted, and when we must re-ask. Deliberately isomorphic (no "server-only"):
  * the pure parse/serialize helpers run on both the server and the client, while the
  * `document.cookie` helpers guard for SSR so this file is safe to import anywhere.
  *
  * Compliance shape (UK PECR / EU GDPR / US state laws):
  *  - "necessary" cookies are always on and need no consent (session auth, security).
- *  - every other category is OPT-IN and off by default — nothing non-essential loads
+ *  - every other category is OPT-IN and off by default - nothing non-essential loads
  *    until the user actively grants it, and rejecting must be as easy as accepting.
  *  - the choice is stored with a schema version + timestamp so we can re-ask when the
  *    cookie list changes or the consent goes stale.
@@ -29,7 +29,7 @@ export type OptionalCategory = (typeof OPTIONAL_CATEGORIES)[number];
 export type ConsentCategory = "necessary" | OptionalCategory;
 
 export interface ConsentState {
-  /** Strictly necessary cookies — always granted. */
+  /** Strictly necessary cookies - always granted. */
   necessary: true;
   /** Anonymous product analytics to understand and improve the Service. */
   analytics: boolean;

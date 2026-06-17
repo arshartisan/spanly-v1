@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/server/auth";
 import { retryTarget } from "@/server/posts";
 
-// POST /api/posts/[id]/targets/[targetId]/retry — re-publish a single failed target
+// POST /api/posts/[id]/targets/[targetId]/retry - re-publish a single failed target
 // (docs/implementation/09). Successful targets are never touched, so no duplicate posts.
 export async function POST(
   _req: Request,

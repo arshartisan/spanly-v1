@@ -102,7 +102,7 @@ describe("listPlansAdmin (rows + subscriberCount from groupBy; accountLimit stay
       { key: "creator", accountLimit: 15, subscriberCount: 3 },
       { key: "pro", accountLimit: -1, subscriberCount: 0 },
     ]);
-    // accountLimit -1 is left as -1 (NOT Infinity) — JSON-safe for the UI.
+    // accountLimit -1 is left as -1 (NOT Infinity) - JSON-safe for the UI.
     expect(rows[1].accountLimit).toBe(-1);
   });
 
@@ -124,7 +124,7 @@ describe("listPlansAdmin (rows + subscriberCount from groupBy; accountLimit stay
 // ═══════════════════════════ createPlan ═══════════════════════════
 
 describe("createPlan (409 on existing key; success creates + invalidates cache)", () => {
-  it("throws 409 when the key already exists — never creates", async () => {
+  it("throws 409 when the key already exists - never creates", async () => {
     planFindUnique.mockResolvedValue({ key: "starter" });
     const err = await catchThrown(() => createPlan("u_admin", createInput()));
     expect(err).toBeInstanceOf(AdminActionError);
@@ -151,7 +151,7 @@ describe("createPlan (409 on existing key; success creates + invalidates cache)"
 // ═══════════════════════════ updatePlan ═══════════════════════════
 
 describe("updatePlan (404 missing; never writes key; success invalidates cache)", () => {
-  it("throws 404 when the plan is missing — never updates", async () => {
+  it("throws 404 when the plan is missing - never updates", async () => {
     planFindUnique.mockResolvedValue(null);
     const err = await catchThrown(() => updatePlan("u_admin", "ghost", { name: "X" }));
     expect((err as AdminActionError).status).toBe(404);
@@ -181,14 +181,14 @@ describe("updatePlan (404 missing; never writes key; success invalidates cache)"
 // ═══════════════════════════ deletePlan ═══════════════════════════
 
 describe("deletePlan (404 / 409 subscribers / 409 last-active / success)", () => {
-  it("throws 404 when the plan is missing — never deletes", async () => {
+  it("throws 404 when the plan is missing - never deletes", async () => {
     planFindUnique.mockResolvedValue(null);
     const err = await catchThrown(() => deletePlan("u_admin", "ghost"));
     expect((err as AdminActionError).status).toBe(404);
     expect(planDelete).not.toHaveBeenCalled();
   });
 
-  it("throws 409 when ANY live subscriber is on the plan — never deletes", async () => {
+  it("throws 409 when ANY live subscriber is on the plan - never deletes", async () => {
     planFindUnique.mockResolvedValue({ key: "creator", active: true });
     subCount.mockResolvedValue(2);
     const err = await catchThrown(() => deletePlan("u_admin", "creator"));
@@ -208,7 +208,7 @@ describe("deletePlan (404 / 409 subscribers / 409 last-active / success)", () =>
     expect(planDelete).not.toHaveBeenCalled();
   });
 
-  it("succeeds when no subscribers and other active plans remain — deletes + invalidates", async () => {
+  it("succeeds when no subscribers and other active plans remain - deletes + invalidates", async () => {
     planFindUnique.mockResolvedValue({ key: "creator", active: true });
     subCount.mockResolvedValue(0);
     planCount.mockResolvedValue(1); // another active plan exists
@@ -317,7 +317,7 @@ describe("planUpdateSchema (no key; everything optional)", () => {
     expect(planUpdateSchema.safeParse({}).success).toBe(true);
   });
 
-  it("does NOT accept a key (stripped — immutable)", () => {
+  it("does NOT accept a key (stripped - immutable)", () => {
     const parsed = planUpdateSchema.parse({ key: "renamed", name: "X" });
     expect("key" in parsed).toBe(false);
     expect(parsed.name).toBe("X");

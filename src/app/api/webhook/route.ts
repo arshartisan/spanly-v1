@@ -6,7 +6,7 @@ import { deleteWebhook, getWebhook, upsertWebhook } from "@/server/webhooks";
 
 const putSchema = z.object({ url: z.string().url().max(2048) });
 
-// GET /api/webhook — current webhook config (url + signing secret), or null (doc 12).
+// GET /api/webhook - current webhook config (url + signing secret), or null (doc 12).
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -16,7 +16,7 @@ export async function GET() {
   return NextResponse.json({ webhook: await getWebhook(user.id) });
 }
 
-// PUT /api/webhook — set/replace the callback URL (secret is stable across edits).
+// PUT /api/webhook - set/replace the callback URL (secret is stable across edits).
 export async function PUT(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -29,7 +29,7 @@ export async function PUT(req: Request) {
   return NextResponse.json({ webhook: await upsertWebhook(user.id, parsed.data.url) });
 }
 
-// DELETE /api/webhook — remove the callback.
+// DELETE /api/webhook - remove the callback.
 export async function DELETE() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });

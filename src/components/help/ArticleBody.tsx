@@ -1,6 +1,6 @@
 import type { HelpBlock } from "@/lib/help-content";
 
-// Renders a help article's structured blocks. Pure/server — no markdown pipeline needed.
+// Renders a help article's structured blocks. Pure/server - no markdown pipeline needed.
 export function ArticleBody({ body }: { body: HelpBlock[] }) {
   return (
     <div className="flex flex-col gap-4">

@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 // Create / edit form for a plan tier (admin plan catalog). A popover-hosted controlled form
 // mirroring the Zod contract in `@/lib/schemas/admin-plans` (planCreateSchema /
-// planUpdateSchema) so the UX matches server validation — but the server is the real gate.
+// planUpdateSchema) so the UX matches server validation - but the server is the real gate.
 // On submit it POSTs (create) or PATCHes (edit) the admin plans API, then router.refresh()es
 // the RSC. `accountLimit` uses the -1 ⇄ "Unlimited" sentinel: an "Unlimited" checkbox sets the
 // stored value to -1 and disables the number input. Mirrors AnnouncementForm / UserActions.
@@ -58,7 +58,7 @@ export function PlanForm({
   mode: "create" | "edit";
   /** The existing row (edit mode). Omitted in create mode. */
   plan?: PlanAdminRow;
-  /** Suggested rank for a new plan (create mode) — one past the current max. */
+  /** Suggested rank for a new plan (create mode) - one past the current max. */
   nextRank?: number;
 }) {
   const [open, setOpen] = useState(false);
@@ -216,7 +216,7 @@ function PlanFormBody({
     <form onSubmit={onSubmit} className="flex flex-col gap-3">
       <p className="text-sm font-medium">{mode === "create" ? "New plan" : "Edit plan"}</p>
 
-      {/* Key — create-only (immutable); shown read-only in edit mode. */}
+      {/* Key - create-only (immutable); shown read-only in edit mode. */}
       {mode === "create" ? (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="plan-key">Key</Label>

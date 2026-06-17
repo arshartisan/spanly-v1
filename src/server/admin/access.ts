@@ -5,7 +5,7 @@ import { getCurrentUser, type CurrentUser } from "@/server/auth";
 
 // Server-side role gating for the admin surface (doc 15), mirroring `requirePlan`
 // in src/server/plans.ts. The session cookie's presence is gated by middleware;
-// the REAL authorization is here — middleware runs on the edge with no DB.
+// the REAL authorization is here - middleware runs on the edge with no DB.
 
 const RANK: Record<Role, number> = { user: 0, support: 1, admin: 2, superadmin: 3 };
 

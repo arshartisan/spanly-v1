@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/server/auth";
 import { deletePost, getPublishingState, updatePost } from "@/server/posts";
 import { updatePostSchema } from "@/lib/schemas/post";
 
-// GET /api/posts/[id] — publishing/result state, polled by /publishing/[id] until terminal
+// GET /api/posts/[id] - publishing/result state, polled by /publishing/[id] until terminal
 // (docs/implementation/09 + 12).
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -15,7 +15,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   return NextResponse.json(state);
 }
 
-// PATCH /api/posts/[id] — update a draft/scheduled post (docs/implementation/06 + 12).
+// PATCH /api/posts/[id] - update a draft/scheduled post (docs/implementation/06 + 12).
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const user = await getCurrentUser();

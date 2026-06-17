@@ -3,7 +3,7 @@ import { requireRole } from "@/server/admin/access";
 import { listAuditLogs } from "@/server/admin/audit-log";
 import { auditLogQuerySchema } from "@/lib/schemas/admin-audit";
 
-// GET /api/admin/audit — append-only admin audit trail with filters + cursor paging (doc 15).
+// GET /api/admin/audit - append-only admin audit trail with filters + cursor paging (doc 15).
 // Role: support. READ-ONLY: the log is never edited or deleted through the API.
 export async function GET(req: Request) {
   try {

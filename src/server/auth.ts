@@ -75,7 +75,7 @@ export interface NewUserInput {
 
 /**
  * Create a customer with the standard onboarding defaults (trial subscription + default queue
- * slots). Does NOT create a session — callers decide when to sign the user in.
+ * slots). Does NOT create a session - callers decide when to sign the user in.
  */
 export async function createTrialUser(input: NewUserInput): Promise<User> {
   const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
@@ -169,7 +169,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 }
 
 export interface SessionContext {
-  /** The EFFECTIVE user — the impersonated target when impersonating, else the signed-in user. */
+  /** The EFFECTIVE user - the impersonated target when impersonating, else the signed-in user. */
   user: CurrentUser;
   /** The acting staff user id when this is an impersonation session, else null. */
   impersonatorId: string | null;

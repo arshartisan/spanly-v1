@@ -5,7 +5,7 @@ import { AdminActionError, createStaffRefund, listRefundRequests } from "@/serve
 import { refundStatusFilterSchema, staffRefundSchema } from "@/lib/schemas/admin-billing";
 import { clientIp } from "@/server/rate-limit";
 
-// GET /api/admin/refunds — refund-request queue (doc 17). Role: support.
+// GET /api/admin/refunds - refund-request queue (doc 17). Role: support.
 export async function GET(req: Request) {
   try {
     await requireRole("support");
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   }
 }
 
-// POST /api/admin/refunds — staff-initiated pending refund request (doc 17). Role: admin.
+// POST /api/admin/refunds - staff-initiated pending refund request (doc 17). Role: admin.
 export async function POST(req: Request) {
   try {
     const actor = await requireRole("admin");

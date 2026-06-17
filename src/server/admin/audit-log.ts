@@ -6,17 +6,17 @@ import type { AuditLogQuery } from "@/lib/schemas/admin-audit";
 // Read surface for the append-only admin audit trail (doc 15). The WRITER lives in
 // `audit.ts` (`logAdminAction`); this file only reads. Pure `buildAuditWhere` for unit
 // tests; `listAuditLogs` runs the cursor-paginated query. The select NEVER reaches into
-// the actor's secrets (passwordHash / tokens) — only id/email/displayName.
+// the actor's secrets (passwordHash / tokens) - only id/email/displayName.
 
 // ─────────────────────────── Filtering ───────────────────────────
 
 /**
- * Pure mapping from a parsed audit filter to a Prisma `AuditLogWhereInput`. No DB calls —
+ * Pure mapping from a parsed audit filter to a Prisma `AuditLogWhereInput`. No DB calls -
  * unit-testable in isolation. Combined with AND so every supplied filter narrows.
  *
  * `action` uses case-insensitive `contains` (NOT exact) on purpose: the actions are
  * dotted namespaces ("user.suspend", "user.impersonate.start", …), so a query of "user."
- * matches every user-scoped action — far more useful as a filter than exact match.
+ * matches every user-scoped action - far more useful as a filter than exact match.
  *
  * `actorId` (exact) and `actorQuery` (email/displayName contains via the `actor` relation)
  * are independent; if both are supplied both constraints apply.
@@ -71,7 +71,7 @@ const auditListSelect = {
   metadata: true,
   ip: true,
   createdAt: true,
-  // Only non-secret actor fields — NEVER passwordHash / encryptedTokens / reset tokens.
+  // Only non-secret actor fields - NEVER passwordHash / encryptedTokens / reset tokens.
   actor: { select: { id: true, email: true, displayName: true } },
 } satisfies Prisma.AuditLogSelect;
 

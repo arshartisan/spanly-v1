@@ -5,7 +5,7 @@ import { AdminActionError, approveRefund } from "@/server/admin/billing";
 import { approveRefundSchema } from "@/lib/schemas/admin-billing";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/refunds/:id/approve — approve & issue a refund (doc 17). Role: admin;
+// POST /api/admin/refunds/:id/approve - approve & issue a refund (doc 17). Role: admin;
 // out-of-policy forced refunds require superadmin (enforced when `force` is set).
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

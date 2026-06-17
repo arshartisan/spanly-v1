@@ -89,7 +89,7 @@ export function ApiKeysView({
         <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
           <p className="text-sm font-medium">Your new API key “{revealed.name}”</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Copy it now — for your security, it won't be shown again.
+            Copy it now - for your security, it won't be shown again.
           </p>
           <div className="mt-3 flex items-center gap-2">
             <code className="flex-1 truncate rounded-md border bg-background px-3 py-2 font-mono text-xs">

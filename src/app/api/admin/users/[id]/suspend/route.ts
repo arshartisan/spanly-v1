@@ -5,7 +5,7 @@ import { AdminActionError, suspendUser } from "@/server/admin/users";
 import { suspendSchema } from "@/lib/schemas/admin-users";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/users/:id/suspend — set suspendedAt=now (doc 16). Role: support.
+// POST /api/admin/users/:id/suspend - set suspendedAt=now (doc 16). Role: support.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const actor = await requireRole("support");

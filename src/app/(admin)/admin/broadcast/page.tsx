@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Reveal } from "@/components/motion/reveal";
 import { BroadcastForm } from "@/components/admin/settings/BroadcastForm";
 
-// Admin Broadcast — send a transactional/broadcast email to an audience (doc 21). RSC.
+// Admin Broadcast - send a transactional/broadcast email to an audience (doc 21). RSC.
 // requireStaff("superadmin") redirects any non-superadmin. Mirrors the announcements page
 // structure; the composer itself is a client component (BroadcastForm). This sends REAL email.
 
@@ -21,7 +21,7 @@ export default async function AdminBroadcastPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Broadcast</h1>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Send an email to a segment of customers — service notices, price changes, and the like.
+          Send an email to a segment of customers - service notices, price changes, and the like.
         </p>
       </Reveal>
 
@@ -32,7 +32,7 @@ export default async function AdminBroadcastPage() {
         >
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <p className="leading-snug">
-            This sends a real email to every matching user. Double-check the audience and copy —
+            This sends a real email to every matching user. Double-check the audience and copy -
             there is no undo. The send is audited (audience + recipient count only).
           </p>
         </div>

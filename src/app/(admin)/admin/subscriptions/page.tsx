@@ -26,7 +26,7 @@ import { formatCents, formatPercent } from "@/lib/admin-format";
 import { cn } from "@/lib/utils";
 import type { PlanKey } from "@/server/plans";
 
-// Admin subscriptions oversight (doc 17) — RSC. A billing-metrics KPI strip + plan-mix
+// Admin subscriptions oversight (doc 17) - RSC. A billing-metrics KPI strip + plan-mix
 // breakdown, then a filterable subscriptions table sharing the users-table styling.
 
 export const dynamic = "force-dynamic";
@@ -226,7 +226,7 @@ function SubscriptionRow({ sub }: { sub: AdminSubscriptionListItem }) {
             API add-on
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground">—</span>
+          <span className="text-xs text-muted-foreground">-</span>
         )}
       </Td>
       <Td>
@@ -238,7 +238,7 @@ function SubscriptionRow({ sub }: { sub: AdminSubscriptionListItem }) {
             {sub.providerSubId.slice(0, 14)}…
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground">—</span>
+          <span className="text-xs text-muted-foreground">-</span>
         )}
       </Td>
     </tr>
@@ -246,7 +246,7 @@ function SubscriptionRow({ sub }: { sub: AdminSubscriptionListItem }) {
 }
 
 function fmtDate(d: Date | null | undefined): string {
-  return d ? format(new Date(d), "d MMM yyyy") : "—";
+  return d ? format(new Date(d), "d MMM yyyy") : "-";
 }
 
 function Th({ children, className }: { children: React.ReactNode; className?: string }) {

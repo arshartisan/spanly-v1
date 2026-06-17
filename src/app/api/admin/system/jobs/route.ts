@@ -5,7 +5,7 @@ import { jobListQuerySchema } from "@/lib/schemas/admin-ops";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/admin/system/jobs?queue=&state=failed — failed/active job list (doc 19). Role: support.
+// GET /api/admin/system/jobs?queue=&state=failed - failed/active job list (doc 19). Role: support.
 export async function GET(req: Request) {
   try {
     await requireRole("support");

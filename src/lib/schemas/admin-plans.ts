@@ -12,7 +12,7 @@ const planKey = z
   .max(32, "Key must be at most 32 characters.")
   .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, "Key must be a slug (lowercase letters, numbers, hyphens).");
 
-/** A single feature bullet — non-empty after trim. */
+/** A single feature bullet - non-empty after trim. */
 const feature = z.string().trim().min(1, "Feature text cannot be empty.").max(120);
 
 const features = z.array(feature).max(20, "At most 20 features.");
@@ -23,7 +23,7 @@ const accountLimit = z
   .int("Account limit must be a whole number.")
   .gte(-1, "Account limit must be -1 (unlimited) or greater.");
 
-/** POST /api/admin/plans — create a plan tier. */
+/** POST /api/admin/plans - create a plan tier. */
 export const planCreateSchema = z.object({
   key: planKey,
   name: z.string().trim().min(1, "A name is required.").max(60),
@@ -39,7 +39,7 @@ export const planCreateSchema = z.object({
 
 export type PlanCreateInput = z.infer<typeof planCreateSchema>;
 
-/** PATCH /api/admin/plans/:key — every create field EXCEPT `key` (immutable), all optional. */
+/** PATCH /api/admin/plans/:key - every create field EXCEPT `key` (immutable), all optional. */
 export const planUpdateSchema = z
   .object({
     name: z.string().trim().min(1, "A name is required.").max(60),
@@ -56,7 +56,7 @@ export const planUpdateSchema = z
 
 export type PlanUpdateInput = z.infer<typeof planUpdateSchema>;
 
-/** PATCH /api/admin/settings/defaults — edit the platform default scalars. */
+/** PATCH /api/admin/settings/defaults - edit the platform default scalars. */
 export const defaultsUpdateSchema = z.object({
   trialDays: z.number().int("Trial days must be a whole number.").gte(0).lte(90).optional(),
   refundWindowDays: z

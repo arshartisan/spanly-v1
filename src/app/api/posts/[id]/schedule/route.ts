@@ -9,7 +9,7 @@ const bodySchema = z.object({
   timezone: z.string().min(1).default("UTC"),
 });
 
-// POST /api/posts/[id]/schedule — schedule for a specific UTC instant
+// POST /api/posts/[id]/schedule - schedule for a specific UTC instant
 // (docs/implementation/06 + 08).
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;

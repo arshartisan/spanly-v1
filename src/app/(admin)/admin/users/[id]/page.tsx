@@ -12,7 +12,7 @@ import { UserDetailTabs } from "@/components/admin/users/UserDetailTabs";
 import { SupportPowers } from "@/components/admin/users/SupportPowers";
 import { PlanBadge, RoleBadge } from "@/components/admin/users/display";
 
-// Admin user detail (doc 16) — RSC. Reads the full user via getUserDetail() and hands the
+// Admin user detail (doc 16) - RSC. Reads the full user via getUserDetail() and hands the
 // already-fetched data to the client tab + action components (no client refetch). 404s on a
 // missing id.
 

@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 // the LIVE admin-editable catalog via `planOptions` (from the RSC parent); when omitted it
 // falls back to the static defaults so the component still renders client-side.
 
-/** A plan choice for the override select — key + display name. */
+/** A plan choice for the override select - key + display name. */
 export type PlanOption = { key: string; name: string };
 
 const DEFAULT_PLAN_OPTIONS: PlanOption[] = DEFAULT_PLAN_DEFS.map((p) => ({
@@ -62,7 +62,7 @@ export function SubscriptionOverride({
         <h3 className="text-sm font-semibold">Superadmin billing controls</h3>
       </div>
       <p className="text-xs text-muted-foreground">
-        Manual overrides write directly to the subscription. Use deliberately — every change
+        Manual overrides write directly to the subscription. Use deliberately - every change
         is recorded in the audit log.
       </p>
       <div className="flex flex-wrap items-center gap-2">

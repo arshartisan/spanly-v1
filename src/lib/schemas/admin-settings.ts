@@ -11,7 +11,7 @@ const isoDate = z
 /**
  * `audience` is `all` | `trialing` | `plan:<planKey>`. Plan keys are dynamic (admin-editable
  * catalog), so we validate the `plan:` shape carries a non-empty key rather than checking it
- * against a fixed enum — an audience can still never be an empty `plan:`.
+ * against a fixed enum - an audience can still never be an empty `plan:`.
  */
 const audience = z
   .string()
@@ -21,7 +21,7 @@ const audience = z
     { message: "Audience must be 'all', 'trialing', or 'plan:<planKey>'." },
   );
 
-/** PATCH /api/admin/settings/flags/:key — `{ enabled, value? }`. */
+/** PATCH /api/admin/settings/flags/:key - `{ enabled, value? }`. */
 export const flagPatchSchema = z.object({
   enabled: z.boolean(),
   value: z.unknown().optional(),
@@ -43,7 +43,7 @@ export const announcementCreateSchema = z.object({
 
 export type AnnouncementCreateInput = z.infer<typeof announcementCreateSchema>;
 
-/** PATCH /api/admin/settings/announcements/:id — every field optional, incl. `active`. */
+/** PATCH /api/admin/settings/announcements/:id - every field optional, incl. `active`. */
 export const announcementUpdateSchema = z.object({
   message: z.string().trim().min(1).max(500).optional(),
   severity: z.enum(SEVERITIES).optional(),

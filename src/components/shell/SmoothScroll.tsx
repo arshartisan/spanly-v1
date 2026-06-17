@@ -7,7 +7,7 @@ import Lenis from "lenis";
  * Smooth-scrolls the authenticated shell's main content. The app locks window scroll
  * (`overflow-hidden` on the shell) and scrolls inside <main>, so Lenis is bound to that
  * element via `wrapper`/`content` rather than the document. Disabled when the user prefers
- * reduced motion — native scrolling takes over.
+ * reduced motion - native scrolling takes over.
  */
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
   const wrapperRef = useRef<HTMLElement>(null);

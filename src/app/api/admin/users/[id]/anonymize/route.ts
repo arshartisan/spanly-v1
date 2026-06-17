@@ -5,8 +5,8 @@ import { AdminActionError, anonymizeUser } from "@/server/admin/support";
 import { gdprActionSchema } from "@/lib/schemas/admin-support";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/users/:id/anonymize — GDPR scrub PII + revoke access (doc 21). Role: superadmin.
-// Audit records the reason only — never the scrubbed PII or any OAuth tokens.
+// POST /api/admin/users/:id/anonymize - GDPR scrub PII + revoke access (doc 21). Role: superadmin.
+// Audit records the reason only - never the scrubbed PII or any OAuth tokens.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const actor = await requireRole("superadmin");

@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-/** Platform filter for the calendar — navigates with view+date preserved. */
+/** Platform filter for the calendar - navigates with view+date preserved. */
 export function CalendarPlatformFilter({
   view,
   anchorKey,

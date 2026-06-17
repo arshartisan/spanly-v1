@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/server/admin/access";
 import { getPostDetail } from "@/server/admin/content";
 
-// GET /api/admin/content/:postId — full post detail + targets (doc 18). Role: support.
+// GET /api/admin/content/:postId - full post detail + targets (doc 18). Role: support.
 export async function GET(_req: Request, { params }: { params: Promise<{ postId: string }> }) {
   try {
     await requireRole("support");

@@ -5,7 +5,7 @@ import { createApiKey, listApiKeys, requireApiAddon } from "@/server/api-keys";
 
 const createSchema = z.object({ name: z.string().min(1).max(60) });
 
-// GET /api/api-keys — list the user's active keys (doc 12). Add-on gated.
+// GET /api/api-keys - list the user's active keys (doc 12). Add-on gated.
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -15,7 +15,7 @@ export async function GET() {
   return NextResponse.json({ keys: await listApiKeys(user.id) });
 }
 
-// POST /api/api-keys — mint a key; the plaintext is returned exactly once (doc 12).
+// POST /api/api-keys - mint a key; the plaintext is returned exactly once (doc 12).
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });

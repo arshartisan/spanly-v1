@@ -17,10 +17,10 @@ export type { PlanDef, PlanKey };
  * Two layers live here:
  *  1. Static DEFAULT_PLAN_DEFS + the synchronous exports (PLANS, PLAN_LIST, accountLimit,
  *     planAtLeast, requirePlan, isOverAccountLimit, planLabel). These are back-compat /
- *     fallback only — they keep the ~30 existing import sites compiling and serve as the
+ *     fallback only - they keep the ~30 existing import sites compiling and serve as the
  *     fallback when the DB catalog is empty/unreachable. They do NOT read the live DB.
  *  2. Async DB-backed accessors (getPlanCatalog, getPlanMap, getPlan, getAccountLimit,
- *     getPlanAtLeast, requirePlanGate, getPlanLabel). These are the real source of truth —
+ *     getPlanAtLeast, requirePlanGate, getPlanLabel). These are the real source of truth -
  *     server-side enforcement should use these. They read the admin-editable Plan table,
  *     cached like flags.ts, and fall back to DEFAULT_PLAN_DEFS so the product never breaks.
  */
@@ -101,15 +101,15 @@ export function planLabel(plan: PlanKey, status?: string): string {
 
 /** Shared label formatter (pure). */
 function labelFor(name: string, status?: string): string {
-  if (status === "trialing") return `${name} — Trial`;
-  if (status === "past_due") return `${name} — Past due`;
-  if (status === "canceled") return `${name} — Canceled`;
+  if (status === "trialing") return `${name} - Trial`;
+  if (status === "past_due") return `${name} - Past due`;
+  if (status === "canceled") return `${name} - Canceled`;
   return name;
 }
 
 // ─────────────────────────── DB-backed catalog (live source of truth) ───────────────────────────
 
-const CACHE_TTL_MS = 20_000; // mirrors flags.ts — cheap gates, fast invalidation.
+const CACHE_TTL_MS = 20_000; // mirrors flags.ts - cheap gates, fast invalidation.
 
 interface CachedCatalog {
   defs: PlanDef[];
@@ -153,7 +153,7 @@ function fromDbPlan(row: {
 
 /**
  * The active plan catalog, ordered by rank. Cached for CACHE_TTL_MS. Falls back to
- * DEFAULT_PLAN_DEFS if the DB is empty or unreachable — NEVER throws, so signup / connect /
+ * DEFAULT_PLAN_DEFS if the DB is empty or unreachable - NEVER throws, so signup / connect /
  * publish keep working even when the catalog table is unavailable.
  */
 export async function getPlanCatalog(): Promise<PlanDef[]> {
@@ -168,7 +168,7 @@ export async function getPlanCatalog(): Promise<PlanDef[]> {
     });
     defs = rows.length > 0 ? rows.map(fromDbPlan) : DEFAULT_PLAN_DEFS;
   } catch {
-    // DB unreachable — fall back to the built-in defaults so the product keeps working.
+    // DB unreachable - fall back to the built-in defaults so the product keeps working.
     defs = DEFAULT_PLAN_DEFS;
   }
 
@@ -217,7 +217,7 @@ export async function requirePlanGate(
   return { ok: true };
 }
 
-/** Live (DB catalog) plan label, e.g. "Creator — Trial". */
+/** Live (DB catalog) plan label, e.g. "Creator - Trial". */
 export async function getPlanLabel(plan: PlanKey, status?: string): Promise<string> {
   const def = await getPlan(plan);
   return labelFor(def?.name ?? plan, status);

@@ -15,7 +15,7 @@ import { RefundActions } from "@/components/admin/billing/RefundActions";
 import { formatCents } from "@/lib/admin-format";
 import { cn } from "@/lib/utils";
 
-// Admin refund-request queue (doc 17) — RSC. Defaults to the pending queue; staff can
+// Admin refund-request queue (doc 17) - RSC. Defaults to the pending queue; staff can
 // approve/deny pending rows. Out-of-policy rows (>7 days old) are flagged in red.
 
 export const dynamic = "force-dynamic";
@@ -210,7 +210,7 @@ function RefundRow({
             {formatDistanceToNow(new Date(refund.decidedAt), { addSuffix: true })}
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground">—</span>
+          <span className="text-xs text-muted-foreground">-</span>
         )}
       </Td>
     </tr>

@@ -24,7 +24,7 @@ function CategoryTable({ category }: { category: CookieCategoryMeta }) {
               : "rounded-full bg-primary/15 px-2.5 py-0.5 text-[11px] font-medium text-primary"
           }
         >
-          {category.required ? "Always on" : "Optional — your choice"}
+          {category.required ? "Always on" : "Optional - your choice"}
         </span>
       </div>
       <p className="text-sm leading-relaxed text-muted-foreground">{category.description}</p>

@@ -5,7 +5,7 @@ import { AdminActionError, cancelPost } from "@/server/admin/content";
 import { moderationActionSchema } from "@/lib/schemas/admin-content";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/content/:postId/cancel — cancel a scheduled post (doc 18). Role: admin.
+// POST /api/admin/content/:postId/cancel - cancel a scheduled post (doc 18). Role: admin.
 export async function POST(req: Request, { params }: { params: Promise<{ postId: string }> }) {
   try {
     const actor = await requireRole("admin");

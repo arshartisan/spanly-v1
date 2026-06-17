@@ -1,7 +1,7 @@
 /**
  * BullMQ queues (docs/implementation/08). The Next.js app ENQUEUES publish jobs here; the
  * standalone worker (worker/index.ts) consumes them and the maintenance queue. No
- * `server-only` import — the worker (plain tsx process) imports this module too.
+ * `server-only` import - the worker (plain tsx process) imports this module too.
  */
 import { Queue } from "bullmq";
 import { redis } from "@/server/redis";
@@ -35,13 +35,13 @@ export interface PublishEnqueue {
 }
 
 // BullMQ forbids ":" in a custom jobId, so we key off the colon-free PostTarget.id
-// (1:1 with the target, so duplicate enqueues still collapse — exactly-once preserved).
+// (1:1 with the target, so duplicate enqueues still collapse - exactly-once preserved).
 const jobIdFor = (targetId: string) => `publish-${targetId}`;
 
 /**
  * Add one delayed publish job per target, keyed by a stable jobId.
  *
- * BullMQ dedups by jobId across ALL states — including completed/failed. A finished job left
+ * BullMQ dedups by jobId across ALL states - including completed/failed. A finished job left
  * in the queue would therefore silently swallow every later re-enqueue (Retry button, the
  * missed-run sweep), leaving the target stuck "pending" forever. So we remove any prior job
  * with this id before re-adding. publishTarget is itself idempotent (it early-returns on a

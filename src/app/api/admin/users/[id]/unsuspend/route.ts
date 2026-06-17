@@ -4,7 +4,7 @@ import { logAdminAction } from "@/server/admin/audit";
 import { AdminActionError, unsuspendUser } from "@/server/admin/users";
 import { clientIp } from "@/server/rate-limit";
 
-// POST /api/admin/users/:id/unsuspend — clear suspendedAt (doc 16). Role: support.
+// POST /api/admin/users/:id/unsuspend - clear suspendedAt (doc 16). Role: support.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const actor = await requireRole("support");

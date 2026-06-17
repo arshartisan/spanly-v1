@@ -62,7 +62,7 @@ function ResetForm() {
       <CardHeader>
         <CardTitle>Set a new password</CardTitle>
         <CardDescription>
-          {done ? "Password updated — redirecting to log in…" : "Choose a new password for your account."}
+          {done ? "Password updated - redirecting to log in…" : "Choose a new password for your account."}
         </CardDescription>
       </CardHeader>
       <CardContent>

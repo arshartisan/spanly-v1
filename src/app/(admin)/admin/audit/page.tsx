@@ -9,7 +9,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { AuditFilters } from "@/components/admin/audit/AuditFilters";
 import { cn } from "@/lib/utils";
 
-// Admin audit log (doc 15) — RSC, append-only READ surface. Lenient-parses the filters,
+// Admin audit log (doc 15) - RSC, append-only READ surface. Lenient-parses the filters,
 // reads via listAuditLogs(), and renders the glass table with a cursor "Load more" link
 // (mirrors the system events log). Every staff mutation across the app lands here.
 
@@ -146,7 +146,7 @@ function AuditRow({ entry }: { entry: AuditLogEntry }) {
         <MetadataCell metadata={entry.metadata} />
       </Td>
       <Td className="whitespace-nowrap font-mono text-xs text-muted-foreground">
-        {entry.ip ?? "—"}
+        {entry.ip ?? "-"}
       </Td>
     </tr>
   );
@@ -160,7 +160,7 @@ function TargetCell({
   targetId: string | null;
 }) {
   if (!targetType && !targetId) {
-    return <span className="text-xs text-muted-foreground">—</span>;
+    return <span className="text-xs text-muted-foreground">-</span>;
   }
 
   const shortId = targetId ? `${targetId.slice(0, 10)}${targetId.length > 10 ? "…" : ""}` : null;
@@ -188,7 +188,7 @@ function TargetCell({
 }
 
 /**
- * Render the metadata JSON compactly. We NEVER assume any particular shape or PII — just
+ * Render the metadata JSON compactly. We NEVER assume any particular shape or PII - just
  * stringify the (small) object. A `<details>` keeps long payloads from blowing out the row.
  */
 function MetadataCell({ metadata }: { metadata: AuditLogEntry["metadata"] }) {
@@ -199,7 +199,7 @@ function MetadataCell({ metadata }: { metadata: AuditLogEntry["metadata"] }) {
       Object.keys(metadata).length === 0);
 
   if (isEmpty) {
-    return <span className="text-xs text-muted-foreground">—</span>;
+    return <span className="text-xs text-muted-foreground">-</span>;
   }
 
   const json = JSON.stringify(metadata);

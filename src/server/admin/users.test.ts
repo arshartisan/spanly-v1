@@ -201,7 +201,7 @@ function targetRow(over: Partial<TargetRow> = {}): TargetRow {
 }
 
 describe("suspendUser (guards via AdminActionError.status)", () => {
-  it("throws 400 when actor === target (cannot suspend self) — never touches the DB", async () => {
+  it("throws 400 when actor === target (cannot suspend self) - never touches the DB", async () => {
     const err = await catchThrown(() => suspendUser("u_self", "u_self", "spam"));
     expect(err).toBeInstanceOf(AdminActionError);
     expect((err as AdminActionError).status).toBe(400);
@@ -261,7 +261,7 @@ describe("signOutAllFor (deletes target sessions, never clears cookies)", () => 
     expect(deleteMany).toHaveBeenCalledTimes(1);
     expect(deleteMany).toHaveBeenCalledWith({ where: { userId: "u_target" } });
     expect(result).toEqual({ id: "u_target", sessionsRevoked: 3 });
-    // No user.update — it must not mutate the user or any cookie/session state beyond deleteMany.
+    // No user.update - it must not mutate the user or any cookie/session state beyond deleteMany.
     expect(update).not.toHaveBeenCalled();
   });
 

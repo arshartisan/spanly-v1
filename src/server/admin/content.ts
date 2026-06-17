@@ -6,7 +6,7 @@ import { removePublishJobs } from "@/server/queue";
 import type { PostListQuery, ConnectionListQuery } from "@/lib/schemas/admin-content";
 
 // Content & connections oversight service (doc 18). Pure `buildPostWhere` / `buildAccountWhere`
-// for unit tests; the rest run Prisma queries. Reads NEVER select `encryptedTokens` — Spanlyfy
+// for unit tests; the rest run Prisma queries. Reads NEVER select `encryptedTokens` - Spanlyfy
 // relays content, so "moderation" = stopping scheduled sends and disconnecting accounts.
 
 export { AdminActionError } from "@/server/admin/errors";
@@ -16,7 +16,7 @@ const EXPIRING_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h, token "expiring" thresho
 // ─────────────────────────── Post filtering ───────────────────────────
 
 /**
- * Pure mapping from a parsed post filter to a Prisma `PostWhereInput`. No DB calls —
+ * Pure mapping from a parsed post filter to a Prisma `PostWhereInput`. No DB calls -
  * unit-testable in isolation. `platform` joins through `targets → account.platform`;
  * `query` matches the main caption (case-insensitive contains); `from`/`to` bound `createdAt`.
  */
@@ -135,7 +135,7 @@ export async function getPostDetail(postId: string): Promise<AdminPostDetail | n
 
 /**
  * Pure mapping from a parsed connection filter to a Prisma `SocialAccountWhereInput`. No DB
- * calls — unit-testable in isolation. `tokenHealth` needs the current time; `now` is passed
+ * calls - unit-testable in isolation. `tokenHealth` needs the current time; `now` is passed
  * in (not read from Date.now()) to keep the builder deterministic for tests. "expired" =
  * `tokenExpiresAt` before `now`; "expiring" = within the next 24h.
  */
@@ -202,7 +202,7 @@ interface CancelResult {
 /**
  * Cancel a scheduled/publishing post: remove the queued BullMQ job for each PENDING target,
  * mark those targets `canceled`, and set the post `canceled`. Targets already `success` or
- * `publishing` are left untouched — an honest partial outcome when the worker has already run.
+ * `publishing` are left untouched - an honest partial outcome when the worker has already run.
  */
 export async function cancelPost(
   actorId: string,
@@ -247,8 +247,8 @@ export async function cancelPost(
 
 /**
  * Takedown a post: mark it `removed` and cancel any remaining `pending` targets (remove their
- * queued jobs + set `canceled`). Already-sent (`success`) targets cannot be un-published —
- * Spanlyfy only relays — so they are left as-is; the UI notes this limitation.
+ * queued jobs + set `canceled`). Already-sent (`success`) targets cannot be un-published -
+ * Spanlyfy only relays - so they are left as-is; the UI notes this limitation.
  */
 export async function takedownPost(
   actorId: string,

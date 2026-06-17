@@ -5,7 +5,7 @@ import { randomBytes } from "node:crypto";
 
 /**
  * Object storage (docs/implementation/00 + 06). Media is uploaded straight from the
- * browser to S3/R2 (MinIO in dev) via a short-lived presigned PUT URL — the app never
+ * browser to S3/R2 (MinIO in dev) via a short-lived presigned PUT URL - the app never
  * proxies the bytes. We only persist the resulting public URL on the Media row.
  */
 
@@ -64,7 +64,7 @@ export interface FetchedObject {
 
 /**
  * Read one object's bytes from storage. Used by the dev media-proxy route so locally-stored
- * media (MinIO on localhost) can be served over the app's public origin — remote platforms
+ * media (MinIO on localhost) can be served over the app's public origin - remote platforms
  * (e.g. Instagram) fetch media by URL and can't reach localhost. In production
  * S3_PUBLIC_BASE_URL points straight at the CDN/bucket and the proxy route is unused.
  */
@@ -72,7 +72,7 @@ export async function fetchObject(key: string): Promise<FetchedObject> {
   const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
   if (!res.Body) throw new Error(`Object not found: ${key}`);
   const arr = await res.Body.transformToByteArray();
-  // Copy into a standalone ArrayBuffer (a valid BodyInit) — the SDK's view may be backed by
+  // Copy into a standalone ArrayBuffer (a valid BodyInit) - the SDK's view may be backed by
   // a pooled/Shared buffer.
   const bytes = arr.buffer.slice(arr.byteOffset, arr.byteOffset + arr.byteLength) as ArrayBuffer;
   return { bytes, contentType: res.ContentType };

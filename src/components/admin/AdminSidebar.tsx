@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/brand/Logo";
 import { ADMIN_NAV } from "@/lib/admin-nav";
 import type { NavItem } from "@/lib/nav";
 import { AccountMenu } from "@/components/shell/AccountMenu";
@@ -47,11 +48,12 @@ export function AdminSidebar({ user, planLabel }: AdminSidebarProps) {
   return (
     <aside className="glass-panel flex h-screen w-[230px] shrink-0 flex-col border-r border-border/60">
       <div className="flex flex-col gap-3 p-3">
-        <Link href="/admin" className="flex items-center gap-2 px-1.5 pt-1">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 font-bold text-primary-foreground glow-primary">
-            S
-          </div>
-          <span className="text-lg font-bold tracking-tight">Spanlyfy</span>
+        <Link
+          href="/admin"
+          aria-label="Spanlyfy Admin - go to admin home"
+          className="press flex items-center gap-2 px-1.5 pt-1"
+        >
+          <Logo className="h-7" />
           <span className="glow-primary rounded-md bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.3)]">
             Admin
           </span>

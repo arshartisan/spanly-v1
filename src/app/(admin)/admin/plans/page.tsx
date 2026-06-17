@@ -7,7 +7,7 @@ import { PlanForm } from "@/components/admin/plans/PlanForm";
 import { PlanActions } from "@/components/admin/plans/PlanActions";
 import { cn } from "@/lib/utils";
 
-// Admin plan-catalog manager (doc 17) — RSC. Replaces the old read-only catalog with a full
+// Admin plan-catalog manager (doc 17) - RSC. Replaces the old read-only catalog with a full
 // editor: a "New plan" action + a table of every plan (incl. inactive) showing rank, key,
 // pricing, account limit (-1 → "Unlimited"), feature count, public/active flags, and the
 // live subscriber count. Each row has Edit (PlanForm) and, for superadmins, Delete
@@ -33,7 +33,7 @@ export default async function AdminPlansPage() {
             <h1 className="text-2xl font-semibold tracking-tight">Plans</h1>
             <p className="text-sm text-muted-foreground">
               The subscription catalog enforced across the platform. Edits take effect within
-              seconds — no deploy required.
+              seconds - no deploy required.
             </p>
           </div>
           <PlanForm mode="create" nextRank={nextRank} />

@@ -80,7 +80,7 @@ export function PublishingView({ initial }: { initial: PublishingStateView }) {
     <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6 md:p-8">
       <Header done={done} succeeded={succeeded} failed={failed} total={total} />
 
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {state.targets.map((t) => (
           <ResultCard key={t.id} target={t} onRetry={retryOne} retrying={retrying.has(t.id)} />
         ))}
@@ -125,7 +125,7 @@ function Header({
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Publishing your post…</h1>
           <p className="text-sm text-muted-foreground">
-            {succeeded} of {total} published. You can leave this page — it keeps publishing.
+            {succeeded} of {total} published. You can leave this page - it keeps publishing.
           </p>
         </div>
       </div>

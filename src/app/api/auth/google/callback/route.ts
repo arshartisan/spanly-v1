@@ -6,7 +6,7 @@ import { exchangeGoogleCode } from "@/server/google-auth";
 import { publicOrigin } from "@/server/public-url";
 import { isEnabled } from "@/server/settings/flags";
 
-// GET /api/auth/google/callback — finish Google sign-in.
+// GET /api/auth/google/callback - finish Google sign-in.
 // Verify the CSRF state, exchange the code for the user's profile, then resolve the user by
 // linking (existing email), signing in (existing Google id), or creating a new trial account.
 export async function GET(req: Request) {
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
     return toLogin("error=oauth");
   }
 
-  // Only trust Google-verified emails — auto-linking by email depends on this.
+  // Only trust Google-verified emails - auto-linking by email depends on this.
   if (!profile.emailVerified) return toLogin("error=oauth_unverified");
 
   // Resolve (link / create / sign-in) + create the session. Any DB/session failure here lands

@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/server/auth";
 import { getQueue, replaceQueue } from "@/server/settings";
 import { queuePutSchema } from "@/lib/schemas/settings";
 
-// GET /api/queue — current user's queue slots + settings (doc 11B / doc 08).
+// GET /api/queue - current user's queue slots + settings (doc 11B / doc 08).
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -11,7 +11,7 @@ export async function GET() {
   return NextResponse.json(await getQueue(user.id, user.timezone));
 }
 
-// PUT /api/queue — replace slots + settings atomically (doc 11B).
+// PUT /api/queue - replace slots + settings atomically (doc 11B).
 export async function PUT(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });

@@ -5,7 +5,7 @@ import { toggleApiAddon } from "@/server/billing";
 
 const schema = z.object({ enable: z.boolean() });
 
-// POST /api/billing/addons/api — enable/disable the $5/mo API add-on (doc 10).
+// POST /api/billing/addons/api - enable/disable the $5/mo API add-on (doc 10).
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });

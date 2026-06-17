@@ -9,7 +9,7 @@ import { isLiveBilling } from "@/server/billing-config";
  * fetch-based client: OAuth2 client-credentials token (cached), a JSON fetch wrapper, the
  * (plan, interval) → PayPal billing-plan-id map, and webhook signature verification.
  *
- * Only meaningful in live mode (BILLING_MODE=live). Mock mode never calls these — see
+ * Only meaningful in live mode (BILLING_MODE=live). Mock mode never calls these - see
  * src/server/billing.ts for the mock stand-ins.
  */
 

@@ -109,7 +109,7 @@ export function BulkImportView({
         </Button>
       </div>
 
-      {/* Step 1 — default accounts */}
+      {/* Step 1 - default accounts */}
       <section className="rounded-xl border bg-background p-5">
         <h2 className="text-sm font-semibold">Default accounts</h2>
         <p className="mt-0.5 text-xs text-muted-foreground">
@@ -147,7 +147,7 @@ export function BulkImportView({
         )}
       </section>
 
-      {/* Step 2 — mode */}
+      {/* Step 2 - mode */}
       <section className="rounded-xl border bg-background p-5">
         <h2 className="text-sm font-semibold">What to do with each row</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -172,7 +172,7 @@ export function BulkImportView({
         )}
       </section>
 
-      {/* Step 3 — CSV */}
+      {/* Step 3 - CSV */}
       <section className="rounded-xl border bg-background p-5">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">CSV data</h2>
@@ -273,7 +273,7 @@ function PreviewTable({ preview }: { preview: BulkPreview }) {
                 <tr key={r.index} className={`border-b align-top ${ok ? "" : "bg-red-50/40"}`}>
                   <td className="p-3 text-xs text-muted-foreground">{r.index}</td>
                   <td className="max-w-xs p-3">
-                    <p className="truncate">{r.caption || <span className="text-muted-foreground">—</span>}</p>
+                    <p className="truncate">{r.caption || <span className="text-muted-foreground">-</span>}</p>
                   </td>
                   <td className="p-3">
                     <span className="rounded bg-muted px-1.5 py-0.5 text-xs">{r.type}</span>
@@ -281,7 +281,7 @@ function PreviewTable({ preview }: { preview: BulkPreview }) {
                   <td className="p-3 text-xs">
                     {r.platforms.length > 0
                       ? r.platforms.map((p) => PLATFORM_CONFIG[p].label).join(", ")
-                      : "—"}
+                      : "-"}
                   </td>
                   <td className="p-3 text-xs text-muted-foreground">
                     {r.publishAtIso ? formatWhen(r.publishAtIso, preview.timezone) : preview.mode}

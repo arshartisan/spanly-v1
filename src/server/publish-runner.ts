@@ -27,7 +27,7 @@ export async function recomputePostStatus(postId: string): Promise<void> {
     await prisma.post.update({ where: { id: postId }, data: { status: "posted", publishedAt } });
   } else if (anyActive) {
     await prisma.post.update({ where: { id: postId }, data: { status: "publishing" } });
-    return; // not terminal yet — no webhook
+    return; // not terminal yet - no webhook
   } else {
     // All terminal, at least one failed → post surfaces as failed (per-target UI shows detail).
     await prisma.post.update({ where: { id: postId }, data: { status: "failed" } });
@@ -87,7 +87,7 @@ export async function publishTarget(targetId: string): Promise<void> {
       });
       await prisma.postTarget.update({
         where: { id: targetId },
-        data: { status: "failed", error: "Account authorization expired — reconnect to retry." },
+        data: { status: "failed", error: "Account authorization expired - reconnect to retry." },
       });
       await recomputePostStatus(target.postId);
       return;

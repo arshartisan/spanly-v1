@@ -2,8 +2,8 @@ import { cn } from "@/lib/utils";
 
 /**
  * Spanlyfy brand lockup: the square emblem followed by the wordmark. Each is a pair of
- * static SVGs (in /public) swapped purely in CSS by theme — black art on light, white art
- * on dark — so the lockup tracks next-themes' `.dark` class with no hydration flash and
+ * static SVGs (in /public) swapped purely in CSS by theme - black art on light, white art
+ * on dark - so the lockup tracks next-themes' `.dark` class with no hydration flash and
  * works in server components. Both emblems keep their orange tile; only the "S" flips.
  *
  * `className` sets the lockup height (e.g. `h-7`); the emblem stays square and the wordmark
@@ -18,7 +18,7 @@ export function Logo({
 }) {
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      {/* Emblem — square tile, fills the lockup height. */}
+      {/* Emblem - square tile, fills the lockup height. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/emblem-black.svg"
@@ -36,7 +36,7 @@ export function Logo({
         className="hidden h-full w-auto select-none dark:block"
       />
 
-      {/* Wordmark — hidden when only the emblem is wanted. */}
+      {/* Wordmark - hidden when only the emblem is wanted. */}
       {!emblemOnly && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}

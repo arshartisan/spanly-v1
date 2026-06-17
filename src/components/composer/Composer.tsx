@@ -92,7 +92,7 @@ export function Composer({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{ action: ComposerAction; publishAt?: string } | null>(null);
 
-  // Restore remembered selection/settings (doc 01 "Remember" toggle) — create mode only.
+  // Restore remembered selection/settings (doc 01 "Remember" toggle) - create mode only.
   useEffect(() => {
     if (isEdit) return;
     try {
@@ -129,7 +129,7 @@ export function Composer({
   );
 
   // Account-specific problems only (caption over a platform's limit, unsupported type, too many
-  // media). These flag the avatar in amber with a tooltip — they're the user's per-account
+  // media). These flag the avatar in amber with a tooltip - they're the user's per-account
   // concern. Missing *shared* content (no image/caption yet) is intentionally excluded here and
   // surfaced as a single next-step hint instead, so we don't paint every avatar red.
   const accountIssues = useMemo(() => {
@@ -151,13 +151,13 @@ export function Composer({
 
   const accountInvalidIds = useMemo(() => new Set(accountIssues.keys()), [accountIssues]);
 
-  // Shared content the post still needs before it can go out — phrased as a friendly next step.
+  // Shared content the post still needs before it can go out - phrased as a friendly next step.
   const contentHint = useMemo(() => {
     if (type === "image" && media.length === 0) return "Add at least one image to continue.";
     if (type === "video" && media.length === 0) return "Add a video to continue.";
     if (type === "story") {
       if (media.length === 0) return "Add one photo or video for your story.";
-      if (media.length > 1) return "Stories allow exactly one media item — remove the extras.";
+      if (media.length > 1) return "Stories allow exactly one media item - remove the extras.";
     }
     if (type === "text" && mainCaption.trim().length === 0) return "Write a caption to continue.";
     return null;
@@ -436,7 +436,7 @@ export function Composer({
 
       {!editable && (
         <div className="mb-4 rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
-          This post is {initialPost.status}. It can&apos;t be edited — use Duplicate to make a new
+          This post is {initialPost.status}. It can&apos;t be edited - use Duplicate to make a new
           version.
         </div>
       )}

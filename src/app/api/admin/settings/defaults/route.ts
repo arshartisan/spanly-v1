@@ -5,7 +5,7 @@ import { getEditableDefaults, setEditableDefaults } from "@/server/settings/conf
 import { defaultsUpdateSchema } from "@/lib/schemas/admin-plans";
 import { clientIp } from "@/server/rate-limit";
 
-// GET /api/admin/settings/defaults — read the editable platform defaults. Role: admin.
+// GET /api/admin/settings/defaults - read the editable platform defaults. Role: admin.
 export async function GET() {
   try {
     await requireRole("admin");
@@ -17,7 +17,7 @@ export async function GET() {
   }
 }
 
-// PATCH /api/admin/settings/defaults — edit the platform defaults. Role: admin.
+// PATCH /api/admin/settings/defaults - edit the platform defaults. Role: admin.
 // Audited as `defaults.update` with { before, after }.
 export async function PATCH(req: Request) {
   try {

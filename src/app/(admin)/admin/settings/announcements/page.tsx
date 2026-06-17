@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { AnnouncementForm } from "@/components/admin/settings/AnnouncementForm";
 import { AnnouncementActions } from "@/components/admin/settings/AnnouncementActions";
 
-// Admin Announcements — create + manage customer-facing banners (doc 20). RSC, view = admin.
+// Admin Announcements - create + manage customer-facing banners (doc 20). RSC, view = admin.
 // Mirrors the /admin/system page structure. The create form + per-row activate/delete are
 // client components that PATCH/POST/DELETE and router.refresh().
 
