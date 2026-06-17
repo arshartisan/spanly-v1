@@ -97,6 +97,16 @@
     @apply bg-muted text-foreground;
   }
 
+  /* Neue Machina for all titles; Inter (font-sans) remains the body face. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display;
+  }
+
   /* Ambient warm glow behind translucent glass surfaces. */
   body,
   .app-bg {
