@@ -3,7 +3,6 @@ import { format } from "date-fns";
 import {
   CreditCard,
   DollarSign,
-  ExternalLink,
   Hourglass,
   AlertTriangle,
   Percent,
@@ -31,8 +30,6 @@ import type { PlanKey } from "@/server/plans";
 // breakdown, then a filterable subscriptions table sharing the users-table styling.
 
 export const dynamic = "force-dynamic";
-
-const STRIPE_BASE = "https://dashboard.stripe.com";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -179,7 +176,7 @@ export default async function AdminSubscriptionsPage({
                     <Th>Trial ends</Th>
                     <Th>Period end</Th>
                     <Th>Add-on</Th>
-                    <Th>Stripe</Th>
+                    <Th>PayPal</Th>
                   </tr>
                 </thead>
                 <tbody>
@@ -233,16 +230,13 @@ function SubscriptionRow({ sub }: { sub: AdminSubscriptionListItem }) {
         )}
       </Td>
       <Td>
-        {sub.stripeCustomerId ? (
-          <a
-            href={`${STRIPE_BASE}/customers/${sub.stripeCustomerId}`}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline"
+        {sub.providerSubId ? (
+          <span
+            className="font-mono text-xs text-muted-foreground"
+            title={sub.providerSubId}
           >
-            Customer
-            <ExternalLink className="h-3 w-3" />
-          </a>
+            {sub.providerSubId.slice(0, 14)}…
+          </span>
         ) : (
           <span className="text-xs text-muted-foreground">—</span>
         )}

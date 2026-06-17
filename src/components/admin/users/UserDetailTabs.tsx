@@ -5,7 +5,6 @@ import { format, formatDistanceToNow } from "date-fns";
 import {
   Activity,
   CreditCard,
-  ExternalLink,
   FileText,
   Link2,
   MonitorSmartphone,
@@ -35,8 +34,6 @@ const TABS: { key: TabKey; label: string; icon: React.ComponentType<{ className?
   { key: "sessions", label: "Sessions", icon: MonitorSmartphone },
   { key: "activity", label: "Activity & notes", icon: Activity },
 ];
-
-const STRIPE_BASE = "https://dashboard.stripe.com";
 
 export function UserDetailTabs({
   user,
@@ -228,32 +225,16 @@ function SubscriptionPanel({
         <Field label="Trial ends">{fmtDate(sub.trialEndsAt)}</Field>
         <Field label="Current period end">{fmtDate(sub.currentPeriodEnd)}</Field>
         <Field label="API add-on">{sub.apiAddonActive ? "Active" : "Off"}</Field>
-        <Field label="Stripe customer">
-          {sub.stripeCustomerId ? (
-            <a
-              href={`${STRIPE_BASE}/customers/${sub.stripeCustomerId}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline"
-            >
-              {sub.stripeCustomerId}
-              <ExternalLink className="h-3 w-3" />
-            </a>
+        <Field label="PayPal payer">
+          {sub.providerCustomerId ? (
+            <span className="font-mono text-xs">{sub.providerCustomerId}</span>
           ) : (
             "—"
           )}
         </Field>
-        <Field label="Stripe subscription">
-          {sub.stripeSubId ? (
-            <a
-              href={`${STRIPE_BASE}/subscriptions/${sub.stripeSubId}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline"
-            >
-              {sub.stripeSubId}
-              <ExternalLink className="h-3 w-3" />
-            </a>
+        <Field label="PayPal subscription">
+          {sub.providerSubId ? (
+            <span className="font-mono text-xs">{sub.providerSubId}</span>
           ) : (
             "—"
           )}

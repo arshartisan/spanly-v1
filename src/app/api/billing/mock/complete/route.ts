@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/server/auth";
-import { isLiveBilling } from "@/server/stripe";
+import { isLiveBilling } from "@/server/billing-config";
 import { mockActivate } from "@/server/billing";
 import type { BillingInterval } from "@prisma/client";
 import type { PlanKey } from "@/server/plans";
@@ -9,7 +9,7 @@ const PLANS = ["creator", "growth", "pro"];
 const INTERVALS = ["month", "year"];
 
 // GET /api/billing/mock/complete?plan&interval — mock checkout "Subscribe" action. Drives the
-// same Subscription upsert the live Stripe webhook would, then returns to Billing. Mock-only.
+// same Subscription upsert the live PayPal webhook would, then returns to Billing. Mock-only.
 export async function GET(req: Request) {
   if (isLiveBilling()) return NextResponse.json({ error: "Not found." }, { status: 404 });
 

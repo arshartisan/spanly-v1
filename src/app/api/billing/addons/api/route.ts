@@ -17,8 +17,10 @@ export async function POST(req: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid request." }, { status: 422 });
 
   try {
-    await toggleApiAddon(user.id, parsed.data.enable);
-    return NextResponse.json({ ok: true, apiAddonActive: parsed.data.enable });
+    const result = await toggleApiAddon(user.id, parsed.data.enable);
+    // Live enable returns a PayPal approval URL the client must redirect to; the webhook
+    // flips apiAddonActive once the add-on subscription activates.
+    return NextResponse.json({ ok: true, apiAddonActive: result.enabled, url: result.url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Could not update add-on.";
     return NextResponse.json({ error: message }, { status: 500 });

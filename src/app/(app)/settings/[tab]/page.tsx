@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/server/auth";
 import { readSettings, getQueue } from "@/server/settings";
 import { activeAccountCount } from "@/server/connections";
 import { accountLimit, isOverAccountLimit, getPlanCatalog, getPlanMap } from "@/server/plans";
-import { BILLING_MODE, appUrl } from "@/server/stripe";
+import { BILLING_MODE, appUrl } from "@/server/billing-config";
 import { SettingsTabs, type SettingsTab } from "@/components/settings/SettingsTabs";
 import { GeneralPanel } from "@/components/settings/GeneralPanel";
 import { QueuePanel } from "@/components/settings/QueuePanel";

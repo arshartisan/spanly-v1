@@ -6,8 +6,8 @@ import type { BillingInterval } from "@prisma/client";
 import type { PlanKey } from "@/server/plans";
 
 /**
- * Internal mock Stripe Checkout (docs/implementation/10, D-014). Stands in for the real Stripe
- * Checkout so the subscribe → 7-day trial flow works with no Stripe account. "Subscribe" hits
+ * Internal mock checkout (docs/implementation/10, D-014). Stands in for the real PayPal
+ * approval flow so the subscribe → 7-day trial flow works with no PayPal account. "Subscribe" hits
  * /api/billing/mock/complete which performs the same Subscription upsert the webhook would.
  * Rendered outside the (app) shell to feel like an external page.
  */
@@ -46,8 +46,8 @@ export default async function MockCheckoutPage({
         </div>
 
         <p className="mb-5 text-xs text-muted-foreground">
-          Development stand-in for Stripe Checkout. No card is charged. Your trial ends in 7 days;
-          cancel anytime from the billing portal.
+          Development stand-in for PayPal checkout. No money is charged. Your trial ends in 7 days;
+          cancel anytime from the billing page.
         </p>
 
         <div className="flex gap-3">

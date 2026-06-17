@@ -151,8 +151,8 @@ export interface ApproveRefundOptions {
 }
 
 /**
- * Approve a pending refund and issue it. Live mode hits Stripe (latest charge → refund);
- * mock mode skips Stripe. Out-of-policy approvals require `force` (superadmin-gated at the
+ * Approve a pending refund and issue it. Live mode refunds the latest PayPal subscription
+ * transaction; mock mode skips PayPal. Out-of-policy approvals require `force` (superadmin-gated at the
  * route). Returns the updated request.
  */
 export async function approveRefund(

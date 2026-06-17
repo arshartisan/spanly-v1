@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DEFAULT_PLANS,
@@ -22,7 +22,7 @@ interface SubView {
   apiAddonActive: boolean;
 }
 
-// Billing tab (doc 10). Live subscription state + Stripe actions (mock-backed in dev, D-014).
+// Billing tab (doc 10). Live subscription state + PayPal actions (mock-backed in dev, D-014).
 // `plan` is the LIVE catalog def for the current subscription's plan, passed from the RSC
 // parent so admin price/name edits show; it falls back to the static default when absent.
 export function BillingPanel({
@@ -40,15 +40,14 @@ export function BillingPanel({
   const params = useSearchParams();
   const [addonBusy, setAddonBusy] = useState(false);
   const [addon, setAddon] = useState(subscription?.apiAddonActive ?? false);
-  const [portalBusy, setPortalBusy] = useState(false);
+  const [cancelBusy, setCancelBusy] = useState(false);
   const [refundMsg, setRefundMsg] = useState<string | null>(null);
 
-  async function openPortal() {
-    setPortalBusy(true);
-    const res = await fetch("/api/billing/portal", { method: "POST" });
-    const data = await res.json().catch(() => null);
-    if (res.ok && data?.url) window.location.href = data.url;
-    else setPortalBusy(false);
+  async function cancelSub() {
+    setCancelBusy(true);
+    const res = await fetch("/api/billing/cancel", { method: "POST" });
+    setCancelBusy(false);
+    if (res.ok) router.refresh();
   }
 
   async function toggleAddon() {
@@ -59,9 +58,15 @@ export function BillingPanel({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ enable: next }),
     });
+    const data = await res.json().catch(() => null);
+    // Live enable returns a PayPal approval URL to redirect to; mock toggles immediately.
+    if (res.ok && data?.url) {
+      window.location.href = data.url;
+      return;
+    }
     setAddonBusy(false);
     if (res.ok) {
-      setAddon(next);
+      setAddon(data?.apiAddonActive ?? next);
       router.refresh();
     }
   }
@@ -102,6 +107,9 @@ export function BillingPanel({
         <Banner tone="success">Subscribed — your 7-day trial has started.</Banner>
       )}
       {params.get("canceled") === "1" && <Banner tone="muted">Your subscription was canceled.</Banner>}
+      {params.get("addon") === "1" && (
+        <Banner tone="success">API add-on approved — it&apos;ll activate shortly.</Banner>
+      )}
 
       {subscription.interval === "month" && !isCanceled && (
         <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 p-4">
@@ -157,8 +165,15 @@ export function BillingPanel({
             <Link href="/settings/plans">Change Plan</Link>
           </Button>
           {!isCanceled && (
-            <Button variant="outline" size="sm" disabled={portalBusy} onClick={openPortal}>
-              Pause / Cancel
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={cancelBusy}
+              onClick={cancelSub}
+              className="text-destructive hover:text-destructive"
+            >
+              {cancelBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Cancel subscription
             </Button>
           )}
         </div>
@@ -189,15 +204,6 @@ export function BillingPanel({
       <div className="flex flex-wrap items-center gap-4 px-1">
         <button
           type="button"
-          onClick={openPortal}
-          disabled={portalBusy}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground underline hover:text-foreground"
-        >
-          {portalBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
-          Billing Portal
-        </button>
-        <button
-          type="button"
           onClick={requestRefund}
           className="text-sm text-muted-foreground underline hover:text-foreground"
         >
@@ -212,9 +218,9 @@ export function BillingPanel({
 function MockNotice() {
   return (
     <div className="rounded-lg border border-dashed bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-      Billing is in <span className="font-medium">mock mode</span> — checkout and the portal use
-      internal stand-ins (no Stripe account or card needed). Set <code>BILLING_MODE=live</code> +
-      Stripe keys to switch on real payments.
+      Billing is in <span className="font-medium">mock mode</span> — checkout uses an internal
+      stand-in (no PayPal account needed). Set <code>BILLING_MODE=live</code> + PayPal keys to
+      switch on real payments.
     </div>
   );
 }

@@ -9,7 +9,7 @@ const schema = z.object({
 });
 
 // POST /api/billing/checkout — start a subscription checkout (doc 10). Returns { url } for the
-// client to redirect to (live: Stripe Checkout; mock: internal mock checkout page).
+// client to redirect to (live: PayPal subscription approval; mock: internal mock checkout page).
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
