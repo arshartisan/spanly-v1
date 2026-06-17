@@ -38,5 +38,7 @@ export async function POST(req: Request) {
   }
 
   await createSession(user.id);
-  return NextResponse.json({ ok: true });
+  // Staff (support/admin/superadmin) land on the admin dashboard; customers on the app (doc 15).
+  const redirect = user.role === "user" ? "/dashboard" : "/admin";
+  return NextResponse.json({ ok: true, redirect });
 }

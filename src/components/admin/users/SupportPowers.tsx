@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Eye,
-  Loader2,
   ShieldAlert,
   Trash2,
   UserCog,
@@ -226,9 +225,9 @@ function ReasonForm({
           type="submit"
           size="sm"
           variant="destructive"
-          disabled={pending || !reason.trim()}
+          loading={pending}
+          disabled={!reason.trim()}
         >
-          {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
           {confirmLabel}
         </Button>
       </div>

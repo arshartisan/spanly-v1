@@ -89,6 +89,38 @@ export async function createCheckout(
 }
 
 /**
+ * Reconcile the local subscription directly from PayPal by subscription id (live mode only).
+ * Called on the post-approval return (`/settings/billing?subscribed=1&subscription_id=…`) so the
+ * billing page reflects the new plan/add-on immediately, instead of waiting for the async
+ * ACTIVATED webhook (which races the redirect and leaves the page stale until a manual refresh).
+ *
+ * Idempotent and safe to run alongside the webhook — both funnel through the same upserts. The
+ * `custom_id` guard prevents a crafted `?subscription_id` from syncing someone else's
+ * subscription onto the current account. No-op in mock mode or for unmappable subscriptions.
+ */
+export async function reconcileSubscription(subscriptionId: string, userId: string): Promise<void> {
+  if (!isLiveBilling()) return;
+  const full = await getPaypalSubscription(subscriptionId);
+  const customId = full.custom_id ?? "";
+
+  // Add-on subscription: custom_id is "userId:addon".
+  if (customId === `${userId}:addon`) {
+    if (full.status === "ACTIVE" || full.status === "APPROVED") {
+      await prisma.subscription.updateMany({
+        where: { userId },
+        data: { apiAddonActive: true, providerAddonSubId: full.id },
+      });
+    }
+    return;
+  }
+
+  // Plan subscription: only reconcile when the PayPal sub belongs to this user.
+  if (customId && customId !== userId) return;
+  const input = fromPaypalSubscription(full, userId);
+  if (input) await syncSubscription(input);
+}
+
+/**
  * Cancel the user's subscription (PayPal has no billing portal). Live: cancel via the PayPal
  * API; both modes flip the local row to `canceled` (the webhook also confirms it in live).
  */

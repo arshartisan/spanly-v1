@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Ban, Loader2, Trash2 } from "lucide-react";
+import { AlertTriangle, Ban, Trash2 } from "lucide-react";
 import type { PostStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -207,8 +207,13 @@ function ActionPopover({
             <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
               Dismiss
             </Button>
-            <Button type="submit" size="sm" variant="destructive" disabled={pending || !reason.trim()}>
-              {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+            <Button
+              type="submit"
+              size="sm"
+              variant="destructive"
+              loading={pending}
+              disabled={!reason.trim()}
+            >
               {confirmLabel}
             </Button>
           </div>

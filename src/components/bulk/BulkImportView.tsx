@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Check, Download, FileUp, Loader2, Upload, X } from "lucide-react";
+import { AlertTriangle, Check, Download, FileUp, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORM_CONFIG } from "@/lib/platforms";
@@ -214,17 +214,20 @@ export function BulkImportView({
           }}
         />
         <div className="mt-3 flex items-center gap-2">
-          <Button disabled={!csv.trim() || busy !== null} onClick={validate}>
-            {busy === "validate" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            <Upload className="mr-1 h-4 w-4" /> Validate
+          <Button
+            disabled={!csv.trim() || busy !== null}
+            loading={busy === "validate"}
+            onClick={validate}
+          >
+            {busy !== "validate" && <Upload className="mr-1 h-4 w-4" />} Validate
           </Button>
           {preview && (
             <Button
               variant="default"
               disabled={validCount === 0 || busy !== null}
+              loading={busy === "commit"}
               onClick={commit}
             >
-              {busy === "commit" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Import {validCount} {validCount === 1 ? "post" : "posts"}
             </Button>
           )}

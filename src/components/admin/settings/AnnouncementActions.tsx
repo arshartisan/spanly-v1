@@ -113,10 +113,9 @@ export function AnnouncementActions({
                   type="button"
                   variant="destructive"
                   size="sm"
-                  disabled={deletePending}
+                  loading={deletePending}
                   onClick={remove}
                 >
-                  {deletePending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
                   Delete
                 </Button>
               </div>

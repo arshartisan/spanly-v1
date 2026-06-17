@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Loader2, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -182,8 +182,7 @@ export function QueuePanel({ initial }: { initial: QueueView }) {
       </section>
 
       <div className="flex items-center gap-3">
-        <Button onClick={save} disabled={busy}>
-          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button onClick={save} loading={busy}>
           Save queue
         </Button>
         {saved && <span className="text-xs text-primary">Saved</span>}

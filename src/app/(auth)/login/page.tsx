@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/dashboard";
+  const next = params.get("next");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +35,8 @@ function LoginForm() {
         setError(data.error ?? "Something went wrong.");
         return;
       }
-      router.push(next);
+      // Honor an explicit ?next (deep link), else the server's role-based target (staff → /admin).
+      router.push(next || data.redirect || "/dashboard");
       router.refresh();
     } catch {
       setError("Network error. Please try again.");
@@ -95,7 +96,7 @@ function LoginForm() {
               </button>
             </div>
           </div>
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" loading={loading}>
             {loading ? "Logging in…" : "Log in"}
           </Button>
         </form>

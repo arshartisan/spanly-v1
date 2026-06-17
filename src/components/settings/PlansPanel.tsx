@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, Loader2 } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DEFAULT_PLAN_DEFS,
@@ -127,10 +127,10 @@ export function PlansPanel({
               <Button
                 className="mt-5"
                 variant={isCurrent ? "outline" : "default"}
+                loading={busy === plan.key}
                 disabled={!!isCurrent || busy !== null}
                 onClick={() => checkout(plan.key)}
               >
-                {busy === plan.key && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isCurrent ? "Current plan" : activeSub ? "Change plan" : "Get started"}
               </Button>
             </div>

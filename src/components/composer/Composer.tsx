@@ -412,12 +412,12 @@ export function Composer({
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {isEdit ? (
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleDuplicate} disabled={busy}>
-              <Copy />
+            <Button variant="outline" size="sm" onClick={handleDuplicate} loading={busy}>
+              {!busy && <Copy />}
               Duplicate
             </Button>
-            <Button variant="outline" size="sm" onClick={handleDelete} disabled={busy}>
-              <Trash2 />
+            <Button variant="outline" size="sm" onClick={handleDelete} loading={busy}>
+              {!busy && <Trash2 />}
               Delete
             </Button>
           </div>

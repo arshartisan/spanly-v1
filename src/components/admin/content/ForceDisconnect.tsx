@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Unplug } from "lucide-react";
+import { Unplug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -106,8 +106,13 @@ export function ForceDisconnect({
             <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
               Dismiss
             </Button>
-            <Button type="submit" size="sm" variant="destructive" disabled={pending || !reason.trim()}>
-              {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+            <Button
+              type="submit"
+              size="sm"
+              variant="destructive"
+              loading={pending}
+              disabled={!reason.trim()}
+            >
               Disconnect
             </Button>
           </div>

@@ -57,7 +57,7 @@ export default function ForgotPage() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" loading={loading}>
               {loading ? "Sending…" : "Send reset link"}
             </Button>
           </form>

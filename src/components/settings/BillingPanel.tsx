@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DEFAULT_PLANS,
@@ -168,11 +167,10 @@ export function BillingPanel({
             <Button
               variant="outline"
               size="sm"
-              disabled={cancelBusy}
+              loading={cancelBusy}
               onClick={cancelSub}
               className="text-destructive hover:text-destructive"
             >
-              {cancelBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Cancel subscription
             </Button>
           )}
@@ -194,8 +192,13 @@ export function BillingPanel({
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">API add-on — $5/mo.</p>
         </div>
-        <Button variant="outline" size="sm" disabled={addonBusy || isCanceled} onClick={toggleAddon}>
-          {addonBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button
+          variant="outline"
+          size="sm"
+          loading={addonBusy}
+          disabled={isCanceled}
+          onClick={toggleAddon}
+        >
           {addon ? "Disable Add-on" : "Enable Add-on"}
         </Button>
       </section>

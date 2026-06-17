@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, StickyNote } from "lucide-react";
+import { StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -69,8 +69,13 @@ export function SupportNotes({
         />
         {error ? <p className="text-xs text-status-failed">{error}</p> : null}
         <div className="flex justify-end">
-          <Button type="button" size="sm" onClick={addNote} disabled={pending || !body.trim()}>
-            {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+          <Button
+            type="button"
+            size="sm"
+            onClick={addNote}
+            loading={pending}
+            disabled={!body.trim()}
+          >
             Add note
           </Button>
         </div>

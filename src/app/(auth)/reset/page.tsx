@@ -85,7 +85,7 @@ function ResetForm() {
               />
               <p className="text-xs text-muted-foreground">At least 8 characters.</p>
             </div>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" loading={loading}>
               {loading ? "Updating…" : "Update password"}
             </Button>
           </form>

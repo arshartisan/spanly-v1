@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Check, Copy, KeyRound, Loader2, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, Check, Copy, KeyRound, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ApiKeyView } from "@/server/api-keys";
@@ -23,6 +23,7 @@ export function ApiKeysView({
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [revoking, setRevoking] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<{ name: string; plaintext: string } | null>(null);
 
   async function createKey() {
@@ -44,8 +45,13 @@ export function ApiKeysView({
   }
 
   async function revoke(id: string) {
-    const res = await fetch(`/api/api-keys/${id}`, { method: "DELETE" });
-    if (res.ok) setKeys((k) => k.filter((x) => x.id !== id));
+    setRevoking(id);
+    try {
+      const res = await fetch(`/api/api-keys/${id}`, { method: "DELETE" });
+      if (res.ok) setKeys((k) => k.filter((x) => x.id !== id));
+    } finally {
+      setRevoking(null);
+    }
   }
 
   return (
@@ -107,8 +113,7 @@ export function ApiKeysView({
             onChange={(e) => setNewName(e.target.value)}
             maxLength={60}
           />
-          <Button disabled={busy || !newName.trim()} onClick={createKey}>
-            {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button disabled={!newName.trim()} loading={busy} onClick={createKey}>
             Create
           </Button>
           <Button variant="ghost" onClick={() => setCreating(false)}>
@@ -143,9 +148,10 @@ export function ApiKeysView({
                   variant="ghost"
                   size="sm"
                   className="text-destructive hover:text-destructive"
+                  loading={revoking === k.id}
                   onClick={() => revoke(k.id)}
                 >
-                  <Trash2 className="mr-1 h-4 w-4" /> Revoke
+                  {revoking !== k.id && <Trash2 className="mr-1 h-4 w-4" />} Revoke
                 </Button>
               </li>
             ))}
@@ -211,8 +217,7 @@ function WebhookCard({ addonActive, initial }: { addonActive: boolean; initial: 
           onChange={(e) => setUrl(e.target.value)}
           disabled={!addonActive}
         />
-        <Button disabled={!addonActive || busy || !url.trim()} onClick={save}>
-          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button disabled={!addonActive || !url.trim()} loading={busy} onClick={save}>
           Save
         </Button>
         {saved && <Check className="h-4 w-4 text-primary" />}

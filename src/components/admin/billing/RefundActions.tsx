@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -153,8 +153,7 @@ function ApprovePopover({
             <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={pending}>
-              {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+            <Button type="submit" size="sm" loading={pending}>
               Approve
             </Button>
           </div>
@@ -247,9 +246,9 @@ function DenyPopover({
               type="submit"
               size="sm"
               variant="destructive"
-              disabled={pending || !note.trim()}
+              loading={pending}
+              disabled={!note.trim()}
             >
-              {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
               Deny
             </Button>
           </div>

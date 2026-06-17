@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { RefreshCw, X } from "lucide-react";
+import { Loader2, RefreshCw, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
@@ -81,9 +81,14 @@ export function AccountChip({ account, showId }: { account: AccountVM; showId: b
           onClick={refresh}
           disabled={busy}
           title="Refresh connection"
+          aria-busy={busy || undefined}
           className="ml-1 rounded-full p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
         >
-          <RefreshCw className="h-3.5 w-3.5" />
+          {busy ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-3.5 w-3.5" />
+          )}
         </button>
       )}
 

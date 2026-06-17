@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Coins, Loader2, ShieldAlert, SlidersHorizontal } from "lucide-react";
+import { Coins, ShieldAlert, SlidersHorizontal } from "lucide-react";
 import { BillingInterval, SubscriptionStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -225,8 +225,7 @@ function OverridePopover({
             <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={pending}>
-              {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+            <Button type="submit" size="sm" loading={pending}>
               Apply
             </Button>
           </div>
@@ -342,8 +341,7 @@ function CreditPopover({
             <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={pending || !validAmount || !reason.trim()}>
-              {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+            <Button type="submit" size="sm" loading={pending} disabled={!validAmount || !reason.trim()}>
               Grant
             </Button>
           </div>

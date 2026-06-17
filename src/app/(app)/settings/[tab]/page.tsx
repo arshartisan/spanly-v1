@@ -4,6 +4,7 @@ import { readSettings, getQueue } from "@/server/settings";
 import { activeAccountCount } from "@/server/connections";
 import { accountLimit, isOverAccountLimit, getPlanCatalog, getPlanMap } from "@/server/plans";
 import { BILLING_MODE, appUrl } from "@/server/billing-config";
+import { reconcileSubscription } from "@/server/billing";
 import { SettingsTabs, type SettingsTab } from "@/components/settings/SettingsTabs";
 import { GeneralPanel } from "@/components/settings/GeneralPanel";
 import { QueuePanel } from "@/components/settings/QueuePanel";
@@ -15,15 +16,31 @@ const TABS: SettingsTab[] = ["general", "queue", "billing", "plans"];
 // Settings (doc 11): one page, four route-backed tabs. Each tab loads only what it needs.
 export default async function SettingsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ tab: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { tab } = await params;
   if (!TABS.includes(tab as SettingsTab)) notFound();
   const active = tab as SettingsTab;
 
-  const user = await getCurrentUser();
+  let user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  // On return from PayPal approval (?subscribed=1 / ?addon=1 with the subscription_id PayPal
+  // appends), reconcile straight from PayPal so the billing tab reflects the new plan/add-on
+  // immediately rather than waiting for the async webhook. Then re-read the user so the panel
+  // renders the fresh subscription. Failures fall back to the webhook backstop.
+  const sp = await searchParams;
+  if (
+    active === "billing" &&
+    (sp.subscribed === "1" || sp.addon === "1") &&
+    typeof sp.subscription_id === "string"
+  ) {
+    await reconcileSubscription(sp.subscription_id, user.id).catch(() => {});
+    user = (await getCurrentUser()) ?? user;
+  }
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6 md:p-8">

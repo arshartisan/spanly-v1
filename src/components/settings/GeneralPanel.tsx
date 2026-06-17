@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -180,7 +180,8 @@ function ProfileCard({ initial, onSave }: { initial: Initial; onSave: (name: str
       </div>
       <div className="flex items-center gap-3">
         <Button
-          disabled={!dirty || busy}
+          loading={busy}
+          disabled={!dirty}
           onClick={async () => {
             setBusy(true);
             const ok = await onSave(name.trim());
@@ -191,7 +192,6 @@ function ProfileCard({ initial, onSave }: { initial: Initial; onSave: (name: str
             }
           }}
         >
-          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Save
         </Button>
         {saved && <span className="text-xs text-primary">Saved</span>}
@@ -253,8 +253,7 @@ function EmailCard({ email, verified }: { email: string; verified: boolean }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button size="sm" disabled={busy || !newEmail || !password} onClick={submit}>
-            {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button size="sm" loading={busy} disabled={!newEmail || !password} onClick={submit}>
             Send confirmation
           </Button>
         </div>
@@ -303,8 +302,7 @@ function PasswordCard({ email }: { email: string }) {
       <Input placeholder="Current password" type="password" value={current} onChange={(e) => setCurrent(e.target.value)} />
       <Input placeholder="New password (min 8 chars)" type="password" value={next} onChange={(e) => setNext(e.target.value)} />
       <div className="flex items-center gap-3">
-        <Button disabled={busy || current.length < 1 || next.length < 8} onClick={submit}>
-          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button loading={busy} disabled={current.length < 1 || next.length < 8} onClick={submit}>
           Change Password
         </Button>
         <button type="button" onClick={forgot} className="text-xs text-muted-foreground underline hover:text-foreground">
@@ -324,14 +322,13 @@ function SecurityCard() {
       <div>
         <Button
           variant="outline"
-          disabled={busy}
+          loading={busy}
           onClick={async () => {
             setBusy(true);
             await fetch("/api/auth/signout-all", { method: "POST" });
             router.push("/login");
           }}
         >
-          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Sign Out All Devices
         </Button>
       </div>
@@ -357,7 +354,8 @@ function WeeklyGoalCard({ initial, onSave }: { initial: number; onSave: (n: numb
           className="w-28"
         />
         <Button
-          disabled={!valid || busy || n === initial}
+          loading={busy}
+          disabled={!valid || n === initial}
           onClick={async () => {
             setBusy(true);
             const ok = await onSave(n);
@@ -368,7 +366,6 @@ function WeeklyGoalCard({ initial, onSave }: { initial: number; onSave: (n: numb
             }
           }}
         >
-          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Save
         </Button>
         {saved && <span className="text-xs text-primary">Saved</span>}

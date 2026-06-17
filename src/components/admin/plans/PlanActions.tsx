@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -86,10 +86,9 @@ export function PlanActions({
               type="button"
               variant="destructive"
               size="sm"
-              disabled={pending}
+              loading={pending}
               onClick={remove}
             >
-              {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
               Delete
             </Button>
           </div>
