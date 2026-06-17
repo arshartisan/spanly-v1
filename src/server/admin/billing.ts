@@ -7,16 +7,39 @@ import type {
   SubscriptionStatus,
 } from "@prisma/client";
 import { prisma } from "@/server/db";
-import { getStripe, isLiveBilling } from "@/server/stripe";
+import { isLiveBilling } from "@/server/billing-config";
+import { paypalFetch } from "@/server/paypal";
 import { AdminActionError } from "@/server/admin/errors";
 import { PLANS, type PlanKey } from "@/server/plans";
 
 /**
- * Admin billing service (doc 17). Wraps `src/server/billing.ts` + `src/server/stripe.ts`
+ * Admin billing service (doc 17). Wraps `src/server/billing.ts` + `src/server/paypal.ts`
  * for the staff surface: subscriptions oversight, the refund-request workflow, manual
- * overrides, credits, and a Stripe payments view. In mock mode we NEVER call Stripe —
+ * overrides, credits, and a payments view. In mock mode we NEVER call PayPal —
  * refunds/overrides mutate the local rows only.
  */
+
+/** A PayPal subscription transaction (the subset we read for refunds + the payments view). */
+interface PaypalTransaction {
+  id: string;
+  status: string;
+  time?: string;
+  amount_with_breakdown?: { gross_amount?: { value?: string; currency_code?: string } };
+}
+
+/** Lookback window for PayPal subscription transaction queries (start_time is required). */
+const TXN_LOOKBACK_MS = 395 * 86_400_000;
+
+/** List a PayPal subscription's transactions over the lookback window (newest last). */
+async function listSubscriptionTransactions(providerSubId: string): Promise<PaypalTransaction[]> {
+  const end = new Date();
+  const start = new Date(end.getTime() - TXN_LOOKBACK_MS);
+  const qs = `start_time=${start.toISOString()}&end_time=${end.toISOString()}`;
+  const data = await paypalFetch<{ transactions?: PaypalTransaction[] }>(
+    `/v1/billing/subscriptions/${providerSubId}/transactions?${qs}`,
+  );
+  return data.transactions ?? [];
+}
 
 const REFUND_WINDOW_DAYS = 7;
 
@@ -51,8 +74,9 @@ const subSelect = {
   trialEndsAt: true,
   currentPeriodEnd: true,
   apiAddonActive: true,
-  stripeCustomerId: true,
-  stripeSubId: true,
+  providerCustomerId: true,
+  providerSubId: true,
+  providerAddonSubId: true,
   createdAt: true,
   updatedAt: true,
   user: { select: { id: true, email: true, displayName: true } },
@@ -82,7 +106,7 @@ const refundSelect = {
   amount: true,
   reason: true,
   status: true,
-  stripeRefundId: true,
+  providerRefundId: true,
   decidedById: true,
   decidedAt: true,
   createdAt: true,
@@ -145,27 +169,34 @@ export async function approveRefund(
     throw new AdminActionError(403, "Out of policy — requires force (superadmin).");
   }
 
-  let stripeRefundId: string | null = null;
+  let providerRefundId: string | null = null;
 
   if (isLiveBilling()) {
     const sub = request.subscriptionId
       ? await prisma.subscription.findUnique({ where: { id: request.subscriptionId } })
       : await prisma.subscription.findUnique({ where: { userId: request.userId } });
-    const customerId = sub?.stripeCustomerId;
-    if (!customerId) {
-      throw new AdminActionError(422, "No Stripe charge to refund.");
+    const providerSubId = sub?.providerSubId;
+    if (!providerSubId) {
+      throw new AdminActionError(422, "No PayPal subscription to refund.");
     }
-    const stripe = getStripe();
-    const charges = await stripe.charges.list({ customer: customerId, limit: 1 });
-    const charge = charges.data[0];
-    if (!charge) {
-      throw new AdminActionError(422, "No Stripe charge to refund.");
+    const txns = await listSubscriptionTransactions(providerSubId);
+    const completed = txns.filter((t) => t.status === "COMPLETED");
+    const txn = completed[completed.length - 1] ?? txns[txns.length - 1];
+    if (!txn) {
+      throw new AdminActionError(422, "No PayPal transaction to refund.");
     }
-    const refund = await stripe.refunds.create({
-      charge: charge.id,
-      amount: request.amount,
-    });
-    stripeRefundId = refund.id;
+    const currency = txn.amount_with_breakdown?.gross_amount?.currency_code ?? "USD";
+    // request.amount is in minor units; PayPal wants a decimal string.
+    const refund = await paypalFetch<{ id: string }>(
+      `/v2/payments/captures/${txn.id}/refund`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          amount: { value: (request.amount / 100).toFixed(2), currency_code: currency },
+        }),
+      },
+    );
+    providerRefundId = refund.id;
   }
 
   void opts.note; // recorded by the route's audit log, not stored on the request
@@ -173,7 +204,7 @@ export async function approveRefund(
     where: { id },
     data: {
       status: "refunded",
-      stripeRefundId,
+      providerRefundId,
       decidedById: actorId,
       decidedAt: new Date(),
     },
@@ -255,9 +286,10 @@ export async function overrideSubscription(
 }
 
 /**
- * Grant account credit (MVP). Live mode applies a negative customer balance transaction
- * (a credit) when a Stripe customer exists; mock mode is a no-op recorded only via audit.
- * Never throws in mock mode.
+ * Grant account credit (MVP). PayPal has no customer-balance-credit equivalent (unlike
+ * Stripe), so this is a recorded no-op in both modes — the audit log at the route captures
+ * actor/user/amount/reason, and any actual credit is issued out-of-band (e.g. a refund or a
+ * comped period via an override). Kept with the same shape so callers don't change.
  */
 export async function grantCredit(
   actorId: string,
@@ -266,19 +298,9 @@ export async function grantCredit(
   reason: string,
 ): Promise<{ ok: true }> {
   void actorId; // recorded by the route's audit log
-  if (isLiveBilling()) {
-    const sub = await prisma.subscription.findUnique({
-      where: { userId },
-      select: { stripeCustomerId: true },
-    });
-    if (sub?.stripeCustomerId) {
-      await getStripe().customers.createBalanceTransaction(sub.stripeCustomerId, {
-        amount: -amountCents,
-        currency: "usd",
-        description: reason,
-      });
-    }
-  }
+  void userId;
+  void amountCents;
+  void reason;
   return { ok: true };
 }
 
@@ -301,40 +323,39 @@ export interface PaymentsResult {
 }
 
 /**
- * Recent Stripe charges, scoped to a user when given (else platform-wide). Mock mode
- * returns an empty list flagged `mockMode: true` (the UI shows a mock banner instead).
+ * Recent PayPal subscription transactions for a user. Mock mode returns an empty list flagged
+ * `mockMode: true` (the UI shows a mock banner). PayPal has no platform-wide charge listing
+ * like Stripe, so a call without `userId` returns an empty list — the payments view is
+ * per-user (reachable from a user's detail page).
  */
 export async function listPayments(userId?: string): Promise<PaymentsResult> {
   if (!isLiveBilling()) {
     return { mockMode: true, payments: [] };
   }
-
-  const stripe = getStripe();
-  let customerId: string | undefined;
-  if (userId) {
-    const sub = await prisma.subscription.findUnique({
-      where: { userId },
-      select: { stripeCustomerId: true },
-    });
-    if (!sub?.stripeCustomerId) return { mockMode: false, payments: [] };
-    customerId = sub.stripeCustomerId;
+  if (!userId) {
+    return { mockMode: false, payments: [] };
   }
 
-  const charges = await stripe.charges.list({
-    limit: 25,
-    ...(customerId ? { customer: customerId } : {}),
+  const sub = await prisma.subscription.findUnique({
+    where: { userId },
+    select: { providerSubId: true },
   });
+  if (!sub?.providerSubId) return { mockMode: false, payments: [] };
 
-  const payments: PaymentItem[] = charges.data.map((ch) => ({
-    id: ch.id,
-    amount: ch.amount,
-    currency: ch.currency,
-    status: ch.status,
-    description: ch.description,
-    created: ch.created,
-    customerId: typeof ch.customer === "string" ? ch.customer : (ch.customer?.id ?? null),
-    receiptUrl: ch.receipt_url ?? null,
-  }));
+  const txns = await listSubscriptionTransactions(sub.providerSubId);
+  const payments: PaymentItem[] = txns.map((t) => {
+    const gross = t.amount_with_breakdown?.gross_amount;
+    return {
+      id: t.id,
+      amount: Math.round(parseFloat(gross?.value ?? "0") * 100),
+      currency: (gross?.currency_code ?? "USD").toLowerCase(),
+      status: t.status,
+      description: null,
+      created: t.time ? Math.floor(new Date(t.time).getTime() / 1000) : 0,
+      customerId: null,
+      receiptUrl: null,
+    };
+  });
 
   return { mockMode: false, payments };
 }

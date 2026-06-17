@@ -31,7 +31,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         userId: request.userId,
         amount: request.amount,
         force: parsed.data.force ?? false,
-        stripeRefundId: request.stripeRefundId,
+        providerRefundId: request.providerRefundId,
         note: parsed.data.note,
       },
       ip: clientIp(req),
