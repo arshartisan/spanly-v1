@@ -101,7 +101,10 @@ enum Role {
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
-  passwordHash  String
+  // Null for OAuth-only accounts (e.g. Google sign-in) that never set a password.
+  passwordHash  String?
+  // Google `sub` (stable account id) when the user has linked Google sign-in (doc: google oauth).
+  googleId      String?   @unique
   displayName   String?
   avatarUrl     String?
   timezone      String    @default("UTC")

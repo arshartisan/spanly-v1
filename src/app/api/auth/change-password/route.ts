@@ -14,6 +14,14 @@ export async function POST(req: Request) {
   const parsed = changePasswordSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid input." }, { status: 422 });
 
+  // OAuth-only accounts have no current password to confirm; route them to set one via reset.
+  if (!user.passwordHash) {
+    return NextResponse.json(
+      { error: "Your account uses Google sign-in. Use “Forgot password” to set a password first." },
+      { status: 403 },
+    );
+  }
+
   const ok = await verifyPassword(parsed.data.currentPassword, user.passwordHash);
   if (!ok) return NextResponse.json({ error: "Current password is incorrect." }, { status: 403 });
 

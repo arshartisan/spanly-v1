@@ -8,16 +8,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { GoogleButton } from "@/components/auth/google-button";
+
+// Friendly copy for the `?error=` codes the Google callback bounces back with.
+const OAUTH_ERRORS: Record<string, string> = {
+  oauth: "Google sign-in failed. Please try again.",
+  oauth_cancelled: "Google sign-in was cancelled.",
+  oauth_unverified: "Your Google email isn't verified, so we can't sign you in.",
+  suspended: "This account has been suspended.",
+};
 
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next");
+  const errorCode = params.get("error");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    errorCode ? (OAUTH_ERRORS[errorCode] ?? "Sign-in failed. Please try again.") : null,
+  );
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -52,10 +64,16 @@ function LoginForm() {
         <CardDescription>Log in to your Spanly account.</CardDescription>
       </CardHeader>
       <CardContent>
+        {error && (
+          <p className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+        )}
+        <GoogleButton next={next} />
+        <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          or
+          <span className="h-px flex-1 bg-border" />
+        </div>
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
-          {error && (
-            <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-          )}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="email">Email</Label>
             <Input

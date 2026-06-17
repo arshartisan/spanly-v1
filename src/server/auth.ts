@@ -50,6 +50,55 @@ export async function createSession(userId: string): Promise<void> {
   });
 }
 
+// ─────────────────────────── Onboarding ───────────────────────────
+// New-customer creation defaults, shared by email signup and Google OAuth so both
+// onboarding paths stay in lockstep: a trialing "creator" subscription + the two default
+// queue slots. Keep in sync with docs/implementation 03.
+
+const TRIAL_DAYS = 7;
+
+const DEFAULT_QUEUE_SLOTS = [
+  { time: "11:00", days: [true, true, true, true, true, false, false] },
+  { time: "16:00", days: [true, true, true, true, true, false, false] },
+];
+
+export interface NewUserInput {
+  /** Must already be normalized to lowercase. */
+  email: string;
+  displayName?: string | null;
+  /** Null for OAuth-only accounts (no password). */
+  passwordHash?: string | null;
+  googleId?: string | null;
+  avatarUrl?: string | null;
+  emailVerified?: Date | null;
+}
+
+/**
+ * Create a customer with the standard onboarding defaults (trial subscription + default queue
+ * slots). Does NOT create a session — callers decide when to sign the user in.
+ */
+export async function createTrialUser(input: NewUserInput): Promise<User> {
+  const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+  return prisma.user.create({
+    data: {
+      email: input.email,
+      passwordHash: input.passwordHash ?? null,
+      displayName: input.displayName ?? null,
+      avatarUrl: input.avatarUrl ?? null,
+      googleId: input.googleId ?? null,
+      emailVerified: input.emailVerified ?? null,
+      subscription: {
+        create: { plan: "creator", interval: "month", status: "trialing", trialEndsAt },
+      },
+      queueSettings: {
+        create: {
+          slots: { create: DEFAULT_QUEUE_SLOTS.map((s) => ({ time: s.time, days: s.days })) },
+        },
+      },
+    },
+  });
+}
+
 /** 30-min TTL for impersonation sessions (doc 21). Short-lived by design. */
 const IMPERSONATION_TTL_MS = 30 * 60 * 1000;
 

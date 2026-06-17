@@ -1,21 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { GoogleButton } from "@/components/auth/google-button";
 
-export default function SignupPage() {
+// Friendly copy for `?error=` codes the Google callback bounces back to signup.
+const SIGNUP_ERRORS: Record<string, string> = {
+  signups_disabled: "Sign-ups are temporarily disabled. Please check back soon.",
+  oauth: "Google sign-up failed. Please try again.",
+};
+
+function SignupForm() {
   const router = useRouter();
+  const errorCode = useSearchParams().get("error");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    errorCode ? (SIGNUP_ERRORS[errorCode] ?? "Something went wrong.") : null,
+  );
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -49,10 +59,16 @@ export default function SignupPage() {
         <CardDescription>Start your 7-day free trial. No card required.</CardDescription>
       </CardHeader>
       <CardContent>
+        {error && (
+          <p className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+        )}
+        <GoogleButton next={null} label="Sign up with Google" />
+        <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          or
+          <span className="h-px flex-1 bg-border" />
+        </div>
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
-          {error && (
-            <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-          )}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="displayName">Name</Label>
             <Input
@@ -125,5 +141,13 @@ export default function SignupPage() {
         </p>
       </CardContent>
     </Card>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
   );
 }

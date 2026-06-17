@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/db";
 import { signupSchema } from "@/lib/schemas/auth";
-import { createSession, hashPassword, issueToken } from "@/server/auth";
+import { createSession, createTrialUser, hashPassword, issueToken } from "@/server/auth";
 import { mailer } from "@/server/mailer";
 import { clientIp, rateLimit } from "@/server/rate-limit";
 import { isEnabled } from "@/server/settings/flags";
 
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // 24h
-const TRIAL_DAYS = 7;
 
 export async function POST(req: Request) {
   const rl = await rateLimit(`signup:${clientIp(req)}`, 10, 60);
@@ -33,28 +32,7 @@ export async function POST(req: Request) {
   }
 
   const passwordHash = await hashPassword(password);
-  const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
-
-  const user = await prisma.user.create({
-    data: {
-      email: normalizedEmail,
-      passwordHash,
-      displayName,
-      subscription: {
-        create: { plan: "creator", interval: "month", status: "trialing", trialEndsAt },
-      },
-      queueSettings: {
-        create: {
-          slots: {
-            create: [
-              { time: "11:00", days: [true, true, true, true, true, false, false] },
-              { time: "16:00", days: [true, true, true, true, true, false, false] },
-            ],
-          },
-        },
-      },
-    },
-  });
+  const user = await createTrialUser({ email: normalizedEmail, passwordHash, displayName });
 
   // Email verification link (D-013: dev mailer logs it to the console).
   const token = await issueToken(user.id, "verify_email", VERIFY_TTL_MS);

@@ -15,6 +15,14 @@ export async function POST(req: Request) {
   const parsed = changeEmailSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid input." }, { status: 422 });
 
+  // OAuth-only accounts have no password to confirm; require setting one first.
+  if (!user.passwordHash) {
+    return NextResponse.json(
+      { error: "Your account uses Google sign-in. Set a password first to change your email." },
+      { status: 403 },
+    );
+  }
+
   const ok = await verifyPassword(parsed.data.password, user.passwordHash);
   if (!ok) return NextResponse.json({ error: "Password is incorrect." }, { status: 403 });
 

@@ -21,8 +21,9 @@ export async function POST(req: Request) {
   const { email, password } = parsed.data;
 
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
-  if (!user) {
-    // Compare against a dummy hash to keep timing constant (avoid enumeration).
+  if (!user || !user.passwordHash) {
+    // No user, or an OAuth-only account with no password set: keep timing constant (avoid
+    // enumeration) and refuse with the same generic error so Google-only accounts can't be probed.
     await dummyVerify(password);
     return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
   }

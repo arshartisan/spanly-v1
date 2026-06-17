@@ -5,17 +5,32 @@ import { getCurrentUser } from "@/server/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
+import { ConnectedAccounts, type DashboardAccount } from "@/components/dashboard/ConnectedAccounts";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) return null; // layout already guards/redirects
 
-  const [accountCount, scheduledCount, draftCount, postedCount] = await Promise.all([
+  const [accountCount, scheduledCount, draftCount, postedCount, accountRows] = await Promise.all([
     prisma.socialAccount.count({ where: { userId: user.id, disconnectedAt: null } }),
     prisma.post.count({ where: { userId: user.id, status: "scheduled" } }),
     prisma.post.count({ where: { userId: user.id, status: "draft" } }),
     prisma.post.count({ where: { userId: user.id, status: "posted" } }),
+    prisma.socialAccount.findMany({
+      where: { userId: user.id, disconnectedAt: null },
+      orderBy: { connectedAt: "asc" },
+      take: 6,
+    }),
   ]);
+
+  const accounts: DashboardAccount[] = accountRows.map((a) => ({
+    id: a.id,
+    platform: a.platform,
+    handle: a.handle.startsWith("@") ? a.handle : `@${a.handle}`,
+    displayName: a.displayName,
+    avatarUrl: a.avatarUrl,
+    status: a.status,
+  }));
 
   const firstName = (user.displayName ?? user.email).split(" ")[0];
 
@@ -47,7 +62,11 @@ export default async function DashboardPage() {
             </StaggerItem>
           </Stagger>
 
-          <Reveal delay={0.28}>
+          <Reveal delay={0.24}>
+            <ConnectedAccounts accounts={accounts} total={accountCount} />
+          </Reveal>
+
+          <Reveal delay={0.32}>
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Quick actions</CardTitle>
