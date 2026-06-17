@@ -129,7 +129,7 @@ export function ApiKeysView({
             <KeyRound className="h-8 w-8 text-muted-foreground" />
             <p className="text-sm font-medium">No API keys yet</p>
             <p className="text-xs text-muted-foreground">
-              Create your first API key to start using the Spanly API.
+              Create your first API key to start using the Spanlyfy API.
             </p>
           </div>
         ) : (
@@ -208,7 +208,7 @@ function WebhookCard({ addonActive, initial }: { addonActive: boolean; initial: 
       <p className="mt-1 text-sm text-muted-foreground">
         Get notified when a post finishes. We'll POST results to your URL, signed with{" "}
         <span className="font-medium">HMAC-SHA256</span> in the{" "}
-        <code className="rounded bg-muted px-1 py-0.5 text-xs">X-Spanly-Signature</code> header.
+        <code className="rounded bg-muted px-1 py-0.5 text-xs">X-Spanlyfy-Signature</code> header.
       </p>
       <div className="mt-3 flex items-center gap-2">
         <Input

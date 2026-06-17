@@ -12,7 +12,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary font-bold text-primary-foreground">
               S
             </div>
-            <span className="text-lg font-bold tracking-tight">Spanly</span>
+            <span className="text-lg font-bold tracking-tight">Spanlyfy</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm text-muted-foreground">
             <Link href="/terms" className="hover:text-foreground">
@@ -32,7 +32,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
 
       <footer className="border-t">
         <div className="mx-auto flex max-w-3xl flex-col items-center justify-between gap-2 px-6 py-6 text-xs text-muted-foreground sm:flex-row">
-          <span>© {new Date().getFullYear()} Spanly. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} Spanlyfy. All rights reserved.</span>
           <nav className="flex items-center gap-4">
             <Link href="/terms" className="hover:text-foreground">
               Terms of Service

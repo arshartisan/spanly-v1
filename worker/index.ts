@@ -1,5 +1,5 @@
 /**
- * Spanly scheduler worker (docs/implementation/00 + 08). Runs as a SEPARATE always-on
+ * Spanlyfy scheduler worker (docs/implementation/00 + 08). Runs as a SEPARATE always-on
  * process (not serverless). Consumes:
  *   • publishQueue     — one job per PostTarget → provider.publish (retry/backoff/rollup).
  *   • maintenanceQueue — repeatable sweeps: missed-run recovery, drafts cleanup, token refresh.

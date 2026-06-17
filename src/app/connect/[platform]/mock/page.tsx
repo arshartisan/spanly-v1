@@ -50,7 +50,7 @@ export default async function MockConsentPage({
         </div>
 
         <p className="mb-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">Spanly</span> wants to manage and publish
+          <span className="font-medium text-foreground">Spanlyfy</span> wants to manage and publish
           posts to your {label} account.
         </p>
         {key === "instagram" && (

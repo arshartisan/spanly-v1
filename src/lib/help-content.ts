@@ -4,8 +4,8 @@
  * renderer — no markdown pipeline or extra dependency. Articles map 1:1 to shipped features.
  *
  * Topic coverage is modeled on a mature social-scheduler help center but written originally for
- * Spanly: only the six supported platforms (Facebook, Instagram, LinkedIn, TikTok, YouTube, X),
- * our actual limits, and our real flows. Features Spanly doesn't have are deliberately omitted.
+ * Spanlyfy: only the six supported platforms (Facebook, Instagram, LinkedIn, TikTok, YouTube, X),
+ * our actual limits, and our real flows. Features Spanlyfy doesn't have are deliberately omitted.
  */
 
 export type HelpBlock =
@@ -33,7 +33,7 @@ export interface HelpArticle {
 }
 
 export const HELP_CATEGORIES: { key: HelpCategory; label: string; description: string }[] = [
-  { key: "getting-started", label: "Getting started", description: "Set up Spanly and learn the core workflow." },
+  { key: "getting-started", label: "Getting started", description: "Set up Spanlyfy and learn the core workflow." },
   { key: "connections", label: "Connections", description: "Connect and manage your social accounts." },
   { key: "posting", label: "Creating & scheduling", description: "Compose, schedule, queue, and publish posts." },
   { key: "media", label: "Media & limits", description: "Upload sizes, formats, and per-platform limits." },
@@ -46,11 +46,11 @@ export const HELP_ARTICLES: HelpArticle[] = [
   // ─────────────────────────── Getting started ───────────────────────────
   {
     slug: "welcome",
-    title: "Welcome to Spanly",
+    title: "Welcome to Spanlyfy",
     category: "getting-started",
-    excerpt: "What Spanly does and how the core workflow fits together.",
+    excerpt: "What Spanlyfy does and how the core workflow fits together.",
     body: [
-      { type: "p", text: "Spanly is a social media scheduler. You connect your accounts, compose a post once, and publish it now or schedule it across all six supported platforms." },
+      { type: "p", text: "Spanlyfy is a social media scheduler. You connect your accounts, compose a post once, and publish it now or schedule it across all six supported platforms." },
       { type: "h", text: "The supported platforms" },
       { type: "ul", items: ["Facebook", "Instagram", "LinkedIn", "TikTok", "YouTube", "X"] },
       { type: "h", text: "The basic workflow" },
@@ -68,7 +68,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "getting-started",
     excerpt: "Three ways to schedule ahead: pick a time, use a queue, or bulk import.",
     body: [
-      { type: "p", text: "Spanly gives you three ways to line up content before it goes live, so you can batch your work and stay consistent." },
+      { type: "p", text: "Spanlyfy gives you three ways to line up content before it goes live, so you can batch your work and stay consistent." },
       { type: "ul", items: [
         "Pick a time — schedule any post for a specific date and time.",
         "Queue — define recurring weekly slots and drop posts into the next open one.",
@@ -101,7 +101,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     excerpt: "Link Facebook, Instagram, LinkedIn, TikTok, YouTube, and X.",
     body: [
       { type: "p", text: "Open Connections from the sidebar. Each platform has a Connect button that takes you through a secure authorization flow; once you approve, the account appears with its handle." },
-      { type: "p", text: "Spanly never sees or stores your social passwords — you authorize access on the platform's own screen, and we keep only the access tokens needed to publish on your behalf, encrypted at rest." },
+      { type: "p", text: "Spanlyfy never sees or stores your social passwords — you authorize access on the platform's own screen, and we keep only the access tokens needed to publish on your behalf, encrypted at rest." },
       { type: "h", text: "Reconnecting" },
       { type: "p", text: "If an account's access expires, reconnect it from the same row. Reconnecting an existing platform never uses an extra account slot." },
     ],
@@ -112,7 +112,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "connections",
     excerpt: "Connect directly via Instagram or through a linked Facebook Page.",
     body: [
-      { type: "p", text: "When you connect Instagram, Spanly asks which method to use:" },
+      { type: "p", text: "When you connect Instagram, Spanlyfy asks which method to use:" },
       { type: "ul", items: [
         "Instagram — authorize directly with your Instagram account.",
         "Facebook Page — connect an Instagram account that's managed through a linked Facebook Page.",
@@ -125,9 +125,9 @@ export const HELP_ARTICLES: HelpArticle[] = [
     slug: "connect-facebook",
     title: "Connecting a Facebook Page",
     category: "connections",
-    excerpt: "Spanly publishes to Facebook Pages you manage.",
+    excerpt: "Spanlyfy publishes to Facebook Pages you manage.",
     body: [
-      { type: "p", text: "Spanly connects to Facebook Pages — the business/brand presences you manage — rather than a personal timeline. During authorization, grant access to the Page you want to post to." },
+      { type: "p", text: "Spanlyfy connects to Facebook Pages — the business/brand presences you manage — rather than a personal timeline. During authorization, grant access to the Page you want to post to." },
       { type: "p", text: "If a Page doesn't appear, make sure your account has a manager or admin role on it, then try connecting again." },
       { type: "p", text: "Facebook supports text, image, and video posts, with the most generous caption length of any platform." },
     ],
@@ -138,7 +138,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "connections",
     excerpt: "Post to your LinkedIn profile or a company page.",
     body: [
-      { type: "p", text: "Connect LinkedIn from the Connections page and authorize the profile or page you want to publish to. Spanly supports text, image, and video posts on LinkedIn." },
+      { type: "p", text: "Connect LinkedIn from the Connections page and authorize the profile or page you want to publish to. Spanlyfy supports text, image, and video posts on LinkedIn." },
       { type: "p", text: "If you manage a company page, make sure you have a posting role on it before connecting." },
     ],
   },
@@ -151,7 +151,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h", text: "TikTok" },
       { type: "p", text: "TikTok accepts image and video posts. Some accounts may need to be a Business or Creator account to allow third-party publishing — if a connection or post is rejected, check your account type in TikTok." },
       { type: "h", text: "YouTube" },
-      { type: "p", text: "YouTube is video-only in Spanly. Connect the channel you want to upload to and authorize access. Each YouTube post is a single video." },
+      { type: "p", text: "YouTube is video-only in Spanlyfy. Connect the channel you want to upload to and authorize access. Each YouTube post is a single video." },
     ],
   },
   {
@@ -194,7 +194,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "connections",
     excerpt: "Publish the same post to several accounts in one step.",
     body: [
-      { type: "p", text: "Select as many accounts as you like in the composer and Spanly fans the post out to each one. Every account publishes independently, so a problem with one never blocks the others." },
+      { type: "p", text: "Select as many accounts as you like in the composer and Spanlyfy fans the post out to each one. Every account publishes independently, so a problem with one never blocks the others." },
       { type: "p", text: "Only accounts that can handle your post type are selectable — for example, a text post won't offer YouTube, which is video-only." },
       { type: "p", text: "On the publishing screen you'll see a separate result for each account, with its own link or error." },
     ],
@@ -286,9 +286,9 @@ export const HELP_ARTICLES: HelpArticle[] = [
     slug: "queue",
     title: "Using your posting queue",
     category: "posting",
-    excerpt: "Define recurring time slots and let Spanly fill them in order.",
+    excerpt: "Define recurring time slots and let Spanlyfy fill them in order.",
     body: [
-      { type: "p", text: "A queue is a weekly set of time slots. Instead of picking a date for every post, add posts to the queue and Spanly assigns each one to the next open slot." },
+      { type: "p", text: "A queue is a weekly set of time slots. Instead of picking a date for every post, add posts to the queue and Spanlyfy assigns each one to the next open slot." },
       { type: "ol", items: [
         "Open Settings → Queue.",
         "Add the times and days you want to post.",
@@ -339,7 +339,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "posting",
     excerpt: "What happens after you hit publish, and how failures are handled.",
     body: [
-      { type: "p", text: "When a post goes out, Spanly publishes to each selected account independently and shows a live progress screen with a result card per account." },
+      { type: "p", text: "When a post goes out, Spanlyfy publishes to each selected account independently and shows a live progress screen with a result card per account." },
       { type: "h", text: "If a target fails" },
       { type: "p", text: "A failed account shows the error and a Retry button. Retrying only re-sends the failed account — accounts that already succeeded are never re-posted, so you can't accidentally double-post." },
       { type: "p", text: "If an account's access expired, you'll see a Reconnect prompt instead; reconnect it and retry." },
@@ -381,7 +381,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "media",
     excerpt: "A quick reference table for every supported platform.",
     body: [
-      { type: "p", text: "Spanly enforces each platform's limits when you publish. For reference:" },
+      { type: "p", text: "Spanlyfy enforces each platform's limits when you publish. For reference:" },
       { type: "ul", items: [
         "X — 280-character caption, up to 4 media.",
         "LinkedIn — 3,000-character caption, up to 9 media.",
@@ -439,9 +439,9 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "account-billing",
     excerpt: "How the 7-day money-back window works.",
     body: [
-      { type: "p", text: "Spanly offers a 7-day money-back window on new subscriptions. To request a refund, open Settings → Billing and choose Request refund." },
+      { type: "p", text: "Spanlyfy offers a 7-day money-back window on new subscriptions. To request a refund, open Settings → Billing and choose Request refund." },
       { type: "ol", items: [
-        "If you're within 7 days of the charge, Spanly records your request and notifies support to process it.",
+        "If you're within 7 days of the charge, Spanlyfy records your request and notifies support to process it.",
         "If you're outside the window, the request is declined with an explanation.",
       ] },
       { type: "p", text: "You'll get a confirmation either way." },
@@ -484,7 +484,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h", text: "Caption or media rejected" },
       { type: "p", text: "The post likely exceeded a platform's caption length or media count. Check the limits, edit the post, and retry." },
       { type: "h", text: "A scheduled post didn't go out" },
-      { type: "p", text: "Make sure the scheduled time was in the future when you saved it. Spanly automatically recovers missed runs, so a brief delay usually resolves on its own." },
+      { type: "p", text: "Make sure the scheduled time was in the future when you saved it. Spanlyfy automatically recovers missed runs, so a brief delay usually resolves on its own." },
     ],
   },
   {
@@ -493,7 +493,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "troubleshooting",
     excerpt: "When a platform reports an invalid session or revoked access.",
     body: [
-      { type: "p", text: "Connections can break when you change your social password, revoke Spanly's access on the platform, or the platform's token simply expires." },
+      { type: "p", text: "Connections can break when you change your social password, revoke Spanlyfy's access on the platform, or the platform's token simply expires." },
       { type: "ol", items: [
         "Open Connections and find the affected account.",
         "Click Reconnect and complete the authorization again.",
@@ -522,7 +522,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     slug: "api-keys",
     title: "API keys and the public API",
     category: "developers",
-    excerpt: "Create keys and call the Spanly API programmatically.",
+    excerpt: "Create keys and call the Spanlyfy API programmatically.",
     body: [
       { type: "p", text: "With the API add-on enabled, create a key under API Keys. The full key is shown once at creation — copy it then; afterwards only a masked preview is stored." },
       { type: "h", text: "Authenticating" },
@@ -543,19 +543,19 @@ export const HELP_ARTICLES: HelpArticle[] = [
     category: "developers",
     excerpt: "Get notified when a post finishes publishing.",
     body: [
-      { type: "p", text: "Set a webhook URL under API Keys. When a post reaches a final state, Spanly sends a signed POST to your URL with the post and per-account results." },
+      { type: "p", text: "Set a webhook URL under API Keys. When a post reaches a final state, Spanlyfy sends a signed POST to your URL with the post and per-account results." },
       { type: "h", text: "Verifying the signature" },
-      { type: "p", text: "Each delivery includes an HMAC-SHA256 signature of the raw body in the X-Spanly-Signature header. Compute the same HMAC with your signing secret and compare to verify the request is genuinely from Spanly." },
+      { type: "p", text: "Each delivery includes an HMAC-SHA256 signature of the raw body in the X-Spanlyfy-Signature header. Compute the same HMAC with your signing secret and compare to verify the request is genuinely from Spanlyfy." },
       { type: "p", text: "Each post is delivered once. A slow or failing endpoint never blocks or delays publishing." },
     ],
   },
   {
     slug: "mcp",
-    title: "Connecting Spanly to Claude (MCP)",
+    title: "Connecting Spanlyfy to Claude (MCP)",
     category: "developers",
-    excerpt: "Manage Spanly from an AI agent via the MCP server.",
+    excerpt: "Manage Spanlyfy from an AI agent via the MCP server.",
     body: [
-      { type: "p", text: "Spanly exposes a Model Context Protocol (MCP) server so AI agents can list your accounts and create posts on your behalf. It uses the same API-key authentication as the public API, so it requires the API add-on." },
+      { type: "p", text: "Spanlyfy exposes a Model Context Protocol (MCP) server so AI agents can list your accounts and create posts on your behalf. It uses the same API-key authentication as the public API, so it requires the API add-on." },
       { type: "h", text: "Endpoint" },
       { type: "p", text: "Add this Streamable-HTTP MCP endpoint to your client (the exact URL is shown in Settings → General):" },
       { type: "code", text: "POST {your-app-url}/api/mcp\nAuthorization: Bearer spb_live_…" },

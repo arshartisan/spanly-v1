@@ -8,7 +8,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary font-bold text-primary-foreground">
           S
         </div>
-        <span className="text-2xl font-bold tracking-tight">Spanly</span>
+        <span className="text-2xl font-bold tracking-tight">Spanlyfy</span>
       </Link>
       <div className="w-full max-w-sm">{children}</div>
       <p className="mt-6 text-center text-xs text-muted-foreground">

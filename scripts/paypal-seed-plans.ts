@@ -2,7 +2,7 @@ import "dotenv/config";
 import { randomUUID } from "node:crypto";
 
 /**
- * One-off helper: create the PayPal product + billing plans for Spanly's catalog and print the
+ * One-off helper: create the PayPal product + billing plans for Spanlyfy's catalog and print the
  * env lines to paste into `.env` (docs/implementation/10, "Phase 0").
  *
  * Run:  npx tsx scripts/paypal-seed-plans.ts
@@ -118,8 +118,8 @@ async function main() {
   console.log(`Creating product + plans in ${base()} …\n`);
 
   const product = await api<{ id: string }>("/v1/catalogs/products", accessToken, {
-    name: "Spanly",
-    description: "Spanly social scheduling subscription",
+    name: "Spanlyfy",
+    description: "Spanlyfy social scheduling subscription",
     type: "SERVICE",
     category: "SOFTWARE",
   });
@@ -130,7 +130,7 @@ async function main() {
     const monthId = await createPlan(
       accessToken,
       product.id,
-      `Spanly ${tier.name} (Monthly)`,
+      `Spanlyfy ${tier.name} (Monthly)`,
       "MONTH",
       tier.monthly,
       true,
@@ -141,7 +141,7 @@ async function main() {
     const yearId = await createPlan(
       accessToken,
       product.id,
-      `Spanly ${tier.name} (Yearly)`,
+      `Spanlyfy ${tier.name} (Yearly)`,
       "YEAR",
       tier.yearly,
       true,

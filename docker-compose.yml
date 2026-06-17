@@ -1,4 +1,4 @@
-# Local dev services for Spanly: Postgres, Redis, MinIO (S3-compatible).
+# Local dev services for Spanlyfy: Postgres, Redis, MinIO (S3-compatible).
 # Usage: docker compose up -d
 services:
   postgres:

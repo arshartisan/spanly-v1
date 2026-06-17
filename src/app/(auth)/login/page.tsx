@@ -61,7 +61,7 @@ function LoginForm() {
     <Card>
       <CardHeader>
         <CardTitle>Welcome back</CardTitle>
-        <CardDescription>Log in to your Spanly account.</CardDescription>
+        <CardDescription>Log in to your Spanlyfy account.</CardDescription>
       </CardHeader>
       <CardContent>
         {error && (

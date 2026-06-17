@@ -6,7 +6,7 @@ import { removePublishJobs } from "@/server/queue";
 import type { PostListQuery, ConnectionListQuery } from "@/lib/schemas/admin-content";
 
 // Content & connections oversight service (doc 18). Pure `buildPostWhere` / `buildAccountWhere`
-// for unit tests; the rest run Prisma queries. Reads NEVER select `encryptedTokens` — Spanly
+// for unit tests; the rest run Prisma queries. Reads NEVER select `encryptedTokens` — Spanlyfy
 // relays content, so "moderation" = stopping scheduled sends and disconnecting accounts.
 
 export { AdminActionError } from "@/server/admin/errors";
@@ -248,7 +248,7 @@ export async function cancelPost(
 /**
  * Takedown a post: mark it `removed` and cancel any remaining `pending` targets (remove their
  * queued jobs + set `canceled`). Already-sent (`success`) targets cannot be un-published —
- * Spanly only relays — so they are left as-is; the UI notes this limitation.
+ * Spanlyfy only relays — so they are left as-is; the UI notes this limitation.
  */
 export async function takedownPost(
   actorId: string,

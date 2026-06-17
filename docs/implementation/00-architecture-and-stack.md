@@ -145,7 +145,7 @@ PAYPAL_PLAN_API_ADDON=P-...
 
 # Email
 RESEND_API_KEY=...
-EMAIL_FROM="Spanly <no-reply@spanly.app>"
+EMAIL_FROM="Spanlyfy <no-reply@spanly.app>"
 
 # Providers — start with mock; fill per platform as approvals land
 PROVIDER_MODE=mock            # mock | live

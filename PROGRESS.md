@@ -1,4 +1,4 @@
-# Spanly — Progress / TODO
+# Spanlyfy — Progress / TODO
 
 Status tracker across sessions. Update after each phase; stop for human sign-off at each
 checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
@@ -314,7 +314,7 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
 ## Phase 13 — Help center (D-020)
 - ☑ `src/lib/help-content.ts`: **7 categories + 36 typed articles** (block arrays), topic coverage
       modeled on a mature scheduler help center (support.post-bridge.com) but **written originally**
-      for Spanly — only the 6 platforms + our real limits/flows; omits features we don't have
+      for Spanlyfy — only the 6 platforms + our real limits/flows; omits features we don't have
       (Bluesky/Threads, magic-link login, affiliate, TikTok music, team/VA access — D-004).
       Categories: Getting started · Connections · Creating & scheduling · Media & limits ·
       Account & billing · Troubleshooting · Developers. `getHelpArticle`/`articlesByCategory` helpers.

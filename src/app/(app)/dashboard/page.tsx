@@ -135,7 +135,7 @@ function EmptyState() {
           <h2 className="text-lg font-semibold">Connect your first account</h2>
           <p className="max-w-md text-sm text-muted-foreground">
             Link a Facebook, Instagram, LinkedIn, TikTok, YouTube, or X account to start scheduling
-            and publishing posts from Spanly.
+            and publishing posts from Spanlyfy.
           </p>
         </div>
         <Button asChild>

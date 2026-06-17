@@ -61,7 +61,7 @@ export function Sidebar({ user, planLabel, isStaff }: SidebarProps) {
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 font-bold text-primary-foreground glow-primary">
             S
           </div>
-          <span className="text-lg font-bold tracking-tight">Spanly</span>
+          <span className="text-lg font-bold tracking-tight">Spanlyfy</span>
         </Link>
         {/* <WorkspaceSwitcher /> */}
         <CreatePostButton />

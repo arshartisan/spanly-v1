@@ -21,7 +21,7 @@ const neueMachina = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Spanly — Social scheduling, simplified",
+  title: "Spanlyfy — Social scheduling, simplified",
   description:
     "Schedule and publish content across Facebook, Instagram, LinkedIn, TikTok, YouTube, and X from one place.",
 };

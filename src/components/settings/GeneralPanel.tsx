@@ -44,7 +44,7 @@ export function GeneralPanel({ initial, mcpEndpoint }: { initial: Initial; mcpEn
       <PasswordCard email={initial.email} />
       <SecurityCard />
 
-      <SettingCard title="Email Preferences" description="Choose which emails Spanly sends you.">
+      <SettingCard title="Email Preferences" description="Choose which emails Spanlyfy sends you.">
         <ToggleRow
           label="Automation emails"
           checked={settings.emailPrefs.automation}
@@ -157,7 +157,7 @@ function ProfileCard({ initial, onSave }: { initial: Initial; onSave: (name: str
   const initials = (initial.displayName || initial.email).slice(0, 2).toUpperCase();
 
   return (
-    <SettingCard title="Profile" description="Your name and avatar across Spanly.">
+    <SettingCard title="Profile" description="Your name and avatar across Spanlyfy.">
       <div className="flex items-center gap-4">
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
           {initial.avatarUrl ? (
@@ -379,7 +379,7 @@ function McpCard({ endpoint }: { endpoint: string }) {
   return (
     <SettingCard
       title="Connect to Claude (MCP)"
-      description="Manage Spanly from an AI agent. Add this MCP endpoint and authenticate with an API key."
+      description="Manage Spanlyfy from an AI agent. Add this MCP endpoint and authenticate with an API key."
     >
       <div className="flex items-center gap-2">
         <Input value={endpoint} readOnly className="font-mono text-xs" />

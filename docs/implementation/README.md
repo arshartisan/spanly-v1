@@ -1,6 +1,6 @@
-# Spanly — Implementation Specs
+# Spanlyfy — Implementation Specs
 
-This folder is the **code-level build blueprint** for Spanly, an original social-media
+This folder is the **code-level build blueprint** for Spanlyfy, an original social-media
 scheduling app (a clone of the Post-Bridge *concept*, not its code or branding). The
 screen-design specs live one level up in `../` (`00`–`14`) and `../../Ref Images/`. These
 files translate that design into concrete, implementable engineering specs.

@@ -123,7 +123,7 @@ as a user (see Support powers).
   (cancel pending targets + mark post removed) — audited.
 - **Connections:** all connected accounts across users; filter by platform / status; token
   health (expiring/expired); **force-disconnect** a problem account.
-- **Moderation note:** Spanly does not host published content (it relays to platforms), so
+- **Moderation note:** Spanlyfy does not host published content (it relays to platforms), so
   moderation = preventing *scheduled* sends and disconnecting abusive accounts, not editing
   already-published posts.
 

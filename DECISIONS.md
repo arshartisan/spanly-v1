@@ -1,4 +1,4 @@
-# Spanly — Decisions Log
+# Spanlyfy — Decisions Log
 
 Running log of product + architecture decisions with reasoning. Newest at top. Each entry:
 what we decided, why, and any alternative rejected.
@@ -31,7 +31,7 @@ what we decided, why, and any alternative rejected.
   user-provided key/domain). **Approved by:** human (2026-06-12).
 
 ### D-001 Product: clone the Post-Bridge *concept*, build original
-- **Decision:** Build "Spanly", an original social scheduler modeled on Post-Bridge's
+- **Decision:** Build "Spanlyfy", an original social scheduler modeled on Post-Bridge's
   functionality. No copying of their code, branding, copy, or assets.
 - **Why:** Project brief. Avoids IP issues; we own the implementation.
 
@@ -131,7 +131,7 @@ what we decided, why, and any alternative rejected.
   (same one-time-reveal model as verification tokens). Public endpoints live under `/api/v1/*`,
   authenticate via `Authorization: Bearer <key>`, and are gated server-side behind the **API
   add-on** (`requireApiAddon`) — never the UI alone. Post-completion webhooks are per-user, signed
-  with **HMAC-SHA256** over the raw body in `X-Spanly-Signature`, delivered **once** per post from
+  with **HMAC-SHA256** over the raw body in `X-Spanlyfy-Signature`, delivered **once** per post from
   the publish-runner terminal rollup (idempotent via `Post.webhookSentAt`, best-effort + time-boxed
   so a bad URL never blocks publishing). MVP public surface: `GET /v1/me`, `GET /v1/accounts`,
   `POST /v1/posts` (text); media-in-API deferred.
@@ -184,7 +184,7 @@ what we decided, why, and any alternative rejected.
   for non-dev editing at MVP).
 - **Update (2026-06-12):** expanded to **7 categories / 36 articles**, modeling topic *coverage* on
   the Post-Bridge support center (support.post-bridge.com) while writing all copy **originally** for
-  Spanly (D-001). Deliberately omitted topics that don't apply to Spanly: Bluesky/Threads, magic-link
+  Spanlyfy (D-001). Deliberately omitted topics that don't apply to Spanlyfy: Bluesky/Threads, magic-link
   login (we use password + email verification), affiliate program, TikTok-music/custom-thumbnails,
   and team/VA account access (Workspaces deferred — D-004). All platform limits in the articles are
   taken from `PLATFORM_CONFIG` so the docs match enforcement.

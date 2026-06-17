@@ -7,7 +7,7 @@
 force-disconnect = `admin`.
 
 ## Scope
-Platform-wide oversight of **what is being published and by whom**. Spanly relays content to
+Platform-wide oversight of **what is being published and by whom**. Spanlyfy relays content to
 external platforms (it does not host published posts), so "moderation" = stopping
 *scheduled* sends and disconnecting abusive accounts, not editing already-live posts. Reuses
 the queue/cancel and connection helpers rather than new publishing logic.

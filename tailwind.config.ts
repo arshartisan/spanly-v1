@@ -3,7 +3,7 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 import tailwindcssAnimate from "tailwindcss-animate";
 
 /**
- * Spanly theme — green primary on light-gray surfaces (see docs/implementation/14).
+ * Spanlyfy theme — green primary on light-gray surfaces (see docs/implementation/14).
  * Colors are driven by CSS variables defined in src/app/globals.css so shadcn/ui
  * components inherit them.
  */
@@ -58,7 +58,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Spanly status colors (badges/chips) — doc 14
+        // Spanlyfy status colors (badges/chips) — doc 14
         status: {
           posted: "hsl(var(--status-posted))",
           scheduled: "hsl(var(--status-scheduled))",

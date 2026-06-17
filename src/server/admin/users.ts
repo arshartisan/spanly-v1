@@ -240,7 +240,7 @@ export async function sendPasswordResetFor(targetId: string) {
   const resetUrl = `${process.env.APP_URL ?? "http://localhost:3000"}/reset?token=${token}`;
   await mailer.send({
     to: target.email,
-    subject: "Reset your Spanly password",
+    subject: "Reset your Spanlyfy password",
     text: "Use the link below to set a new password. It expires in 1 hour.",
     actionUrl: resetUrl,
   });

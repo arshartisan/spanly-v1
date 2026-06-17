@@ -51,7 +51,7 @@ export function AdminSidebar({ user, planLabel }: AdminSidebarProps) {
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 font-bold text-primary-foreground glow-primary">
             S
           </div>
-          <span className="text-lg font-bold tracking-tight">Spanly</span>
+          <span className="text-lg font-bold tracking-tight">Spanlyfy</span>
           <span className="glow-primary rounded-md bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.3)]">
             Admin
           </span>

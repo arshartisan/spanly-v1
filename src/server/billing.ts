@@ -75,7 +75,7 @@ export async function createCheckout(
       custom_id: userId,
       subscriber: { email_address: email },
       application_context: {
-        brand_name: "Spanly",
+        brand_name: "Spanlyfy",
         user_action: "SUBSCRIBE_NOW",
         shipping_preference: "NO_SHIPPING",
         return_url: appUrl("/settings/billing?subscribed=1"),
@@ -158,7 +158,7 @@ export async function toggleApiAddon(userId: string, enable: boolean): Promise<A
           plan_id: API_ADDON_PLAN,
           custom_id: `${userId}:addon`,
           application_context: {
-            brand_name: "Spanly",
+            brand_name: "Spanlyfy",
             user_action: "SUBSCRIBE_NOW",
             shipping_preference: "NO_SHIPPING",
             return_url: appUrl("/settings/billing?addon=1"),

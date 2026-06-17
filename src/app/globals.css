@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /*
- * Spanly theme — warm orange accent on deep charcoal surfaces with a glassmorphism
+ * Spanlyfy theme — warm orange accent on deep charcoal surfaces with a glassmorphism
  * treatment. HSL channels (space-separated) are consumed by tailwind.config.ts +
  * shadcn/ui, and re-used directly via hsl(var(--token) / <alpha>) in the glass utilities.
  */
@@ -97,14 +97,14 @@
     @apply bg-muted text-foreground;
   }
 
-  /* Neue Machina for all titles; Inter (font-sans) remains the body face. */
+  /* Neue Machina (Regular weight) for all titles; Inter (font-sans) stays the body face. */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-display;
+    @apply font-display font-normal;
   }
 
   /* Ambient warm glow behind translucent glass surfaces. */

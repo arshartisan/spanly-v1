@@ -52,7 +52,7 @@ export function ConnectionsView({
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Connected Accounts</h1>
         <p className="text-sm text-muted-foreground">
-          Link your social accounts to schedule and publish from Spanly.{" "}
+          Link your social accounts to schedule and publish from Spanlyfy.{" "}
           <span className={cn("font-medium", limitReached && "text-destructive")}>
             {used} / {limit === null ? "∞" : limit} accounts
           </span>

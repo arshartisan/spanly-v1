@@ -1,4 +1,4 @@
-# Spanly
+# Spanlyfy
 
 Schedule and publish content across Facebook, Instagram, LinkedIn, TikTok, YouTube, and X
 from one place. Built with Next.js (App Router) + PostgreSQL/Prisma + BullMQ.

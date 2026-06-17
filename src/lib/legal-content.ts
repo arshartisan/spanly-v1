@@ -1,10 +1,10 @@
 /**
- * Legal content - Terms of Service & Privacy Policy for Spanly.
+ * Legal content - Terms of Service & Privacy Policy for Spanlyfy.
  *
  * Kept as typed, structured data (mirroring help-content.ts) so it renders through a small
  * block renderer with no markdown pipeline, stays trivially diffable, and exposes a single
  * `effectiveDate` per document. The text is modeled on a mature social-scheduler's legal docs
- * but written originally for Spanly: only the six supported platforms (Facebook, Instagram,
+ * but written originally for Spanlyfy: only the six supported platforms (Facebook, Instagram,
  * LinkedIn, TikTok, YouTube, X), our real billing (PayPal), our real 7-day free trial and
  * 7-day refund window, and how we actually handle OAuth tokens and content.
  *
@@ -34,7 +34,7 @@ export interface LegalDocument {
 
 /** Shared facts so the two documents stay consistent and are edited in one place. */
 export const LEGAL = {
-  product: "Spanly",
+  product: "Spanlyfy",
   domain: "spanly.app",
   supportEmail: "support@spanly.app",
   privacyEmail: "privacy@spanly.app",
@@ -43,7 +43,7 @@ export const LEGAL = {
   refundDays: 7,
   platforms: "Facebook, Instagram, LinkedIn, TikTok, YouTube, and X (formerly Twitter)",
   // Fill these before production launch.
-  legalEntity: "Spanly", // e.g. "Spanly, Inc."
+  legalEntity: "Spanlyfy", // e.g. "Spanlyfy, Inc."
   jurisdiction: "[your governing jurisdiction - e.g., State of Delaware, USA]",
 } as const;
 
@@ -56,7 +56,7 @@ export const TERMS: LegalDocument = {
   intro: [
     {
       type: "p",
-      text: `These Terms of Service ("Terms") are a binding agreement between you ("you" or "your") and ${LEGAL.legalEntity} ("Spanly", "we", "us", or "our"), governing your access to and use of the Spanly website at ${LEGAL.domain}, our applications, and all related services (together, the "Service").`,
+      text: `These Terms of Service ("Terms") are a binding agreement between you ("you" or "your") and ${LEGAL.legalEntity} ("Spanlyfy", "we", "us", or "our"), governing your access to and use of the Spanlyfy website at ${LEGAL.domain}, our applications, and all related services (together, the "Service").`,
     },
     {
       type: "p",
@@ -82,7 +82,7 @@ export const TERMS: LegalDocument = {
         },
         {
           type: "p",
-          text: "You are responsible for ensuring that your use of the Service is lawful in your jurisdiction and that you have the rights and permissions necessary for the social media accounts and content you manage through Spanly.",
+          text: "You are responsible for ensuring that your use of the Service is lawful in your jurisdiction and that you have the rights and permissions necessary for the social media accounts and content you manage through Spanlyfy.",
         },
       ],
     },
@@ -91,11 +91,11 @@ export const TERMS: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `Spanly is a social media scheduling and publishing tool. It lets you connect your accounts on ${LEGAL.platforms}, compose a post once, and publish it immediately or schedule it across the platforms you choose. The Service also provides a content calendar, a publishing queue, drafts, media handling, analytics where available, and developer features such as API keys and an MCP server.`,
+          text: `Spanlyfy is a social media scheduling and publishing tool. It lets you connect your accounts on ${LEGAL.platforms}, compose a post once, and publish it immediately or schedule it across the platforms you choose. The Service also provides a content calendar, a publishing queue, drafts, media handling, analytics where available, and developer features such as API keys and an MCP server.`,
         },
         {
           type: "p",
-          text: "Spanly acts as a tool that you direct. When you publish or schedule content, you instruct us to transmit that content to the third-party platforms you have connected, on your behalf. We do not control those platforms and cannot guarantee that a given post will be accepted, displayed, or retained by them.",
+          text: "Spanlyfy acts as a tool that you direct. When you publish or schedule content, you instruct us to transmit that content to the third-party platforms you have connected, on your behalf. We do not control those platforms and cannot guarantee that a given post will be accepted, displayed, or retained by them.",
         },
       ],
     },
@@ -157,7 +157,7 @@ export const TERMS: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `We want you to be satisfied with Spanly. We offer a ${LEGAL.refundDays}-day, 100% money-back guarantee: if you request a refund within ${LEGAL.refundDays} days of a paid subscription charge, we will refund that charge in full, no questions asked.`,
+          text: `We want you to be satisfied with Spanlyfy. We offer a ${LEGAL.refundDays}-day, 100% money-back guarantee: if you request a refund within ${LEGAL.refundDays} days of a paid subscription charge, we will refund that charge in full, no questions asked.`,
         },
         {
           type: "p",
@@ -187,11 +187,11 @@ export const TERMS: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "To publish on your behalf, you connect your third-party social media accounts to Spanly using each platform's official authorization (OAuth) flow. By connecting an account you authorize Spanly to access and use that account, within the scopes you approve, to provide the Service - for example to read your basic profile, list the pages or channels you manage, and create posts.",
+          text: "To publish on your behalf, you connect your third-party social media accounts to Spanlyfy using each platform's official authorization (OAuth) flow. By connecting an account you authorize Spanlyfy to access and use that account, within the scopes you approve, to provide the Service - for example to read your basic profile, list the pages or channels you manage, and create posts.",
         },
         {
           type: "p",
-          text: "Your use of each connected platform remains subject to that platform's own terms and policies, in addition to these Terms. You are responsible for complying with them. The platforms relevant to Spanly include:",
+          text: "Your use of each connected platform remains subject to that platform's own terms and policies, in addition to these Terms. You are responsible for complying with them. The platforms relevant to Spanlyfy include:",
         },
         {
           type: "ul",
@@ -205,7 +205,7 @@ export const TERMS: LegalDocument = {
         },
         {
           type: "p",
-          text: "Third-party platforms may change, restrict, or remove their APIs and features at any time, which can interrupt or disable parts of the Service. We are not responsible for such changes and may modify or remove affected functionality. You can disconnect any account from Spanly at any time, and you may also revoke Spanly's access from within the relevant platform's settings.",
+          text: "Third-party platforms may change, restrict, or remove their APIs and features at any time, which can interrupt or disable parts of the Service. We are not responsible for such changes and may modify or remove affected functionality. You can disconnect any account from Spanlyfy at any time, and you may also revoke Spanlyfy's access from within the relevant platform's settings.",
         },
       ],
     },
@@ -218,7 +218,7 @@ export const TERMS: LegalDocument = {
         },
         {
           type: "p",
-          text: "You can revoke Spanly's access to your Google/YouTube data at any time via the Google security settings page (https://security.google.com/settings/security/permissions). We use data obtained through the YouTube API Services only to provide the Service to you and in accordance with the YouTube API Services policies.",
+          text: "You can revoke Spanlyfy's access to your Google/YouTube data at any time via the Google security settings page (https://security.google.com/settings/security/permissions). We use data obtained through the YouTube API Services only to provide the Service to you and in accordance with the YouTube API Services policies.",
         },
       ],
     },
@@ -227,15 +227,15 @@ export const TERMS: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "\"Your Content\" means the text, images, video, captions, schedules, and other materials you upload to or create within Spanly. As between you and us, you retain all ownership rights in Your Content.",
+          text: "\"Your Content\" means the text, images, video, captions, schedules, and other materials you upload to or create within Spanlyfy. As between you and us, you retain all ownership rights in Your Content.",
         },
         {
           type: "p",
-          text: "You grant Spanly a worldwide, non-exclusive, royalty-free license to host, store, reproduce, process, transmit, adapt (for formatting and platform requirements), and display Your Content solely as needed to operate and provide the Service - including transmitting it to the third-party platforms you instruct us to publish to. This license ends when Your Content is deleted, except for residual copies in routine backups and as required to comply with law.",
+          text: "You grant Spanlyfy a worldwide, non-exclusive, royalty-free license to host, store, reproduce, process, transmit, adapt (for formatting and platform requirements), and display Your Content solely as needed to operate and provide the Service - including transmitting it to the third-party platforms you instruct us to publish to. This license ends when Your Content is deleted, except for residual copies in routine backups and as required to comply with law.",
         },
         {
           type: "p",
-          text: "You represent and warrant that you own or have all necessary rights, licenses, and permissions for Your Content, and that publishing it through Spanly does not violate any law or any third party's rights. You are solely responsible for Your Content and for what you publish.",
+          text: "You represent and warrant that you own or have all necessary rights, licenses, and permissions for Your Content, and that publishing it through Spanlyfy does not violate any law or any third party's rights. You are solely responsible for Your Content and for what you publish.",
         },
       ],
     },
@@ -280,7 +280,7 @@ export const TERMS: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "The Service, including its software, design, text, graphics, and the Spanly name and logo, is owned by us or our licensors and is protected by intellectual property laws. Subject to these Terms, we grant you a limited, non-exclusive, non-transferable, revocable license to access and use the Service for its intended purpose.",
+          text: "The Service, including its software, design, text, graphics, and the Spanlyfy name and logo, is owned by us or our licensors and is protected by intellectual property laws. Subject to these Terms, we grant you a limited, non-exclusive, non-transferable, revocable license to access and use the Service for its intended purpose.",
         },
         {
           type: "p",
@@ -354,7 +354,7 @@ export const TERMS: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "You agree to indemnify and hold harmless Spanly and its affiliates from and against any claims, damages, liabilities, and expenses (including reasonable legal fees) arising out of or related to Your Content, your use of the Service, your violation of these Terms, or your violation of any law or third-party right, including any third-party platform's terms.",
+          text: "You agree to indemnify and hold harmless Spanlyfy and its affiliates from and against any claims, damages, liabilities, and expenses (including reasonable legal fees) arising out of or related to Your Content, your use of the Service, your violation of these Terms, or your violation of any law or third-party right, including any third-party platform's terms.",
         },
       ],
     },
@@ -412,7 +412,7 @@ export const PRIVACY: LegalDocument = {
   intro: [
     {
       type: "p",
-      text: `This Privacy Policy explains how ${LEGAL.legalEntity} ("Spanly", "we", "us", or "our") collects, uses, shares, and protects your personal information when you use ${LEGAL.product} at ${LEGAL.domain} and our related services (the "Service").`,
+      text: `This Privacy Policy explains how ${LEGAL.legalEntity} ("Spanlyfy", "we", "us", or "our") collects, uses, shares, and protects your personal information when you use ${LEGAL.product} at ${LEGAL.domain} and our related services (the "Service").`,
     },
     {
       type: "p",
@@ -442,7 +442,7 @@ export const PRIVACY: LegalDocument = {
         { type: "h", text: "Content you create" },
         {
           type: "p",
-          text: "The posts, captions, uploaded media, drafts, schedules, and related metadata you create or store in Spanly so we can save, format, and publish them.",
+          text: "The posts, captions, uploaded media, drafts, schedules, and related metadata you create or store in Spanlyfy so we can save, format, and publish them.",
         },
         { type: "h", text: "Usage and device data" },
         {
@@ -492,7 +492,7 @@ export const PRIVACY: LegalDocument = {
           items: [
             "Social media platforms: when you publish or schedule content, we transmit that content and the necessary data to the platforms you have connected and instructed us to post to.",
             "Service providers (subprocessors): trusted vendors who process data on our behalf to run the Service - including PayPal (payments), our email provider, our hosting and storage providers, and error-monitoring tools - under contracts that limit their use of your data.",
-            "Legal and safety: when required by law or legal process, or to protect the rights, property, or safety of Spanly, our users, or the public.",
+            "Legal and safety: when required by law or legal process, or to protect the rights, property, or safety of Spanlyfy, our users, or the public.",
             "Business transfers: in connection with a merger, acquisition, financing, or sale of assets, where your information may be transferred subject to this Policy.",
           ],
         },
@@ -511,7 +511,7 @@ export const PRIVACY: LegalDocument = {
         },
         {
           type: "p",
-          text: "Access tokens are stored encrypted and used only to act on your behalf. You can disconnect any account in Spanly at any time, which stops our access going forward, and you can also revoke access from within each platform's own settings.",
+          text: "Access tokens are stored encrypted and used only to act on your behalf. You can disconnect any account in Spanlyfy at any time, which stops our access going forward, and you can also revoke access from within each platform's own settings.",
         },
       ],
     },
@@ -524,7 +524,7 @@ export const PRIVACY: LegalDocument = {
         },
         {
           type: "p",
-          text: "We use data from the YouTube API Services only to provide the Service to you, do not use it for advertising, and do not transfer it except as needed to provide the Service, to comply with law, or as part of a merger or acquisition. You can revoke Spanly's access at any time via the Google security settings page (https://security.google.com/settings/security/permissions).",
+          text: "We use data from the YouTube API Services only to provide the Service to you, do not use it for advertising, and do not transfer it except as needed to provide the Service, to comply with law, or as part of a merger or acquisition. You can revoke Spanlyfy's access at any time via the Google security settings page (https://security.google.com/settings/security/permissions).",
         },
       ],
     },

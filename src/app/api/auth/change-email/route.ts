@@ -42,8 +42,8 @@ export async function POST(req: Request) {
   const verifyUrl = `${process.env.APP_URL ?? "http://localhost:3000"}/verify?token=${token}`;
   await mailer.send({
     to: email,
-    subject: "Confirm your new Spanly email",
-    text: "Confirm this address to finish changing your Spanly email.",
+    subject: "Confirm your new Spanlyfy email",
+    text: "Confirm this address to finish changing your Spanlyfy email.",
     actionUrl: verifyUrl,
   });
 

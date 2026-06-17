@@ -108,7 +108,7 @@ async function main() {
     data: {
       email: adminEmail,
       passwordHash: await bcrypt.hash(adminPassword, 12),
-      displayName: "Spanly Admin",
+      displayName: "Spanlyfy Admin",
       timezone: "Asia/Colombo",
       emailVerified: new Date(),
       role: "superadmin",

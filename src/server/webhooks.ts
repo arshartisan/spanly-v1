@@ -37,7 +37,7 @@ export async function deleteWebhook(userId: string): Promise<void> {
   await prisma.webhookEndpoint.deleteMany({ where: { userId } });
 }
 
-/** Hex HMAC-SHA256 of `body` under `secret` (the value sent in `X-Spanly-Signature`). */
+/** Hex HMAC-SHA256 of `body` under `secret` (the value sent in `X-Spanlyfy-Signature`). */
 export function signPayload(secret: string, body: string): string {
   return createHmac("sha256", secret).update(body).digest("hex");
 }
@@ -113,8 +113,8 @@ export async function deliverPostWebhook(postId: string): Promise<void> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Spanly-Signature": signature,
-        "X-Spanly-Event": payload.event,
+        "X-Spanlyfy-Signature": signature,
+        "X-Spanlyfy-Event": payload.event,
       },
       body,
       signal: controller.signal,

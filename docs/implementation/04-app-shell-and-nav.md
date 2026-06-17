@@ -13,7 +13,7 @@ count, renders `<Sidebar/>` + `<main>{children}</main>`.
 
 ### Sidebar (~230px, white, fixed, scrollable)
 ```
-[ Spanly logo ]
+[ Spanlyfy logo ]
 [ Workspace switcher ▾ ]        (single "Personal" workspace in MVP)
 [ + Create post ]  (green CTA → /create/text)
 ──────────────────────────────

@@ -66,7 +66,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               >
                 <Wrench className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 <p className="leading-snug">
-                  Spanly is in maintenance mode. Some actions may be temporarily unavailable —
+                  Spanlyfy is in maintenance mode. Some actions may be temporarily unavailable —
                   thanks for your patience.
                 </p>
               </div>
