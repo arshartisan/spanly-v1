@@ -80,7 +80,7 @@ export class MockProvider implements PlatformProvider {
 
   validate(input: Omit<PublishInput, "idempotencyKey">): ValidationResult {
     const errors: string[] = [];
-    const { captionMax, mediaMax, supportsStory } = this.limits;
+    const { captionMax, mediaMax } = this.limits;
 
     if (!this.capabilities.includes(input.type)) {
       errors.push(`${this.platform} does not support ${input.type} posts`);
@@ -90,10 +90,6 @@ export class MockProvider implements PlatformProvider {
     }
     if (input.media.length > mediaMax) {
       errors.push(`Too many media items (max ${mediaMax}) for ${this.platform}`);
-    }
-    if (input.type === "story") {
-      if (!supportsStory) errors.push(`${this.platform} does not support stories`);
-      if (input.media.length !== 1) errors.push("Stories require exactly one media item");
     }
     if ((input.type === "image" || input.type === "video") && input.media.length === 0) {
       errors.push(`${input.type} posts require at least one media item`);

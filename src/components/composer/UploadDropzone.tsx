@@ -9,11 +9,10 @@ import type { UploadedMedia } from "./types";
 const ACCEPT: Record<Exclude<PostTypeKey, "text">, { accept: string; helper: string }> = {
   image: { accept: "image/*,application/pdf", helper: "Image(s) or PDF" },
   video: { accept: "video/*", helper: "Video" },
-  story: { accept: "image/*,video/*", helper: "One image or video" },
 };
 
 /**
- * Upload affordance for image/video/story posts (doc 01/06). Click, drag-drop, or paste.
+ * Upload affordance for image/video posts (doc 01/06). Click, drag-drop, or paste.
  * The actual presign→PUT→finalize round-trip lives in the parent (Composer); this just
  * surfaces files and renders the attached thumbnails.
  */
@@ -24,7 +23,7 @@ export function UploadDropzone({
   onFiles,
   onRemove,
 }: {
-  type: "image" | "video" | "story";
+  type: "image" | "video";
   media: UploadedMedia[];
   busy: boolean;
   onFiles: (files: File[]) => void;
@@ -76,18 +75,11 @@ export function UploadDropzone({
           ref={inputRef}
           type="file"
           accept={cfg.accept}
-          multiple={type !== "story"}
+          multiple
           hidden
           onChange={(e) => pick(e.target.files)}
         />
       </div>
-
-      {type === "story" && (
-        <p className="text-xs text-muted-foreground">
-          Stories don&apos;t support captions, carousels, or cover images. Pick exactly one image or
-          video.
-        </p>
-      )}
 
       {media.length > 0 && (
         <div className="flex flex-wrap gap-3">

@@ -6,13 +6,12 @@
 export const PLATFORMS = ["facebook", "instagram", "linkedin", "tiktok", "youtube", "x"] as const;
 export type PlatformKey = (typeof PLATFORMS)[number];
 
-export type Capability = "text" | "image" | "video" | "story";
+export type Capability = "text" | "image" | "video";
 
 export interface PlatformLimits {
   captionMax: number;
   mediaMax: number;
   videoMaxSeconds?: number;
-  supportsStory: boolean;
 }
 
 export interface PlatformConfig {
@@ -29,7 +28,7 @@ export const PLATFORM_CONFIG: Record<PlatformKey, PlatformConfig> = {
     key: "x",
     label: "X",
     capabilities: ["text", "image", "video"],
-    limits: { captionMax: 280, mediaMax: 4, videoMaxSeconds: 140, supportsStory: false },
+    limits: { captionMax: 280, mediaMax: 4, videoMaxSeconds: 140 },
   },
   linkedin: {
     key: "linkedin",
@@ -37,32 +36,32 @@ export const PLATFORM_CONFIG: Record<PlatformKey, PlatformConfig> = {
     // Video is intentionally NOT supported: our LinkedIn live publishing handles image
     // media only (see providers/linkedin publishImage), so we don't advertise video here.
     capabilities: ["text", "image"],
-    limits: { captionMax: 3000, mediaMax: 9, supportsStory: false },
+    limits: { captionMax: 3000, mediaMax: 9 },
   },
   facebook: {
     key: "facebook",
     label: "Facebook",
     capabilities: ["text", "image", "video"],
-    limits: { captionMax: 5000, mediaMax: 10, videoMaxSeconds: 1200, supportsStory: false },
+    limits: { captionMax: 5000, mediaMax: 10, videoMaxSeconds: 1200 },
   },
   instagram: {
     key: "instagram",
     label: "Instagram",
-    capabilities: ["image", "video", "story"],
-    limits: { captionMax: 2200, mediaMax: 10, videoMaxSeconds: 90, supportsStory: true },
+    capabilities: ["image", "video"],
+    limits: { captionMax: 2200, mediaMax: 10, videoMaxSeconds: 90 },
     hasConnectMethodChoice: true,
   },
   tiktok: {
     key: "tiktok",
     label: "TikTok",
     capabilities: ["image", "video"],
-    limits: { captionMax: 2200, mediaMax: 35, videoMaxSeconds: 600, supportsStory: false },
+    limits: { captionMax: 2200, mediaMax: 35, videoMaxSeconds: 600 },
   },
   youtube: {
     key: "youtube",
     label: "YouTube",
     capabilities: ["video"],
-    limits: { captionMax: 5000, mediaMax: 1, videoMaxSeconds: 60, supportsStory: false },
+    limits: { captionMax: 5000, mediaMax: 1, videoMaxSeconds: 60 },
   },
 };
 

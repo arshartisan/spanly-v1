@@ -16,7 +16,7 @@ export type PublishingTargetView = {
 
 export type PublishingStateView = {
   id: string;
-  type: "text" | "image" | "video" | "story";
+  type: "text" | "image" | "video";
   status: "draft" | "scheduled" | "publishing" | "posted" | "failed";
   publishAt: string | null;
   publishedAt: string | null;

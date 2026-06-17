@@ -30,7 +30,7 @@ export interface PublishMedia {
 }
 
 export interface PublishInput {
-  type: "text" | "image" | "video" | "story";
+  type: "text" | "image" | "video";
   caption: string;
   media: PublishMedia[];
   idempotencyKey: string;

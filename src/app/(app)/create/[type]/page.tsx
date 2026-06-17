@@ -25,11 +25,12 @@ export default async function CreatePostPage({
   if (postId) {
     const post = await getOwnedPost(user.id, postId);
     if (post) {
-      // Keep the URL type in sync with the post's actual type.
+      // Keep the URL type in sync with the post's actual type. A legacy "story" post
+      // redirects to /create/story, which is no longer a valid type and 404s above.
       if (post.type !== type) redirect(`/create/${post.type}?postId=${postId}`);
       initialPost = {
         id: post.id,
-        type: post.type,
+        type: post.type as PostTypeKey,
         status: post.status,
         mainCaption: post.mainCaption,
         perPlatform: (post.perPlatform as Record<string, string>) ?? {},

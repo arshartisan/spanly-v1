@@ -4,15 +4,15 @@ import {
   CalendarDays,
   FileText,
   HelpCircle,
-  KeyRound,
+  // KeyRound, // API Keys — temporarily hidden from the sidebar
   LayoutDashboard,
   Link2,
-  ListChecks,
+  // ListChecks, // Queue — temporarily hidden from the sidebar
   PenSquare,
   Send,
   Settings,
-  Sparkles,
-  Upload,
+  // Sparkles, // Content Studio — temporarily hidden from the sidebar
+  // Upload, // Bulk Import — temporarily hidden from the sidebar
 } from "lucide-react";
 
 // Sidebar nav map (doc 04). `soon` items render disabled with a "Soon" tag.
@@ -33,8 +33,8 @@ export const NAV_SECTIONS: NavSection[] = [
     heading: "Create",
     items: [
       { label: "Create post", href: "/create/text", icon: PenSquare },
-      { label: "Bulk Import", href: "/bulk", icon: Upload },
-      { label: "Content Studio", href: "/studio", icon: Sparkles, soon: true },
+      // { label: "Bulk Import", href: "/bulk", icon: Upload },
+      // { label: "Content Studio", href: "/studio", icon: Sparkles, soon: true },
     ],
   },
   {
@@ -43,7 +43,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "All Posts", href: "/posts/all", icon: FileText },
       { label: "Scheduled", href: "/posts/scheduled", icon: Send },
       { label: "Posted", href: "/posts/posted", icon: BarChart3 },
-      { label: "Drafts", href: "/posts/drafts", icon: FileText },
+      // { label: "Drafts", href: "/posts/drafts", icon: FileText },
       { label: "Calendar", href: "/calendar", icon: CalendarDays },
     ],
   },
@@ -51,7 +51,7 @@ export const NAV_SECTIONS: NavSection[] = [
     heading: "Workspace",
     items: [
       { label: "Connections", href: "/connections", icon: Link2 },
-      { label: "Queue", href: "/settings/queue", icon: ListChecks },
+      // { label: "Queue", href: "/settings/queue", icon: ListChecks },
     ],
   },
   {
@@ -60,7 +60,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Settings", href: "/settings/general", icon: Settings },
       { label: "Billing", href: "/settings/billing", icon: LayoutDashboard },
       { label: "Plans", href: "/settings/plans", icon: BarChart3 },
-      { label: "API Keys", href: "/api-keys", icon: KeyRound },
+      // { label: "API Keys", href: "/api-keys", icon: KeyRound },
       { label: "Help Center", href: "/help", icon: HelpCircle },
     ],
   },

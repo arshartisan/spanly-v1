@@ -118,7 +118,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
         "Facebook Page - connect an Instagram account that's managed through a linked Facebook Page.",
       ] },
       { type: "p", text: "Pick whichever matches how your account is set up. If you manage the account from Facebook's business tools, use the Facebook Page method; otherwise connect directly." },
-      { type: "p", text: "Instagram supports image, video, and story posts. Stories require exactly one media item." },
+      { type: "p", text: "Instagram supports image and video posts." },
     ],
   },
   {
@@ -180,9 +180,9 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h", text: "What each platform supports" },
       { type: "ul", items: [
         "X - text, image, video. Up to 4 media; 280-character captions.",
-        "LinkedIn - text, image, video. Up to 9 media; 3,000-character captions.",
+        "LinkedIn - text, image. Up to 9 media; 3,000-character captions.",
         "Facebook - text, image, video. Up to 10 media; 5,000-character captions.",
-        "Instagram - image, video, story. Up to 10 media; 2,200-character captions.",
+        "Instagram - image, video. Up to 10 media; 2,200-character captions.",
         "TikTok - image, video. Up to 35 media; 2,200-character captions.",
         "YouTube - video only. One video; 5,000-character captions.",
       ] },
@@ -232,14 +232,13 @@ export const HELP_ARTICLES: HelpArticle[] = [
     slug: "post-types",
     title: "Post types and platform limits",
     category: "posting",
-    excerpt: "Text, image, video, and story - and what each platform allows.",
+    excerpt: "Text, image, and video - and what each platform allows.",
     body: [
       { type: "p", text: "Each post has a type, and each platform supports a different mix. The composer only lets you select accounts that can handle the chosen type." },
       { type: "ul", items: [
         "Text - supported on X, LinkedIn, and Facebook.",
         "Image - all platforms except YouTube.",
-        "Video - every platform.",
-        "Story - Instagram only, exactly one media item.",
+        "Video - X, Facebook, Instagram, TikTok, and YouTube.",
       ] },
       { type: "p", text: "Caption length and media counts are enforced per platform when you publish, so you'll see an error before anything goes out if a target can't accept the post." },
     ],
@@ -259,16 +258,6 @@ export const HELP_ARTICLES: HelpArticle[] = [
         "YouTube - a single video.",
       ] },
       { type: "p", text: "Drag to reorder media in the composer; the order you set is the order followers see." },
-    ],
-  },
-  {
-    slug: "stories",
-    title: "Publishing Instagram stories",
-    category: "posting",
-    excerpt: "Stories are Instagram-only and take exactly one media item.",
-    body: [
-      { type: "p", text: "Choose the Story type to publish to Instagram stories. A story must have exactly one media item - one image or one video - and only Instagram supports it." },
-      { type: "p", text: "If you select the Story type, other platforms are filtered out of the account picker automatically." },
     ],
   },
   {
@@ -319,7 +308,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "code", text: "caption,type,platforms,date,time,media_url" },
       { type: "ul", items: [
         "caption - the post text (required).",
-        "type - text, image, video, or story (defaults to text).",
+        "type - text, image, or video (defaults to text).",
         "platforms - platform names like \"x, linkedin\"; leave blank to use your default accounts.",
         "date / time - used in Schedule mode, interpreted in your timezone.",
         "media_url - a link to an image or video for media posts.",

@@ -111,7 +111,7 @@ function resolveRow(
 
   // ── Media ────────────────────────────────────────────────────────────────
   let mediaCount = 0;
-  if (type === "image" || type === "video" || type === "story") {
+  if (type === "image" || type === "video") {
     if (!mediaUrl) errors.push(`${type} posts require a media_url`);
     else mediaCount = 1;
   } else if (mediaUrl) {

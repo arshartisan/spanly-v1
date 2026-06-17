@@ -4,7 +4,7 @@ import { PLATFORM_CONFIG, type Capability, type PlatformKey } from "@/lib/platfo
 // Composer validation (doc 06). Shared by API route handlers and the client composer.
 // The DB stores `perPlatform` as a map { [socialAccountId]: captionOverride }.
 
-export const POST_TYPES = ["text", "image", "video", "story"] as const;
+export const POST_TYPES = ["text", "image", "video"] as const;
 export type PostTypeKey = (typeof POST_TYPES)[number];
 
 export const postTypeSchema = z.enum(POST_TYPES);
@@ -99,7 +99,7 @@ export function validatePostTargets(input: {
 
   for (const account of input.accounts) {
     const cfg = PLATFORM_CONFIG[account.platform];
-    const { captionMax, mediaMax, supportsStory } = cfg.limits;
+    const { captionMax, mediaMax } = cfg.limits;
     const caption = resolveCaption(input.mainCaption, input.perPlatform, account.id);
     const errors: string[] = [];
 
@@ -114,10 +114,6 @@ export function validatePostTargets(input: {
     }
     if (input.mediaCount > mediaMax) {
       errors.push(`Too many media items (max ${mediaMax}) for ${cfg.label}`);
-    }
-    if (input.type === "story") {
-      if (!supportsStory) errors.push(`${cfg.label} doesn't support stories`);
-      if (input.mediaCount !== 1) errors.push("Stories require exactly one media item");
     }
     if ((input.type === "image" || input.type === "video") && input.mediaCount === 0) {
       errors.push(`${input.type} posts require at least one media item`);

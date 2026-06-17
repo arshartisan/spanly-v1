@@ -319,11 +319,7 @@ export class InstagramProvider implements PlatformProvider {
       const media = input.media.slice(0, this.limits.mediaMax);
       let creationId: string;
 
-      if (input.type === "story") {
-        const m = media[0];
-        if (!m) return { ok: false, error: "Story requires one media item", retryable: false };
-        creationId = await this.createContainer(base, igUserId, token, this.storyParams(m));
-      } else if (media.length > 1) {
+      if (media.length > 1) {
         // Carousel: one child container per item, then a CAROUSEL container referencing them.
         const childIds: string[] = [];
         for (const m of media) {
@@ -369,12 +365,6 @@ export class InstagramProvider implements PlatformProvider {
         : { media_type: "REELS", video_url: media.url };
     }
     return { image_url: media.url };
-  }
-
-  private storyParams(media: PublishMedia): Record<string, string> {
-    return media.kind === "video"
-      ? { media_type: "STORIES", video_url: media.url }
-      : { media_type: "STORIES", image_url: media.url };
   }
 
   private async createContainer(
@@ -512,7 +502,7 @@ export class InstagramProvider implements PlatformProvider {
 
   validate(input: Omit<PublishInput, "idempotencyKey">): ValidationResult {
     const errors: string[] = [];
-    const { captionMax, mediaMax, supportsStory } = this.limits;
+    const { captionMax, mediaMax } = this.limits;
 
     if (!this.capabilities.includes(input.type)) {
       errors.push(`Instagram does not support ${input.type} posts`);
@@ -522,10 +512,6 @@ export class InstagramProvider implements PlatformProvider {
     }
     if (input.media.length > mediaMax) {
       errors.push(`Too many media items (max ${mediaMax}) for Instagram`);
-    }
-    if (input.type === "story") {
-      if (!supportsStory) errors.push("Instagram does not support stories");
-      if (input.media.length !== 1) errors.push("Stories require exactly one media item");
     }
     if ((input.type === "image" || input.type === "video") && input.media.length === 0) {
       errors.push(`${input.type} posts require at least one media item`);

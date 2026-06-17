@@ -22,23 +22,6 @@ describe("MockProvider (registry)", () => {
     expect(res.errors.join(" ")).toMatch(/280/);
   });
 
-  it("validate enforces story = exactly one media (Instagram only)", () => {
-    const ig = getProvider("instagram");
-    expect(ig.validate({ type: "story", caption: "", media: [] }).ok).toBe(false);
-    expect(
-      ig.validate({ type: "story", caption: "", media: [{ kind: "image", url: "u", order: 0 }] }).ok,
-    ).toBe(true);
-  });
-
-  it("validate rejects unsupported type (story on X)", () => {
-    const res = getProvider("x").validate({
-      type: "story",
-      caption: "",
-      media: [{ kind: "image", url: "u", order: 0 }],
-    });
-    expect(res.ok).toBe(false);
-  });
-
   it("publish succeeds by default and is deterministic by idempotencyKey", async () => {
     const r = await getProvider("facebook").publish(
       { type: "text", caption: "hello", media: [], idempotencyKey: "post1:acc1" },
@@ -131,13 +114,6 @@ describe("InstagramProvider (live)", () => {
     expect(() => ig.getAuthUrl({ state: "s", redirectUri: "r", method: "instagram" })).toThrow(
       /INSTAGRAM_CLIENT_ID/,
     );
-  });
-
-  it("validate enforces story = exactly one media", () => {
-    expect(ig.validate({ type: "story", caption: "", media: [] }).ok).toBe(false);
-    expect(
-      ig.validate({ type: "story", caption: "", media: [{ kind: "image", url: "u", order: 0 }] }).ok,
-    ).toBe(true);
   });
 
   it("validate rejects an over-limit caption (max 2200)", () => {
@@ -281,7 +257,7 @@ describe("YoutubeProvider (live)", () => {
     expect(res.ok).toBe(false);
   });
 
-  it("validate rejects unsupported types (text/image/story)", () => {
+  it("validate rejects unsupported types (text/image)", () => {
     expect(yt.validate({ type: "text", caption: "hi", media: [] }).ok).toBe(false);
     expect(yt.validate({ type: "image", caption: "hi", media: [{ kind: "image", url: "u", order: 0 }] }).ok).toBe(
       false,

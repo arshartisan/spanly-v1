@@ -36,14 +36,12 @@ const TYPE_TITLE: Record<PostTypeKey, string> = {
   text: "Create text post",
   image: "Create image post",
   video: "Create video post",
-  story: "Create story post",
 };
 
 const TYPE_TABS: { key: PostTypeKey; label: string }[] = [
   { key: "text", label: "Text" },
   { key: "image", label: "Image" },
   { key: "video", label: "Video" },
-  { key: "story", label: "Story" },
 ];
 
 function kindFor(mime: string): "image" | "video" | "pdf" {
@@ -135,7 +133,7 @@ export function Composer({
   const accountIssues = useMemo(() => {
     const map = new Map<string, string[]>();
     for (const a of selectedAccounts) {
-      const { captionMax, mediaMax, supportsStory } = PLATFORM_CONFIG[a.platform].limits;
+      const { captionMax, mediaMax } = PLATFORM_CONFIG[a.platform].limits;
       const label = PLATFORM_CONFIG[a.platform].label;
       const caption = resolveCaption(mainCaption, perPlatform, a.id);
       const issues: string[] = [];
@@ -143,7 +141,6 @@ export function Composer({
       if (caption.length > captionMax)
         issues.push(`Caption is ${caption.length} / ${captionMax} for ${label}`);
       if (media.length > mediaMax) issues.push(`Max ${mediaMax} media on ${label}`);
-      if (type === "story" && !supportsStory) issues.push(`${label} doesn't support stories`);
       if (issues.length > 0) map.set(a.id, issues);
     }
     return map;
@@ -155,10 +152,6 @@ export function Composer({
   const contentHint = useMemo(() => {
     if (type === "image" && media.length === 0) return "Add at least one image to continue.";
     if (type === "video" && media.length === 0) return "Add a video to continue.";
-    if (type === "story") {
-      if (media.length === 0) return "Add one photo or video for your story.";
-      if (media.length > 1) return "Stories allow exactly one media item - remove the extras.";
-    }
     if (type === "text" && mainCaption.trim().length === 0) return "Write a caption to continue.";
     return null;
   }, [type, media.length, mainCaption]);
@@ -171,7 +164,7 @@ export function Composer({
     validationErrors,
   });
 
-  const showPlatformCaptions = type !== "story" && selectedAccounts.length >= 2;
+  const showPlatformCaptions = selectedAccounts.length >= 2;
   const activeAccount = accounts.find((a) => a.id === activeTab);
   const activeLimit = activeAccount
     ? PLATFORM_CONFIG[activeAccount.platform].limits.captionMax
@@ -199,11 +192,9 @@ export function Composer({
     setError(null);
     setUploading(true);
     try {
-      // Story = exactly one media: replace the set.
-      let order = type === "story" ? 0 : media.length;
-      const next: UploadedMedia[] = type === "story" ? [] : [...media];
-      const list = type === "story" ? files.slice(0, 1) : files;
-      for (const file of list) {
+      let order = media.length;
+      const next: UploadedMedia[] = [...media];
+      for (const file of files) {
         const presign = await fetch("/api/media/presign", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -490,8 +481,7 @@ export function Composer({
             />
           )}
 
-          {type !== "story" && (
-            <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3">
               {/* Caption tabs (main + per-account when ≥2 selected) */}
               {showPlatformCaptions && platformCaptionsOpen && (
                 <div className="flex flex-wrap gap-1 rounded-lg bg-muted p-1 text-sm">
@@ -545,7 +535,6 @@ export function Composer({
                 </p>
               )}
             </div>
-          )}
 
           {error && (
             <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
