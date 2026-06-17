@@ -533,11 +533,15 @@ export const PRIVACY: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "We use a small number of essential cookies - primarily a session cookie to keep you logged in and a preference cookie to remember settings such as your theme. These are necessary for the Service to function.",
+          text: "We use a small number of strictly necessary cookies - primarily a session cookie to keep you logged in, a cookie to remember your privacy choices, and a preference setting to remember options such as your theme. These are necessary for the Service to function and are always active.",
         },
         {
           type: "p",
-          text: "We do not use third-party advertising cookies to track you across the web. Any analytics we use are limited to understanding and improving how the Service is used.",
+          text: "Any non-essential cookies, such as analytics to understand and improve how the Service is used, are off by default and load only after you opt in. When you first visit, a consent banner lets you accept all, reject non-essential cookies, or choose per category, and you can change your choices at any time using the \"Manage cookies\" control in our footer.",
+        },
+        {
+          type: "p",
+          text: `We do not use third-party advertising cookies to track you across the web, and we do not sell your personal information. For the full list of cookies we set, their purpose, and their lifetimes, see our Cookie Policy at ${LEGAL.domain}/cookies.`,
         },
       ],
     },

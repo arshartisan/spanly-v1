@@ -97,14 +97,23 @@
     @apply bg-muted text-foreground;
   }
 
-  /* Neue Machina (Regular weight) for all titles; Inter (font-sans) stays the body face. */
+  /*
+   * Neue Machina for all titles; Inter (font-sans) stays the body face. The display face is
+   * only licensed/loaded at 300/400/800, so a `font-bold` (700) on a heading snaps up to the
+   * 800 ultrabold cut and reads far too heavy. The brand calls for Regular titles everywhere,
+   * so we pin headings to weight 400 with `!important` — this intentionally overrides any
+   * `font-bold`/`font-semibold` utility on a heading (utilities otherwise beat the base layer).
+   * Body-copy weights (Inter) are unaffected. `font-synthesis: none` prevents faux-bold.
+   */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-display font-normal;
+    @apply font-display;
+    font-weight: 400 !important;
+    font-synthesis-weight: none;
   }
 
   /* Ambient warm glow behind translucent glass surfaces. */

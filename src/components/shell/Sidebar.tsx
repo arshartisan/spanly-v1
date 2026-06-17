@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/brand/Logo";
 import { DASHBOARD_NAV, NAV_SECTIONS, type NavItem } from "@/lib/nav";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { CreatePostButton } from "./CreatePostButton";
@@ -57,11 +58,12 @@ export function Sidebar({ user, planLabel, isStaff }: SidebarProps) {
   return (
     <aside className="glass-panel flex h-screen w-[230px] shrink-0 flex-col border-r border-border/60">
       <div className="flex flex-col gap-3 p-3">
-        <Link href="/dashboard" className="flex items-center gap-2 px-1.5 pt-1">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 font-bold text-primary-foreground glow-primary">
-            S
-          </div>
-          <span className="text-lg font-bold tracking-tight">Spanlyfy</span>
+        <Link
+          href="/dashboard"
+          aria-label="Spanlyfy — go to dashboard"
+          className="press flex items-center px-1.5 pt-1"
+        >
+          <Logo className="h-7" />
         </Link>
         {/* <WorkspaceSwitcher /> */}
         <CreatePostButton />

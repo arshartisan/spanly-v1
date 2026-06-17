@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ConsentProvider } from "@/components/consent/ConsentProvider";
+import { AnalyticsScripts } from "@/components/consent/AnalyticsScripts";
 import "./globals.css";
 
 const inter = Inter({
@@ -38,7 +40,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <ConsentProvider>
+            {children}
+            <AnalyticsScripts />
+          </ConsentProvider>
         </ThemeProvider>
       </body>
     </html>

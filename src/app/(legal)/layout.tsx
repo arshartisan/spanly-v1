@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ManageCookiesButton } from "@/components/consent/ManageCookiesButton";
 
 // Public reading shell for legal pages (Terms / Privacy). Accessible without authentication
 // (these paths are not in middleware's PROTECTED_PREFIXES), so prospective and signed-out
@@ -21,6 +22,9 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
             <Link href="/privacy" className="hover:text-foreground">
               Privacy
             </Link>
+            <Link href="/cookies" className="hover:text-foreground">
+              Cookies
+            </Link>
             <Link href="/login" className="hover:text-foreground">
               Log in
             </Link>
@@ -40,6 +44,10 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
             <Link href="/privacy" className="hover:text-foreground">
               Privacy Policy
             </Link>
+            <Link href="/cookies" className="hover:text-foreground">
+              Cookie Policy
+            </Link>
+            <ManageCookiesButton />
           </nav>
         </div>
       </footer>
