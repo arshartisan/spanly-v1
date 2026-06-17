@@ -14,6 +14,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <p className="mt-6 text-center text-xs text-muted-foreground">
         Social scheduling for Facebook, Instagram, LinkedIn, TikTok, YouTube &amp; X.
       </p>
+      <nav className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+        <Link href="/terms" className="hover:text-foreground">
+          Terms
+        </Link>
+        <Link href="/privacy" className="hover:text-foreground">
+          Privacy
+        </Link>
+      </nav>
     </div>
   );
 }
