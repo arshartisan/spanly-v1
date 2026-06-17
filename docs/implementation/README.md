@@ -11,7 +11,7 @@ files translate that design into concrete, implementable engineering specs.
 
 ## Locked decisions (see `../../DECISIONS.md`)
 - **Stack:** Next.js (App Router, TypeScript) fullstack · PostgreSQL · Prisma · job queue
-  (BullMQ + Redis) · S3-compatible object storage · Stripe · NextAuth (Auth.js).
+  (BullMQ + Redis) · S3-compatible object storage · PayPal (was Stripe — D-021) · NextAuth (Auth.js).
 - **Platforms:** exactly **6** — Facebook, Instagram, LinkedIn, TikTok, YouTube, X.
 - **Pricing:** Creator $29 / Growth $49 / Pro $99; billing unit = connected accounts
   (limits 15 / 50 / unlimited); 7-day trial; 7-day refund.
@@ -62,7 +62,7 @@ files translate that design into concrete, implementable engineering specs.
 5. **Scheduling + lists + calendar** — queue, scheduler engine, posts views, calendar.
    (`07`, `08`)
 6. **Publishing** — orchestration + result cards; mock → real one platform at a time. (`09`)
-7. **Billing** — Stripe checkout/portal, plans, trial, feature gating. (`10`, `11`)
+7. **Billing** — PayPal subscriptions, plans, trial, feature gating. (`10`, `11`)
 8. **Later** — content studio, bulk tools, analytics, API keys, MCP, help center.
 9. **Administration** — staff-only admin console (design in `../15-admin-dashboard.md`).
    Build the phases in order, each depends on the foundation (`15`):

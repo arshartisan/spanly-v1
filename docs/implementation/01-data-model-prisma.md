@@ -143,9 +143,10 @@ model Subscription {
   status           SubscriptionStatus @default(trialing)
   trialEndsAt      DateTime?
   currentPeriodEnd DateTime?
-  apiAddonActive   Boolean            @default(false)
-  stripeCustomerId String?
-  stripeSubId      String?
+  apiAddonActive     Boolean            @default(false)
+  providerCustomerId String? // PayPal payer id (when known)
+  providerSubId      String? // PayPal subscription id
+  providerAddonSubId String? // standalone PayPal subscription for the API add-on
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 

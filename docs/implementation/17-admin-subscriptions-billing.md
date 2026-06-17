@@ -1,5 +1,11 @@
 # 17 — Admin: Subscriptions, Plans & Payments
 
+> **Provider note (D-021):** billing now uses **PayPal**, not Stripe. References below to
+> Stripe / `stripeRefundId` / `stripe.invoices.list` map to PayPal equivalents — see doc 10
+> and `src/server/admin/billing.ts`: refunds issue against the latest PayPal subscription
+> transaction (stored as `providerRefundId`), the payments view is per-subscriber (no
+> platform-wide PayPal feed), and `grantCredit` is a recorded no-op.
+
 **Design refs:** `../15-admin-dashboard.md` (C — Subscriptions & Payments).
 **Depends on:** `15-admin-foundation-and-access.md`, `10-billing-and-plans.md` (Stripe,
 `syncSubscription`, refund policy), `01` (Subscription).

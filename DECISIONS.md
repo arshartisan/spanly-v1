@@ -57,7 +57,7 @@ what we decided, why, and any alternative rejected.
 ### D-005 Stack: Next.js fullstack + PostgreSQL + Prisma
 - **Decision:** Next.js (App Router, TS) serving UI + API route handlers; PostgreSQL via
   Prisma; Auth.js (Credentials + DB sessions); BullMQ+Redis for scheduling; S3-compatible
-  media storage; Stripe; Resend email; Tailwind + shadcn/ui.
+  media storage; PayPal (D-021); Resend email; Tailwind + shadcn/ui.
 - **Why:** User confirmed Next.js (same framework as the reference site) and Postgres+Prisma.
   Prisma chosen over TypeORM for DX/type-safety.
 - **Rejected:** NestJS backend + separate frontend (user clarified they meant Next.js).
@@ -101,13 +101,15 @@ what we decided, why, and any alternative rejected.
 - **Decision:** Billing runs behind `BILLING_MODE=mock|live` (default `mock`), the same
   stand-in pattern as OAuth/publishing (D-008). In mock mode, `checkout`/`portal` redirect to
   internal pages (`/billing/mock/*`) that drive the same `Subscription` upsert logic the live
-  Stripe webhook uses — so the full flow (subscribe → 7-day trial → portal → cancel → API
-  add-on) is buildable/verifiable with **no Stripe account or Price IDs**. The live path
-  (`stripe` SDK + signed `/api/webhooks/stripe`) is wired and switches on when `STRIPE_*` env
-  is set. Stripe is the source of truth in live mode; subscriptions upsert idempotently by
-  `stripeSubId`.
-- **Why:** Platform/Stripe credentials are still a pending human-action item; the mock keeps
-  the phase shippable now without blocking on external accounts, exactly like the providers.
+  webhook uses — so the full flow (subscribe → 7-day trial → cancel → API add-on) is
+  buildable/verifiable with **no payment-provider account**. The live path switches on when the
+  provider env is set. The provider is the source of truth in live mode; subscriptions upsert
+  idempotently keyed by `userId`.
+- **Why:** Provider credentials are still a pending human-action item; the mock keeps the phase
+  shippable now without blocking on external accounts, exactly like the providers.
+- **Update (D-021):** the live provider is now **PayPal** (was Stripe); the mock pattern is
+  unchanged. PayPal has no hosted portal, so the mock portal page was removed and cancel is a
+  direct action.
 
 ### D-015 Downgrade below account count: keep accounts, flag over-limit, block new connects
 - **Decision:** If a plan change leaves `active accounts > accountLimit`, existing accounts are
@@ -118,8 +120,9 @@ what we decided, why, and any alternative rejected.
 ### D-016 Refund: record request within 7-day window, no auto-refund in MVP
 - **Decision:** "Request Refund" checks the 7-day money-back window; within it we **record the
   request + notify support** (console mailer, D-013) and return a confirmation; outside it we
-  deny with a message. No automatic Stripe refund call in MVP (avoids accidental money movement
-  in mock/test). Revisit to auto-refund via the Stripe API once live billing is verified.
+  deny with a message. No automatic provider refund call in MVP (avoids accidental money movement
+  in mock/test); staff approval issues the refund. **Update (D-021):** live refunds issue against
+  the latest PayPal subscription transaction via `/v2/payments/captures/{id}/refund`.
 - **Why:** Keeps refunds safe and auditable before real payments exist.
 
 ### D-017 Public API: hashed keys, Bearer auth, add-on gate, HMAC webhooks
@@ -186,8 +189,26 @@ what we decided, why, and any alternative rejected.
   and team/VA account access (Workspaces deferred — D-004). All platform limits in the articles are
   taken from `PLATFORM_CONFIG` so the docs match enforcement.
 
+### D-021 Payments: PayPal instead of Stripe (full replacement)
+- **Decision:** Billing uses **PayPal Subscriptions** (was Stripe). The `BILLING_MODE` mock/live
+  gate (D-014) is unchanged; live wiring moved to `src/server/paypal.ts` (cached OAuth2 token,
+  REST `paypalFetch`, env plan-id map, `verify-webhook-signature`), with provider-agnostic config
+  in `src/server/billing-config.ts`. DB columns are **provider-neutral** (`providerCustomerId`,
+  `providerSubId`, `providerAddonSubId`, `RefundRequest.providerRefundId`). The webhook sink is
+  `/api/webhooks/paypal`, identity resolved from the subscription's `custom_id = userId`. The
+  trial is configured **on the PayPal plan** (a TRIAL cycle), not at checkout. The **API add-on**
+  is its own PayPal subscription (`custom_id = "userId:addon"`) since PayPal can't attach
+  arbitrary items to a subscription. There is **no hosted billing portal**, so cancel is a direct
+  API action (`/api/billing/cancel`) and the mock portal page was removed.
+- **Why:** Product decision to use PayPal. Refunds issue against the latest PayPal subscription
+  transaction; `grantCredit` is a recorded no-op (no PayPal balance-credit equivalent), and the
+  platform-wide payments view is empty in live mode (PayPal has no cross-customer charge feed —
+  per-subscriber history lives on the user detail page). **Rejected:** running both providers
+  behind a switch (unnecessary), and a PayPal SDK (Subscriptions coverage is thin — a thin fetch
+  client gives full control).
+
 ## Open questions / to revisit
-- Exact annual prices (placeholder yearly values in `plans.ts` — set from real Stripe Prices).
+- Exact annual prices (placeholder yearly values in `plans.ts` — set from real PayPal plan prices).
 - ~~Downgrade-with-over-limit-accounts UX~~ → resolved D-015 (keep + flag, block new connects).
 - Trial-expiry behavior (MVP: read-only + subscribe prompt — confirm).
 - Whether calendar shows one chip-per-post (stacked icons) or one chip-per-target (chosen:

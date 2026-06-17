@@ -1,5 +1,8 @@
 # 19 — Admin: System Health & Operations
 
+> **Provider note (D-021):** the inbound webhook event log source is now **`paypal`** (was
+> `stripe`); events come from `/api/webhooks/paypal`.
+
 **Design refs:** `../15-admin-dashboard.md` (E — System & Operations).
 **Depends on:** `15-admin-foundation-and-access.md`, `08-scheduling-and-queue.md` (BullMQ
 queues + maintenance), `09-publishing-flow.md`, `10` (Stripe webhooks).

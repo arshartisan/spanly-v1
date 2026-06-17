@@ -215,11 +215,21 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
       in DB; portal url; **refund within window→ok**; **mock cancel→status canceled**; password
       change wrong-current→403 / short-new→422; settings tabs 200, /settings/bogus→404,
       /settings→general redirect, unauth→/login. Demo subscription/settings/queue restored after.
-- ☐ (Then) live Stripe: set `BILLING_MODE=live` + `STRIPE_*` env (account + Price IDs = human-action
-      item); verify in Stripe test mode (checkout→webhook trialing, portal cancel→canceled).
+- ☑ **Migrated billing Stripe → PayPal (D-021).** Removed `stripe` dep + `src/server/stripe.ts`;
+      added `src/server/paypal.ts` (cached OAuth2 token, `paypalFetch`, env plan-id map,
+      `verify-webhook-signature`) + `src/server/billing-config.ts`. DB columns provider-neutral
+      (`providerCustomerId`/`providerSubId`/`providerAddonSubId`/`providerRefundId`, migration
+      `20260617061330`). `createCheckout`→PayPal subscription approval URL, `createPortal`→
+      `cancelSubscription` (no portal; mock portal page removed), add-on = standalone PayPal sub,
+      `fromPaypalSubscription`/`mapPaypalStatus`, webhook `/api/webhooks/paypal` (signature verify
+      → BILLING.SUBSCRIPTION.* / PAYMENT.SALE.COMPLETED, resolve user from `custom_id`). Admin
+      refunds issue against the latest PayPal transaction; `grantCredit` recorded no-op. Vitest
+      435/435 green.
+- ☐ (Then) live PayPal: set `BILLING_MODE=live` + `PAYPAL_*` env (account + plan IDs = human-action
+      item); verify in PayPal sandbox (checkout→webhook trialing/active, cancel→canceled).
 - ☑ **CHECKPOINT (human):** reviewed billing (mock checkout→trial, portal, add-on, refund, plan
       gating) + settings (general/queue persistence). Signed off; chose to proceed to Phase 8
-      (API Keys + Webhooks) and defer live Stripe until account + Price IDs are provided (2026-06-12).
+      (API Keys + Webhooks) and defer live billing until provider account + plan IDs are provided (2026-06-12).
 
 ## Phase 8 — API Keys + Webhooks (design doc `12`)
 - ☑ Schema: `ApiKey` (sha256 `hashedKey` + non-secret `prefix`/`last4`, `lastUsedAt`/`revokedAt`),
@@ -321,7 +331,7 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
 
 ## Phase 9+ — Later
 - ☐ Analytics (needs live provider insights APIs) · Content Studio (needs media render pipeline)
-- ☐ Live providers behind `PROVIDER_LIVE_<P>` + live Stripe (`BILLING_MODE=live`) — both need
+- ☐ Live providers behind `PROVIDER_LIVE_<P>` + live PayPal (`BILLING_MODE=live`) — both need
       external accounts/approvals (human-action items).
 - ☐ **CHECKPOINT (human):** review MCP server (stateless JSON-RPC, key-gated tools) + help center
       (searchable, SSG articles). Then pick Analytics / Content Studio, or wire a live integration.
@@ -329,6 +339,7 @@ checkpoint. Legend: ☐ todo · ◐ in progress · ☑ done.
 ## Human-action items (need the human)
 - Register developer apps per platform (Meta, TikTok, Google/YouTube, X, LinkedIn) — long
   lead times; start early.
-- Provide Stripe account + Price IDs.
+- Provide PayPal account (REST app client id/secret), billing-plan IDs per tier/interval, the
+  add-on plan ID, and the webhook ID. See doc 10 "Phase 0 — PayPal Sandbox setup".
 - Provide S3/R2 bucket + Redis + Postgres for staging.
 - OAuth approval/verification steps and any credential entry.

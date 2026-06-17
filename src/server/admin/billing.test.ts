@@ -4,8 +4,8 @@ import type { PlanKey } from "@/server/plans";
 
 // billing.ts imports "server-only" (a Next build alias, not a real module in a plain
 // vitest run). Stub it. We mock @/server/db so the service runs with no real database,
-// and @/server/stripe so we drive `isLiveBilling()` per-test and can assert that Stripe
-// is NEVER touched in mock mode.
+// and @/server/billing-config + @/server/paypal so we drive `isLiveBilling()` per-test and
+// can assert that PayPal is NEVER touched in mock mode.
 vi.mock("server-only", () => ({}));
 
 // ─────────────────────────── Prisma mock ───────────────────────────
@@ -35,25 +35,18 @@ vi.mock("@/server/db", () => ({
   },
 }));
 
-// ─────────────────────────── Stripe mock ───────────────────────────
+// ─────────────────────────── PayPal mock ───────────────────────────
 // `isLiveBilling` is read live on each call inside the service, so toggling the mock's
-// return value between tests flips the live/mock branch deterministically.
+// return value between tests flips the live/mock branch deterministically. `paypalFetch`
+// is the single REST entrypoint — tests route by request path (transactions vs refund).
 const isLiveBilling = vi.fn<() => boolean>();
-const chargesList = vi.fn();
-const refundsCreate = vi.fn();
-const createBalanceTransaction = vi.fn();
-const getStripe = vi.fn(() => ({
-  charges: { list: (a: unknown) => chargesList(a) },
-  refunds: { create: (a: unknown) => refundsCreate(a) },
-  customers: {
-    createBalanceTransaction: (id: string, a: unknown) =>
-      createBalanceTransaction(id, a),
-  },
-}));
+const paypalFetch = vi.fn();
 
-vi.mock("@/server/stripe", () => ({
+vi.mock("@/server/billing-config", () => ({
   isLiveBilling: () => isLiveBilling(),
-  getStripe: () => getStripe(),
+}));
+vi.mock("@/server/paypal", () => ({
+  paypalFetch: (p: string, i?: unknown) => paypalFetch(p, i),
 }));
 
 // Imported after the mocks above are registered.
@@ -89,10 +82,7 @@ beforeEach(() => {
   subFindMany.mockReset();
   userFindUnique.mockReset();
   isLiveBilling.mockReset();
-  getStripe.mockClear();
-  chargesList.mockReset();
-  refundsCreate.mockReset();
-  createBalanceTransaction.mockReset();
+  paypalFetch.mockReset();
   // Default: mock billing mode unless a test opts into live.
   isLiveBilling.mockReturnValue(false);
 });
@@ -116,7 +106,7 @@ function refundRow(over: Partial<RefundRequest> = {}): RefundRequest {
     amount: 2900,
     reason: "changed my mind",
     status: "pending",
-    stripeRefundId: null,
+    providerRefundId: null,
     decidedById: null,
     decidedAt: null,
     createdAt: new Date(Date.now() - 1 * DAY), // in-policy (1 day old) by default
@@ -222,10 +212,10 @@ describe("approveRefund (guards + mock/live branch)", () => {
     expect(err).toBeInstanceOf(AdminActionError);
     expect((err as AdminActionError).status).toBe(403);
     expect(refundUpdate).not.toHaveBeenCalled();
-    expect(refundsCreate).not.toHaveBeenCalled();
+    expect(paypalFetch).not.toHaveBeenCalled();
   });
 
-  it("out-of-policy with force:true (mock mode) → refunded, no Stripe, stripeRefundId stays null", async () => {
+  it("out-of-policy with force:true (mock mode) → refunded, no PayPal, providerRefundId stays null", async () => {
     refundFindUnique.mockResolvedValue(
       refundRow({ createdAt: new Date(Date.now() - 30 * DAY) }),
     );
@@ -235,28 +225,25 @@ describe("approveRefund (guards + mock/live branch)", () => {
       force: true,
     })) as unknown as RefundRequest;
 
-    expect(getStripe).not.toHaveBeenCalled();
-    expect(chargesList).not.toHaveBeenCalled();
-    expect(refundsCreate).not.toHaveBeenCalled();
+    expect(paypalFetch).not.toHaveBeenCalled();
     const arg = refundUpdate.mock.calls[0][0] as {
       where: { id: string };
-      data: { status: string; stripeRefundId: string | null; decidedById: string };
+      data: { status: string; providerRefundId: string | null; decidedById: string };
     };
     expect(arg.where).toEqual({ id: "rr_1" });
     expect(arg.data.status).toBe("refunded");
-    expect(arg.data.stripeRefundId).toBeNull();
+    expect(arg.data.providerRefundId).toBeNull();
     expect(arg.data.decidedById).toBe("u_admin");
     expect(result.status).toBe("refunded");
   });
 
-  it("in-policy mock approve → refunded, decidedBy set, no Stripe call", async () => {
+  it("in-policy mock approve → refunded, decidedBy set, no PayPal call", async () => {
     refundFindUnique.mockResolvedValue(refundRow()); // 1 day old, pending
     refundUpdate.mockImplementation((a: { data: unknown }) => a.data);
 
     await approveRefund("u_admin", "rr_1", {});
 
-    expect(getStripe).not.toHaveBeenCalled();
-    expect(refundsCreate).not.toHaveBeenCalled();
+    expect(paypalFetch).not.toHaveBeenCalled();
     const arg = refundUpdate.mock.calls[0][0] as {
       data: { status: string; decidedById: string; decidedAt: Date };
     };
@@ -265,46 +252,59 @@ describe("approveRefund (guards + mock/live branch)", () => {
     expect(arg.data.decidedAt).toBeInstanceOf(Date);
   });
 
-  it("LIVE mode with a customer + a charge → calls Stripe and stores stripeRefundId", async () => {
+  it("LIVE mode with a subscription + a transaction → refunds the capture and stores providerRefundId", async () => {
     isLiveBilling.mockReturnValue(true);
     refundFindUnique.mockResolvedValue(refundRow({ amount: 4900 }));
-    subFindUnique.mockResolvedValue({ id: "sub_1", stripeCustomerId: "cus_123" });
-    chargesList.mockResolvedValue({ data: [{ id: "ch_abc" }] });
-    refundsCreate.mockResolvedValue({ id: "re_xyz" });
+    subFindUnique.mockResolvedValue({ id: "sub_1", providerSubId: "I-SUB123" });
+    paypalFetch.mockImplementation((path: string) => {
+      if (path.includes("/transactions")) {
+        return Promise.resolve({
+          transactions: [
+            {
+              id: "TXN1",
+              status: "COMPLETED",
+              amount_with_breakdown: { gross_amount: { value: "49.00", currency_code: "USD" } },
+            },
+          ],
+        });
+      }
+      if (path.includes("/refund")) return Promise.resolve({ id: "RF-xyz" });
+      return Promise.resolve({});
+    });
     refundUpdate.mockImplementation((a: { data: unknown }) => a.data);
 
     const result = (await approveRefund("u_admin", "rr_1", {})) as unknown as RefundRequest;
 
-    expect(chargesList).toHaveBeenCalledWith({ customer: "cus_123", limit: 1 });
-    expect(refundsCreate).toHaveBeenCalledWith({ charge: "ch_abc", amount: 4900 });
+    const refundCall = paypalFetch.mock.calls.find((c) => String(c[0]).includes("/refund"));
+    expect(refundCall?.[0]).toBe("/v2/payments/captures/TXN1/refund");
+    expect(String((refundCall?.[1] as { body: string }).body)).toContain("\"value\":\"49.00\"");
     const arg = refundUpdate.mock.calls[0][0] as {
-      data: { status: string; stripeRefundId: string | null };
+      data: { status: string; providerRefundId: string | null };
     };
     expect(arg.data.status).toBe("refunded");
-    expect(arg.data.stripeRefundId).toBe("re_xyz");
-    expect(result.stripeRefundId).toBe("re_xyz");
+    expect(arg.data.providerRefundId).toBe("RF-xyz");
+    expect(result.providerRefundId).toBe("RF-xyz");
   });
 
-  it("LIVE mode with no customer → 422, no refund created/updated", async () => {
+  it("LIVE mode with no PayPal subscription → 422, no refund created/updated", async () => {
     isLiveBilling.mockReturnValue(true);
     refundFindUnique.mockResolvedValue(refundRow());
-    subFindUnique.mockResolvedValue({ id: "sub_1", stripeCustomerId: null });
+    subFindUnique.mockResolvedValue({ id: "sub_1", providerSubId: null });
 
     const err = await catchThrown(() => approveRefund("u_admin", "rr_1", {}));
     expect((err as AdminActionError).status).toBe(422);
-    expect(refundsCreate).not.toHaveBeenCalled();
+    expect(paypalFetch).not.toHaveBeenCalled();
     expect(refundUpdate).not.toHaveBeenCalled();
   });
 
-  it("LIVE mode with a customer but no charge → 422", async () => {
+  it("LIVE mode with a subscription but no transaction → 422", async () => {
     isLiveBilling.mockReturnValue(true);
     refundFindUnique.mockResolvedValue(refundRow());
-    subFindUnique.mockResolvedValue({ id: "sub_1", stripeCustomerId: "cus_123" });
-    chargesList.mockResolvedValue({ data: [] });
+    subFindUnique.mockResolvedValue({ id: "sub_1", providerSubId: "I-SUB123" });
+    paypalFetch.mockResolvedValue({ transactions: [] });
 
     const err = await catchThrown(() => approveRefund("u_admin", "rr_1", {}));
     expect((err as AdminActionError).status).toBe(422);
-    expect(refundsCreate).not.toHaveBeenCalled();
     expect(refundUpdate).not.toHaveBeenCalled();
   });
 });
@@ -347,27 +347,22 @@ describe("denyRefund", () => {
 // ─────────────────────────── grantCredit / overrideSubscription ───────────────────────────
 
 describe("grantCredit", () => {
-  it("mock mode is a no-op that returns ok and never calls Stripe", async () => {
+  it("mock mode is a recorded no-op that returns ok and never calls PayPal", async () => {
     const result = await grantCredit("u_admin", "u_1", 500, "goodwill");
     expect(result).toEqual({ ok: true });
-    expect(getStripe).not.toHaveBeenCalled();
-    expect(createBalanceTransaction).not.toHaveBeenCalled();
-    // Mock mode must not even look the subscription up via the live branch.
+    expect(paypalFetch).not.toHaveBeenCalled();
     expect(subFindUnique).not.toHaveBeenCalled();
   });
 
-  it("live mode with a Stripe customer applies a negative balance transaction", async () => {
+  it("live mode is also a recorded no-op (PayPal has no balance-credit equivalent)", async () => {
     isLiveBilling.mockReturnValue(true);
-    subFindUnique.mockResolvedValue({ stripeCustomerId: "cus_123" });
 
     const result = await grantCredit("u_admin", "u_1", 500, "goodwill");
 
     expect(result).toEqual({ ok: true });
-    expect(createBalanceTransaction).toHaveBeenCalledWith("cus_123", {
-      amount: -500,
-      currency: "usd",
-      description: "goodwill",
-    });
+    expect(paypalFetch).not.toHaveBeenCalled();
+    // No subscription lookup either — it's a pure recorded no-op.
+    expect(subFindUnique).not.toHaveBeenCalled();
   });
 });
 
@@ -420,10 +415,17 @@ describe("overrideSubscription", () => {
 // ─────────────────────────── listPayments (mock-mode flag) ───────────────────────────
 
 describe("listPayments", () => {
-  it("mock mode returns an empty list flagged mockMode:true, no Stripe call", async () => {
+  it("mock mode returns an empty list flagged mockMode:true, no PayPal call", async () => {
     const result = await listPayments();
     expect(result).toEqual({ mockMode: true, payments: [] });
-    expect(getStripe).not.toHaveBeenCalled();
+    expect(paypalFetch).not.toHaveBeenCalled();
+  });
+
+  it("live mode without a userId returns empty (no platform-wide PayPal feed)", async () => {
+    isLiveBilling.mockReturnValue(true);
+    const result = await listPayments();
+    expect(result).toEqual({ mockMode: false, payments: [] });
+    expect(paypalFetch).not.toHaveBeenCalled();
   });
 });
 
