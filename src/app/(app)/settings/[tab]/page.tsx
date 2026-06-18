@@ -55,6 +55,7 @@ export default async function SettingsPage({
             avatarUrl: user.avatarUrl,
             timezone: user.timezone,
             emailVerified: !!user.emailVerified,
+            marketingEmails: user.marketingEmails,
             settings: readSettings(user.settings),
           }}
           mcpEndpoint={appUrl("/api/mcp")}

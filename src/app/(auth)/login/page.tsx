@@ -32,6 +32,18 @@ function LoginForm() {
   );
   const [loading, setLoading] = useState(false);
 
+  // New-device step-up: once the server replies `otpRequired`, swap the password form for the
+  // code form. We keep email+password in state so "Resend code" can re-issue without re-typing.
+  const [otpStep, setOtpStep] = useState(false);
+  const [code, setCode] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
+
+  function goToApp(data: { redirect?: string }) {
+    // Honor an explicit ?next (deep link), else the server's role-based target (staff → /admin).
+    router.push(next || data.redirect || "/dashboard");
+    router.refresh();
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -47,14 +59,110 @@ function LoginForm() {
         setError(data.error ?? "Something went wrong.");
         return;
       }
-      // Honor an explicit ?next (deep link), else the server's role-based target (staff → /admin).
-      router.push(next || data.redirect || "/dashboard");
-      router.refresh();
+      if (data.otpRequired) {
+        setOtpStep(true);
+        setNotice("We emailed a 6-digit code to verify this device. Enter it below.");
+        return;
+      }
+      goToApp(data);
     } catch {
       setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
+  }
+
+  async function onVerifyOtp(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error ?? "Invalid code.");
+        return;
+      }
+      goToApp(data);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onResend() {
+    setError(null);
+    setNotice(null);
+    try {
+      await fetch("/api/auth/resend-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      setNotice("A new code is on its way. It expires in 10 minutes.");
+    } catch {
+      setError("Network error. Please try again.");
+    }
+  }
+
+  if (otpStep) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Verify it's you</CardTitle>
+          <CardDescription>Enter the 6-digit code we emailed to {email}.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <p className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+          )}
+          {notice && !error && (
+            <p className="mb-4 rounded-md bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</p>
+          )}
+          <form onSubmit={onVerifyOtp} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="code">Verification code</Label>
+              <Input
+                id="code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                required
+                autoFocus
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                className="text-center text-lg tracking-[0.5em]"
+              />
+            </div>
+            <Button type="submit" loading={loading} disabled={code.length !== 6}>
+              {loading ? "Verifying…" : "Verify and continue"}
+            </Button>
+          </form>
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <button type="button" onClick={onResend} className="text-primary hover:underline">
+              Resend code
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOtpStep(false);
+                setCode("");
+                setError(null);
+                setNotice(null);
+              }}
+              className="text-muted-foreground hover:underline"
+            >
+              Back to login
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

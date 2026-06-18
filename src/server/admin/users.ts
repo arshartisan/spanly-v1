@@ -2,7 +2,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { issueToken } from "@/server/auth";
-import { mailer } from "@/server/mailer";
+import { sendPasswordResetEmail } from "@/server/email";
 import { roleAtLeast } from "@/server/admin/access";
 import { AdminActionError } from "@/server/admin/errors";
 import type { UserListQuery } from "@/lib/schemas/admin-users";
@@ -238,12 +238,7 @@ export async function sendPasswordResetFor(targetId: string) {
   const target = await requireTarget(targetId);
   const token = await issueToken(target.id, "reset_password", RESET_TTL_MS);
   const resetUrl = `${process.env.APP_URL ?? "http://localhost:3000"}/reset?token=${token}`;
-  await mailer.send({
-    to: target.email,
-    subject: "Reset your Spanlyfy password",
-    text: "Use the link below to set a new password. It expires in 1 hour.",
-    actionUrl: resetUrl,
-  });
+  await sendPasswordResetEmail(target.email, resetUrl);
   return { id: target.id };
 }
 

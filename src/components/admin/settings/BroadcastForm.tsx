@@ -32,6 +32,7 @@ export function BroadcastForm() {
   const [ids, setIds] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [marketing, setMarketing] = useState(false);
   const [touched, setTouched] = useState(false);
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<Result>(null);
@@ -51,6 +52,7 @@ export function BroadcastForm() {
       audience,
       subject: subject.trim(),
       body: body.trim(),
+      marketing,
     });
     if (!parsed.success) {
       const first = parsed.error.issues[0]?.message ?? "Please check the form.";
@@ -75,6 +77,7 @@ export function BroadcastForm() {
       setSubject("");
       setBody("");
       setIds("");
+      setMarketing(false);
       setTouched(false);
     } catch {
       setResult({ kind: "error", message: "Network error. Please try again." });
@@ -161,6 +164,22 @@ export function BroadcastForm() {
           </span>
         </div>
       </div>
+
+      <label className="flex items-start gap-2.5 rounded-lg border border-input bg-background/40 px-3 py-2.5">
+        <input
+          type="checkbox"
+          checked={marketing}
+          onChange={(e) => setMarketing(e.target.checked)}
+          className="mt-0.5 h-4 w-4 accent-primary"
+        />
+        <span className="flex flex-col gap-0.5">
+          <span className="text-sm font-medium">Send as marketing newsletter</span>
+          <span className="text-[11px] text-muted-foreground">
+            Only sends to users who haven&apos;t opted out, and adds a one-click unsubscribe link.
+            Leave off for operational notices (service status, price changes).
+          </span>
+        </span>
+      </label>
 
       {result ? (
         <p

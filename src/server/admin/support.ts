@@ -3,6 +3,9 @@ import { createHash } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { mailer } from "@/server/mailer";
+import { renderEmail, escapeHtml } from "@/server/email/layout";
+import { newsletterTemplate } from "@/server/email/templates";
+import { unsubscribeUrl } from "@/server/email/unsubscribe";
 import { roleAtLeast } from "@/server/admin/access";
 import { AdminActionError } from "@/server/admin/errors";
 import {
@@ -93,6 +96,8 @@ export interface BroadcastInput {
   audience: string;
   subject: string;
   body: string;
+  /** Marketing/newsletter mode: opt-in filter + unsubscribe. Defaults false (operational notice). */
+  marketing?: boolean;
 }
 
 /**
@@ -124,28 +129,48 @@ export function buildAudienceWhere(audience: string): Prisma.UserWhereInput {
   throw new AdminActionError(400, "Unrecognized audience.");
 }
 
-/** Resolve the audience string into the recipient list (id + email). */
+/**
+ * Resolve the audience string into the recipient list (id + email + name). When `marketingOnly`
+ * is set, restricts to users who haven't opted out of marketing email (the newsletter path).
+ */
 export async function resolveAudience(
   audience: string,
-): Promise<{ id: string; email: string }[]> {
+  marketingOnly = false,
+): Promise<{ id: string; email: string; displayName: string | null }[]> {
+  const where = buildAudienceWhere(audience);
   return prisma.user.findMany({
-    where: buildAudienceWhere(audience),
-    select: { id: true, email: true },
+    where: marketingOnly ? { AND: [where, { marketingEmails: true }] } : where,
+    select: { id: true, email: true, displayName: true },
   });
+}
+
+/** Render a plain-text broadcast body into safe HTML paragraphs (newline-aware). */
+function bodyToHtml(body: string): string {
+  return body
+    .split(/\n{2,}/)
+    .map(
+      (para) =>
+        `<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#2A2422;">${escapeHtml(
+          para,
+        ).replace(/\n/g, "<br/>")}</p>`,
+    )
+    .join("");
 }
 
 /**
  * Send a broadcast email to the resolved audience and return the recipient count (doc 21).
  *
  * Send-vs-queue decision (MVP, bounded): we send directly via `mailer.send` in a chunked
- * loop rather than wiring a new BullMQ queue + worker. The dev mailer only logs, so there
- * is no real blocking; the chunk loop keeps it iterable and the shape (resolve → chunk →
- * send) is exactly what a queue producer would do, so this can be moved behind a queue
- * later without changing callers.
+ * loop rather than wiring a new BullMQ queue + worker. The chunk loop keeps it iterable and
+ * the shape (resolve → chunk → send) is exactly what a queue producer would do, so this can be
+ * moved behind a queue later without changing callers. NOTE: Gmail caps sends (~500/day free,
+ * ~2000/day Workspace) - very large lists should move to the queue path before going live.
  *
- * Email opt-outs: there is no broadcast/marketing opt-out field - `settings.emailPrefs`
- * only covers transactional product notifications (automation/failureAlerts/summary) - so
- * none is honored here. Add a dedicated opt-out flag if broadcasts ever become marketing.
+ * Two modes (input.marketing):
+ *   - marketing/newsletter: only users with `marketingEmails = true`; every email carries a
+ *     working one-click unsubscribe link + List-Unsubscribe header (CAN-SPAM / RFC 8058).
+ *   - operational (default): reaches the whole audience (service notices, price changes); no
+ *     unsubscribe, since these aren't promotional.
  *
  * The actor and the message body are NOT logged here; the route audits only audience +
  * recipientCount.
@@ -155,14 +180,42 @@ export async function sendBroadcast(
   input: BroadcastInput,
 ): Promise<{ recipientCount: number }> {
   void actor; // recorded by the route's audit log, not stored here
-  const recipients = await resolveAudience(input.audience);
+  const recipients = await resolveAudience(input.audience, input.marketing);
+  const bodyHtml = bodyToHtml(input.body);
 
   for (let i = 0; i < recipients.length; i += BROADCAST_CHUNK) {
     const chunk = recipients.slice(i, i + BROADCAST_CHUNK);
     await Promise.all(
-      chunk.map((r) =>
-        mailer.send({ to: r.email, subject: input.subject, text: input.body }),
-      ),
+      chunk.map((r) => {
+        if (input.marketing) {
+          const tpl = newsletterTemplate({
+            heading: input.subject,
+            bodyHtml,
+            unsubscribeUrl: unsubscribeUrl(r.id),
+            text: input.body,
+          });
+          return mailer.send({
+            to: r.email,
+            subject: tpl.subject,
+            text: tpl.text,
+            html: tpl.html,
+            headers: {
+              "List-Unsubscribe": `<${unsubscribeUrl(r.id)}>`,
+              "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+            },
+          });
+        }
+        return mailer.send({
+          to: r.email,
+          subject: input.subject,
+          text: input.body,
+          html: renderEmail({
+            preheader: input.subject,
+            heading: input.subject,
+            bodyHtml,
+          }),
+        });
+      }),
     );
   }
 

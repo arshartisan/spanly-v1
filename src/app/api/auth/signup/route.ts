@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/server/db";
 import { signupSchema } from "@/lib/schemas/auth";
 import { createSession, createTrialUser, hashPassword, issueToken } from "@/server/auth";
-import { mailer } from "@/server/mailer";
+import { sendVerificationEmail } from "@/server/email";
 import { clientIp, rateLimit } from "@/server/rate-limit";
 import { isEnabled } from "@/server/settings/flags";
 
@@ -37,12 +37,7 @@ export async function POST(req: Request) {
   // Email verification link (D-013: dev mailer logs it to the console).
   const token = await issueToken(user.id, "verify_email", VERIFY_TTL_MS);
   const verifyUrl = `${process.env.APP_URL ?? "http://localhost:3000"}/verify?token=${token}`;
-  await mailer.send({
-    to: normalizedEmail,
-    subject: "Confirm your Spanlyfy email",
-    text: `Welcome to Spanlyfy! Confirm your email to finish setting up your account.`,
-    actionUrl: verifyUrl,
-  });
+  await sendVerificationEmail(normalizedEmail, verifyUrl, displayName);
 
   // Email-unverified users may still browse in MVP (doc 03).
   await createSession(user.id);

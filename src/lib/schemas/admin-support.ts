@@ -26,6 +26,10 @@ export const broadcastSchema = z.object({
   audience: audienceSchema,
   subject: z.string().trim().min(1, "A subject is required.").max(200),
   body: z.string().trim().min(1, "A body is required.").max(5000),
+  // Marketing/newsletter mode: only sends to users with marketingEmails=true and appends a
+  // working one-click unsubscribe link + List-Unsubscribe header. Off = operational notice
+  // (service status, price changes) that reaches the whole audience regardless of opt-in.
+  marketing: z.boolean().default(false),
 });
 
 export type BroadcastInput = z.infer<typeof broadcastSchema>;

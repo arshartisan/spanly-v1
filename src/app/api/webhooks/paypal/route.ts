@@ -8,6 +8,11 @@ import {
   syncSubscription,
   type PaypalSubscription,
 } from "@/server/billing";
+import {
+  notifyPaymentFailed,
+  notifySubscriptionActive,
+  notifySubscriptionCanceled,
+} from "@/server/billing-emails";
 
 // POST /api/webhooks/paypal - PayPal event sink (doc 10). No auth: identity is the signature,
 // verified via PayPal's verify-webhook-signature API. PayPal is the source of truth in live
@@ -117,6 +122,10 @@ async function handleEvent(event: PaypalWebhookEvent): Promise<void> {
       const full = await getPaypalSubscription(resource.id);
       const input = fromPaypalSubscription(full, parsed.userId);
       if (input) await syncSubscription(input);
+      // Confirm only on first activation; UPDATED fires on many benign changes (would be noisy).
+      if (event.event_type === "BILLING.SUBSCRIPTION.ACTIVATED") {
+        await notifySubscriptionActive(parsed.userId);
+      }
       return;
     }
 
@@ -150,6 +159,7 @@ async function handleEvent(event: PaypalWebhookEvent): Promise<void> {
           where: { providerSubId: resource.id },
           data: { status: "canceled" },
         });
+        if (parsed?.userId) await notifySubscriptionCanceled(parsed.userId);
       }
       return;
     }
@@ -161,6 +171,7 @@ async function handleEvent(event: PaypalWebhookEvent): Promise<void> {
         where: { providerSubId: resource.id },
         data: { status: "past_due" },
       });
+      if (parsed?.userId) await notifyPaymentFailed(parsed.userId);
       return;
     }
 

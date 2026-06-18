@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/server/db";
 import { loginSchema } from "@/lib/schemas/auth";
 import { createSession, dummyVerify, verifyPassword } from "@/server/auth";
+import { isTrustedDevice, issueLoginOtp, OTP_TTL_MINUTES } from "@/server/login-otp";
+import { sendLoginOtpEmail } from "@/server/email";
 import { clientIp, rateLimit } from "@/server/rate-limit";
 
 export async function POST(req: Request) {
@@ -36,6 +38,19 @@ export async function POST(req: Request) {
   // Suspended accounts authenticate but are denied a session (doc 16).
   if (user.suspendedAt) {
     return NextResponse.json({ error: "This account has been suspended." }, { status: 403 });
+  }
+
+  // New-device step-up (D-013): recognized devices sign in immediately; an unknown device must
+  // clear an emailed 6-digit code via /api/auth/verify-otp before a session is created.
+  if (!(await isTrustedDevice(user.id))) {
+    const code = await issueLoginOtp(user.id);
+    await sendLoginOtpEmail(user.email, {
+      code,
+      minutes: OTP_TTL_MINUTES,
+      displayName: user.displayName,
+      ip,
+    });
+    return NextResponse.json({ otpRequired: true });
   }
 
   await createSession(user.id);

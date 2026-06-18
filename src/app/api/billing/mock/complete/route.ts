@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/server/auth";
 import { isLiveBilling } from "@/server/billing-config";
 import { mockActivate } from "@/server/billing";
+import { notifySubscriptionActive } from "@/server/billing-emails";
 import type { BillingInterval } from "@prisma/client";
 import type { PlanKey } from "@/server/plans";
 
@@ -24,5 +25,6 @@ export async function GET(req: Request) {
   }
 
   await mockActivate(user.id, plan as PlanKey, interval as BillingInterval);
+  await notifySubscriptionActive(user.id); // best-effort; never blocks the redirect
   return NextResponse.redirect(new URL("/settings/billing?subscribed=1", req.url));
 }

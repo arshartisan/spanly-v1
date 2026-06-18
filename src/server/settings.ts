@@ -44,6 +44,7 @@ export async function updateSettings(userId: string, patch: SettingsPatch): Prom
   if (patch.displayName !== undefined) data.displayName = patch.displayName;
   if (patch.avatarUrl !== undefined) data.avatarUrl = patch.avatarUrl;
   if (patch.timezone !== undefined) data.timezone = patch.timezone;
+  if (patch.marketingEmails !== undefined) data.marketingEmails = patch.marketingEmails;
 
   await prisma.user.update({ where: { id: userId }, data });
   return next;

@@ -114,6 +114,10 @@ model User {
   role        Role      @default(user)
   suspendedAt DateTime?
 
+  // Marketing/newsletter opt-in (CAN-SPAM/GDPR). Defaults true; cleared by one-click unsubscribe
+  // or the account settings toggle. Newsletter sends filter on this column.
+  marketingEmails Boolean @default(true)
+
   // settings (doc 11A): email + platform prefs, weekly goal, mcp
   settings Json @default("{}")
 
@@ -133,6 +137,46 @@ model User {
   authoredNotes SupportNote[]   @relation("NoteAuthor")
   refundRequests RefundRequest[]
   moderatedPosts Post[]          @relation("PostModerator")
+  loginOtps      LoginOtp[]
+  trustedDevices TrustedDevice[]
+}
+
+// Short-lived numeric login codes for step-up auth on a new device (D-013). We store only a
+// SHA-256 of the 6-digit code, cap attempts to blunt brute force, and mark `consumedAt` on use.
+// 10-min TTL. Distinct from VerificationToken (those are long single-use link tokens).
+model LoginOtp {
+  id        String    @id @default(cuid())
+  userId    String
+  // What the code is for: 'login' (new-device step-up) | 'verify_email' (confirm address). Scopes
+  // issue/verify so a code minted for one purpose can never satisfy the other.
+  purpose   String    @default("login")
+  codeHash  String // sha256(6-digit code)
+  expiresAt DateTime
+  attempts  Int       @default(0)
+  consumedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose, createdAt])
+}
+
+// A device the user has cleared via OTP. The browser holds an opaque token in a long-lived cookie;
+// we store its SHA-256 here. A matching, unexpired row lets that device skip OTP for 30 days.
+// Deleting rows = "this device must verify again". Mirrors the Session hashing pattern.
+model TrustedDevice {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String   @unique // sha256(device token)
+  userAgent  String?
+  ip         String?
+  lastUsedAt DateTime @default(now())
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // Actionable refund queue (doc 17). Created by the customer refund route (in-policy) or

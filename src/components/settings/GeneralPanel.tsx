@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import type { UserSettings } from "@/lib/schemas/settings";
 
 interface Initial {
@@ -16,6 +18,7 @@ interface Initial {
   avatarUrl?: string | null;
   timezone: string;
   emailVerified: boolean;
+  marketingEmails: boolean;
   settings: UserSettings;
 }
 
@@ -23,6 +26,8 @@ interface Initial {
 // auto-save on change; text fields save on an explicit button.
 export function GeneralPanel({ initial, mcpEndpoint }: { initial: Initial; mcpEndpoint: string }) {
   const [settings, setSettings] = useState<UserSettings>(initial.settings);
+  // marketingEmails lives on a User column (not the settings JSON), so track it separately.
+  const [marketingEmails, setMarketingEmails] = useState(initial.marketingEmails);
 
   // Partial PATCH helper. Returns true on success; callers manage their own busy/feedback.
   async function patch(body: Record<string, unknown>): Promise<boolean> {
@@ -59,6 +64,16 @@ export function GeneralPanel({ initial, mcpEndpoint }: { initial: Initial; mcpEn
           label="Post summary"
           checked={settings.emailPrefs.summary}
           onChange={(v) => patch({ emailPrefs: { summary: v } })}
+        />
+        <ToggleRow
+          label="Product news & newsletters"
+          checked={marketingEmails}
+          onChange={async (v) => {
+            setMarketingEmails(v); // optimistic
+            const ok = await patch({ marketingEmails: v });
+            if (!ok) setMarketingEmails(!v); // revert on failure
+            return ok;
+          }}
         />
       </SettingCard>
 
@@ -201,11 +216,64 @@ function ProfileCard({ initial, onSave }: { initial: Initial; onSave: (name: str
 }
 
 function EmailCard({ email, verified }: { email: string; verified: boolean }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Email-verification OTP flow (settings step-up).
+  const [isVerified, setIsVerified] = useState(verified);
+  const [otpOpen, setOtpOpen] = useState(false);
+  const [code, setCode] = useState("");
+  const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [otpMsg, setOtpMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function sendCode() {
+    setSending(true);
+    setOtpMsg(null);
+    setCode("");
+    const res = await fetch("/api/auth/send-email-otp", { method: "POST" });
+    const data = await res.json().catch(() => null);
+    setSending(false);
+    if (res.ok) {
+      if (data?.alreadyVerified) {
+        setIsVerified(true);
+        setOtpOpen(false);
+        router.refresh();
+        return;
+      }
+      setOtpOpen(true);
+      setOtpMsg({ ok: true, text: `We emailed a 6-digit code to ${email}.` });
+    } else {
+      setOtpOpen(true);
+      setOtpMsg({ ok: false, text: data?.error ?? "Could not send the code." });
+    }
+  }
+
+  async function verifyCode(submitted?: string) {
+    // onComplete passes the full value; the `code` state can still be stale within the same event.
+    const value = submitted ?? code;
+    if (value.length !== 6) return;
+    setVerifying(true);
+    setOtpMsg(null);
+    const res = await fetch("/api/auth/verify-email-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: value }),
+    });
+    const data = await res.json().catch(() => null);
+    setVerifying(false);
+    if (res.ok) {
+      setIsVerified(true);
+      setOtpOpen(false);
+      router.refresh();
+    } else {
+      setOtpMsg({ ok: false, text: data?.error ?? "Invalid code." });
+    }
+  }
 
   async function submit() {
     setBusy(true);
@@ -229,20 +297,71 @@ function EmailCard({ email, verified }: { email: string; verified: boolean }) {
 
   return (
     <SettingCard title="Email Address" description="Used for sign-in and notifications.">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-sm">{email}</span>
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-              verified ? "bg-primary/10 text-primary" : "bg-amber-100 text-amber-700"
+              isVerified ? "bg-primary/10 text-primary" : "bg-amber-100 text-amber-700"
             }`}
           >
-            {verified ? "Verified" : "Unverified"}
+            {isVerified ? "Verified" : "Unverified"}
           </span>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setOpen((o) => !o)}>
-          Change Email
-        </Button>
+        <div className="flex items-center gap-2">
+          {!isVerified && (
+            <Popover open={otpOpen} onOpenChange={setOtpOpen}>
+              <PopoverAnchor asChild>
+                <Button size="sm" loading={sending} onClick={sendCode}>
+                  Verify email
+                </Button>
+              </PopoverAnchor>
+              <PopoverContent align="end" className="w-72">
+                <div className="flex flex-col gap-3">
+                  <div>
+                    <p className="text-sm font-medium">Confirm your email</p>
+                    <p className="text-xs text-muted-foreground">Enter the 6-digit code we sent.</p>
+                  </div>
+                  <div className="flex justify-center">
+                    <InputOTP
+                      maxLength={6}
+                      autoFocus
+                      value={code}
+                      onChange={(v) => setCode(v)}
+                      onComplete={(v) => verifyCode(v)}
+                    >
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
+                  <Button size="sm" loading={verifying} disabled={code.length !== 6} onClick={() => verifyCode()}>
+                    Verify
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={sendCode}
+                    disabled={sending}
+                    className="text-xs text-muted-foreground underline hover:text-foreground disabled:opacity-50"
+                  >
+                    {sending ? "Sending…" : "Resend code"}
+                  </button>
+                  {otpMsg && (
+                    <p className={`text-xs ${otpMsg.ok ? "text-primary" : "text-destructive"}`}>{otpMsg.text}</p>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+          <Button variant="outline" size="sm" onClick={() => setOpen((o) => !o)}>
+            Change Email
+          </Button>
+        </div>
       </div>
       {open && (
         <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-3">

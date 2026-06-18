@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/server/db";
 import { forgotSchema } from "@/lib/schemas/auth";
 import { issueToken } from "@/server/auth";
-import { mailer } from "@/server/mailer";
+import { sendPasswordResetEmail } from "@/server/email";
 import { clientIp, rateLimit } from "@/server/rate-limit";
 
 const RESET_TTL_MS = 60 * 60 * 1000; // 1h (doc 03)
@@ -25,12 +25,7 @@ export async function POST(req: Request) {
   if (user) {
     const token = await issueToken(user.id, "reset_password", RESET_TTL_MS);
     const resetUrl = `${process.env.APP_URL ?? "http://localhost:3000"}/reset?token=${token}`;
-    await mailer.send({
-      to: user.email,
-      subject: "Reset your Spanlyfy password",
-      text: "Use the link below to set a new password. It expires in 1 hour.",
-      actionUrl: resetUrl,
-    });
+    await sendPasswordResetEmail(user.email, resetUrl, user.displayName);
   }
 
   return NextResponse.json({ ok: true });

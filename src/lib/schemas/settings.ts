@@ -40,6 +40,8 @@ export const settingsPatchSchema = z.object({
   emailPrefs: emailPrefsSchema.partial().optional(),
   platformPrefs: platformPrefsSchema.partial().optional(),
   mcpUrl: z.string().url().nullable().optional(),
+  // Marketing/newsletter opt-in, stored on the User.marketingEmails column (not the settings JSON).
+  marketingEmails: z.boolean().optional(),
 });
 
 export type SettingsPatch = z.infer<typeof settingsPatchSchema>;

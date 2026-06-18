@@ -9,6 +9,10 @@ import type { CurrentUser } from "@/server/auth";
 // touching next/headers cookies or a real session row.
 vi.mock("server-only", () => ({}));
 
+// Marketing broadcasts build unsubscribe links via an HMAC keyed by NEXTAUTH_SECRET; set one
+// so signUnsubscribe doesn't throw in the test environment.
+process.env.NEXTAUTH_SECRET ??= "test-secret-for-unsubscribe-hmac";
+
 // ─────────────────────────── Prisma mock ───────────────────────────
 const userFindUnique = vi.fn();
 const userFindMany = vi.fn();
@@ -310,17 +314,26 @@ describe("buildAudienceWhere (pure → Prisma.UserWhereInput)", () => {
 
 // ═══════════════════════════ resolveAudience ═══════════════════════════
 
-describe("resolveAudience (where → recipients, id+email only)", () => {
-  it("passes buildAudienceWhere output to findMany, selecting only id + email", async () => {
-    userFindMany.mockResolvedValue([{ id: "u1", email: "a@x.com" }]);
+describe("resolveAudience (where → recipients)", () => {
+  it("passes buildAudienceWhere output to findMany, selecting id + email + displayName", async () => {
+    userFindMany.mockResolvedValue([{ id: "u1", email: "a@x.com", displayName: "A" }]);
     const recipients = await resolveAudience("trialing");
     const arg = userFindMany.mock.calls[0][0] as {
       where: unknown;
       select: Record<string, unknown>;
     };
     expect(arg.where).toEqual({ subscription: { is: { status: "trialing" } } });
-    expect(arg.select).toEqual({ id: true, email: true });
-    expect(recipients).toEqual([{ id: "u1", email: "a@x.com" }]);
+    expect(arg.select).toEqual({ id: true, email: true, displayName: true });
+    // Never selects secret credential fields.
+    expect(JSON.stringify(arg.select)).not.toContain("passwordHash");
+    expect(recipients).toEqual([{ id: "u1", email: "a@x.com", displayName: "A" }]);
+  });
+
+  it("marketingOnly restricts to opted-in users (AND marketingEmails: true)", async () => {
+    userFindMany.mockResolvedValue([]);
+    await resolveAudience("all", true);
+    const arg = userFindMany.mock.calls[0][0] as { where: unknown };
+    expect(arg.where).toEqual({ AND: [{}, { marketingEmails: true }] });
   });
 });
 
@@ -328,30 +341,51 @@ describe("resolveAudience (where → recipients, id+email only)", () => {
 // Acceptance: audited with audience + recipient count; never leaks addresses in the return.
 
 describe("sendBroadcast (mailer fan-out + recipient count)", () => {
-  it("sends once per recipient and returns only the count (no addresses leaked)", async () => {
+  it("operational send: once per recipient, branded HTML, no unsubscribe header", async () => {
     userFindMany.mockResolvedValue([
-      { id: "u1", email: "a@x.com" },
-      { id: "u2", email: "b@x.com" },
-      { id: "u3", email: "c@x.com" },
+      { id: "u1", email: "a@x.com", displayName: "A" },
+      { id: "u2", email: "b@x.com", displayName: null },
+      { id: "u3", email: "c@x.com", displayName: null },
     ]);
 
     const result = await sendBroadcast(actor("u_admin"), {
       audience: "all",
       subject: "Heads up",
       body: "Publishing degraded.",
+      marketing: false,
     });
 
     expect(mailerSend).toHaveBeenCalledTimes(3);
-    // Each send addresses exactly one recipient with the subject/body.
-    expect(mailerSend).toHaveBeenCalledWith({
-      to: "a@x.com",
-      subject: "Heads up",
-      text: "Publishing degraded.",
-    });
+    // Each send carries the subject + text + an HTML body; operational mail has no unsubscribe.
+    const firstArg = mailerSend.mock.calls[0][0] as Record<string, unknown>;
+    expect(firstArg).toMatchObject({ to: "a@x.com", subject: "Heads up", text: "Publishing degraded." });
+    expect(typeof firstArg.html).toBe("string");
+    expect(firstArg.headers).toBeUndefined();
 
     // The audit-relevant return is JUST the count - no email addresses.
     expect(result).toEqual({ recipientCount: 3 });
     expect(JSON.stringify(result)).not.toContain("@x.com");
+  });
+
+  it("marketing send: filters to opted-in + adds a one-click unsubscribe header", async () => {
+    userFindMany.mockResolvedValue([{ id: "u1", email: "a@x.com", displayName: "A" }]);
+
+    await sendBroadcast(actor("u_admin"), {
+      audience: "all",
+      subject: "Spring news",
+      body: "What's new.",
+      marketing: true,
+    });
+
+    // Audience query was restricted to opted-in users.
+    const where = (userFindMany.mock.calls[0][0] as { where: unknown }).where;
+    expect(where).toEqual({ AND: [{}, { marketingEmails: true }] });
+
+    const arg = mailerSend.mock.calls[0][0] as Record<string, unknown>;
+    expect(arg.to).toBe("a@x.com");
+    const headers = arg.headers as Record<string, string>;
+    expect(headers["List-Unsubscribe"]).toMatch(/^<.*\/api\/email\/unsubscribe\?/);
+    expect(headers["List-Unsubscribe-Post"]).toBe("List-Unsubscribe=One-Click");
   });
 
   it("empty audience → 0 sends, recipientCount 0 (no throw)", async () => {
@@ -360,6 +394,7 @@ describe("sendBroadcast (mailer fan-out + recipient count)", () => {
       audience: "ids:nobody",
       subject: "s",
       body: "b",
+      marketing: false,
     });
     expect(mailerSend).not.toHaveBeenCalled();
     expect(result).toEqual({ recipientCount: 0 });
@@ -369,12 +404,14 @@ describe("sendBroadcast (mailer fan-out + recipient count)", () => {
     const recipients = Array.from({ length: 120 }, (_, i) => ({
       id: `u${i}`,
       email: `u${i}@x.com`,
+      displayName: null,
     }));
     userFindMany.mockResolvedValue(recipients);
     const result = await sendBroadcast(actor("u_admin"), {
       audience: "all",
       subject: "s",
       body: "b",
+      marketing: false,
     });
     expect(mailerSend).toHaveBeenCalledTimes(120);
     expect(result).toEqual({ recipientCount: 120 });

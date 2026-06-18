@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/server/db";
 import { changeEmailSchema } from "@/lib/schemas/auth";
 import { getCurrentUser, issueToken, verifyPassword } from "@/server/auth";
-import { mailer } from "@/server/mailer";
+import { sendEmailChangeEmail } from "@/server/email";
 
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -40,12 +40,7 @@ export async function POST(req: Request) {
 
   const token = await issueToken(user.id, "verify_email", VERIFY_TTL_MS);
   const verifyUrl = `${process.env.APP_URL ?? "http://localhost:3000"}/verify?token=${token}`;
-  await mailer.send({
-    to: email,
-    subject: "Confirm your new Spanlyfy email",
-    text: "Confirm this address to finish changing your Spanlyfy email.",
-    actionUrl: verifyUrl,
-  });
+  await sendEmailChangeEmail(email, verifyUrl, user.displayName);
 
   return NextResponse.json({ ok: true });
 }
