@@ -2,6 +2,7 @@ import {
   FacebookIcon,
   InstagramIcon,
   LinkedinIcon,
+  ThreadsIcon,
   TiktokIcon,
   YoutubeIcon,
   XIcon,
@@ -15,12 +16,13 @@ const PLATFORMS: { name: string; Icon: BrandIcon }[] = [
   { name: "Facebook", Icon: FacebookIcon },
   { name: "Instagram", Icon: InstagramIcon },
   { name: "LinkedIn", Icon: LinkedinIcon },
+  { name: "Threads", Icon: ThreadsIcon },
   { name: "TikTok", Icon: TiktokIcon },
   { name: "YouTube", Icon: YoutubeIcon },
   { name: "X", Icon: XIcon },
 ];
 
-// Thin bordered logo strip: "publish to" + the six supported platform marks.
+// Thin bordered logo strip: "publish to" + the seven supported platform marks.
 export function PlatformStrip() {
   return (
     <section className={cn("border-y border-white/10 bg-[hsl(20_14%_5%)]", SECTION_X)}>

@@ -1,9 +1,9 @@
 /**
- * Single source of truth for the 6 supported platforms: capabilities + publishing limits.
+ * Single source of truth for the 7 supported platforms: capabilities + publishing limits.
  * Used by the composer (doc 06), provider abstraction (doc 02), and the seed.
  * Values are seed defaults - refine against each real platform API in Phase 6.
  */
-export const PLATFORMS = ["facebook", "instagram", "linkedin", "tiktok", "youtube", "x"] as const;
+export const PLATFORMS = ["facebook", "instagram", "linkedin", "threads", "tiktok", "youtube", "x"] as const;
 export type PlatformKey = (typeof PLATFORMS)[number];
 
 export type Capability = "text" | "image" | "video";
@@ -50,6 +50,13 @@ export const PLATFORM_CONFIG: Record<PlatformKey, PlatformConfig> = {
     capabilities: ["image", "video"],
     limits: { captionMax: 2200, mediaMax: 10, videoMaxSeconds: 90 },
     hasConnectMethodChoice: true,
+  },
+  threads: {
+    key: "threads",
+    label: "Threads",
+    // Threads is text-first but also supports single image/video and carousels.
+    capabilities: ["text", "image", "video"],
+    limits: { captionMax: 500, mediaMax: 20, videoMaxSeconds: 300 },
   },
   tiktok: {
     key: "tiktok",

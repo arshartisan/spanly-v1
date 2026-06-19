@@ -12,6 +12,7 @@ import { XProvider } from "@/providers/x";
 import { LinkedinProvider } from "@/providers/linkedin";
 import { FacebookProvider } from "@/providers/facebook";
 import { InstagramProvider } from "@/providers/instagram";
+import { ThreadsProvider } from "@/providers/threads";
 import { TiktokProvider } from "@/providers/tiktok";
 import { YoutubeProvider } from "@/providers/youtube";
 
@@ -34,6 +35,9 @@ function liveProvider(platform: PlatformKey): PlatformProvider | null {
       break;
     case "instagram":
       p = new InstagramProvider();
+      break;
+    case "threads":
+      p = new ThreadsProvider();
       break;
     case "tiktok":
       p = new TiktokProvider();

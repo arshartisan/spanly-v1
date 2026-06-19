@@ -100,6 +100,7 @@ The backbone of MVP. One generic class parameterized by platform config.
 | linkedin | text,image,video | 3000 | 9 | 600 | no |
 | facebook | text,image,video | 5000 | 10 | 1200 | no |
 | instagram | image,video,story | 2200 | 10 | 90 | yes |
+| threads | text,image,video | 500 | 20 | 300 | no |
 | tiktok | image,video | 2200 | 35 | 600 | no |
 | youtube | video | 5000 | 1 | 60(shorts)/—| no |
 
@@ -111,6 +112,9 @@ Each `src/providers/<platform>/index.ts` implements `PlatformProvider`:
 - **facebook / instagram** — Meta Graph API; share OAuth; IG needs Business/Creator + Page;
   `extra.pageId` stored. IG method modal chooses `instagram` vs `facebook` login path.
 - **linkedin** — OAuth `w_member_social`; UGC Posts API; org scopes for Pages later.
+- **threads** — Threads (Meta) Graph API on `graph.threads.net`; single direct OAuth path
+  (`threads_basic`/`threads_content_publish`); two-step container publish like IG plus a
+  text-only post type; `extra.threadsUserId` stored. Flag-gated (`PROVIDER_LIVE_THREADS`).
 - **tiktok** — Content Posting API (`video.publish`/`video.upload`); audit gating note.
 - **youtube** — Google OAuth + YouTube Data API `videos.insert`; quota-aware.
 - **x** — OAuth2 PKCE; v2 `POST /2/tweets` + media upload; paid-tier write caps.

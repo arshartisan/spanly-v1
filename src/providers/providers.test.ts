@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 import { getProvider } from "@/providers/registry";
 import { FacebookProvider } from "@/providers/facebook";
 import { InstagramProvider } from "@/providers/instagram";
+import { ThreadsProvider } from "@/providers/threads";
 import { TiktokProvider } from "@/providers/tiktok";
 import { YoutubeProvider } from "@/providers/youtube";
 
 describe("MockProvider (registry)", () => {
   it("returns a provider for every platform in mock mode", () => {
-    for (const p of ["facebook", "instagram", "linkedin", "tiktok", "youtube", "x"] as const) {
+    for (const p of ["facebook", "instagram", "linkedin", "threads", "tiktok", "youtube", "x"] as const) {
       expect(getProvider(p).platform).toBe(p);
     }
   });
@@ -128,6 +129,47 @@ describe("InstagramProvider (live)", () => {
 
   it("validate rejects text posts (unsupported on Instagram)", () => {
     expect(ig.validate({ type: "text", caption: "hi", media: [] }).ok).toBe(false);
+  });
+});
+
+describe("ThreadsProvider (live)", () => {
+  const th = new ThreadsProvider();
+
+  it("getAuthUrl points at threads.net/oauth/authorize with publish scope and state", () => {
+    process.env.THREADS_CLIENT_ID = "th-test-id";
+    const url = new URL(th.getAuthUrl({ state: "csrf123", redirectUri: "https://app/cb" }));
+    expect(url.hostname).toContain("threads.net");
+    expect(url.pathname).toContain("/oauth/authorize");
+    expect(url.searchParams.get("client_id")).toBe("th-test-id");
+    expect(url.searchParams.get("redirect_uri")).toBe("https://app/cb");
+    expect(url.searchParams.get("state")).toBe("csrf123");
+    expect(url.searchParams.get("response_type")).toBe("code");
+    expect(url.searchParams.get("scope")).toMatch(/threads_content_publish/);
+  });
+
+  it("getAuthUrl throws when THREADS_CLIENT_ID is unset", () => {
+    delete process.env.THREADS_CLIENT_ID;
+    expect(() => th.getAuthUrl({ state: "s", redirectUri: "r" })).toThrow(/THREADS_CLIENT_ID/);
+  });
+
+  it("validate accepts a well-formed text post", () => {
+    expect(th.validate({ type: "text", caption: "hello threads", media: [] }).ok).toBe(true);
+  });
+
+  it("validate rejects an over-limit caption (max 500)", () => {
+    const res = th.validate({ type: "text", caption: "x".repeat(501), media: [] });
+    expect(res.ok).toBe(false);
+    expect(res.errors.join(" ")).toMatch(/500/);
+  });
+
+  it("validate rejects empty text posts and media-less image posts", () => {
+    expect(th.validate({ type: "text", caption: "   ", media: [] }).ok).toBe(false);
+    expect(th.validate({ type: "image", caption: "hi", media: [] }).ok).toBe(false);
+  });
+
+  it("validate rejects more than 20 media items (carousel max)", () => {
+    const media = Array.from({ length: 21 }, (_, i) => ({ kind: "image" as const, url: "u", order: i }));
+    expect(th.validate({ type: "image", caption: "hi", media }).ok).toBe(false);
   });
 });
 
