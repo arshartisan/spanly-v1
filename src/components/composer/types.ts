@@ -21,3 +21,9 @@ export interface UploadedMedia {
   order: number;
   name: string;
 }
+
+/** AI caption assistant result (shared by the API route, server service, and composer UI). */
+export interface GeneratedCaption {
+  caption: string;
+  hashtags: string[];
+}

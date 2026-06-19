@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PLATFORM_CONFIG, type Capability, type PlatformKey } from "@/lib/platforms";
+import { PLATFORM_CONFIG, PLATFORMS, type Capability, type PlatformKey } from "@/lib/platforms";
 
 // Composer validation (doc 06). Shared by API route handlers and the client composer.
 // The DB stores `perPlatform` as a map { [socialAccountId]: captionOverride }.
@@ -27,6 +27,19 @@ export const createPostSchema = z.object({
 });
 
 export const updatePostSchema = createPostSchema.partial();
+
+// AI caption assistant (composer "Enhance with AI"). The draft + selected platforms are
+// sent to Gemini; `platforms` lets the model match each network's tone and the strictest
+// character limit (see captionLimitFor). At least one platform must be selected.
+export const platformSchema = z.enum(PLATFORMS);
+
+export const aiCaptionSchema = z.object({
+  draft: z.string().max(5000).default(""),
+  type: postTypeSchema,
+  platforms: z.array(platformSchema).min(1).max(PLATFORMS.length),
+});
+
+export type AiCaptionInput = z.infer<typeof aiCaptionSchema>;
 
 export const scheduleSchema = z.object({
   // ISO instant in UTC; the client converts the local pick using the post timezone.

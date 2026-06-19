@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { CalendarClock, CalendarDays, Clock, Loader2, Send } from "lucide-react";
 import { format, startOfToday } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -18,15 +19,21 @@ export type ComposerAction = "draft" | "now" | "schedule" | "queue";
 
 const QUICK_TIMES = ["11:00", "15:00", "19:00"];
 
-/** 30-minute time options as { value: "HH:MM" (24h), label: "h:MM AM/PM" }. */
-const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
-  const h = Math.floor(i / 2);
-  const m = i % 2 ? "30" : "00";
+/** 15-minute time options as { value: "HH:MM" (24h), label: "h:MM AM/PM" }. */
+const TIME_OPTIONS = Array.from({ length: 96 }, (_, i) => {
+  const h = Math.floor(i / 4);
+  const m = String((i % 4) * 15).padStart(2, "0");
   const value = `${String(h).padStart(2, "0")}:${m}`;
   const h12 = h % 12 === 0 ? 12 : h % 12;
   const label = `${h12}:${m} ${h < 12 ? "AM" : "PM"}`;
   return { value, label };
 });
+
+/** Minutes-since-midnight for an "HH:MM" value. */
+function toMinutes(value: string): number {
+  const [h, m] = value.split(":").map(Number);
+  return h * 60 + m;
+}
 
 /** "YYYY-MM-DD" ⇄ local Date, kept TZ-safe (no UTC shift). */
 function parseDate(s: string): Date | undefined {
@@ -70,9 +77,34 @@ export function ScheduleCard({
   disabledReason: string | null;
 }) {
   const busy = submitting !== null;
-  const scheduleReady = scheduleTab === "queue" || (date !== "" && time !== "");
 
   const selectedDate = parseDate(date);
+
+  // Current local time, set after mount (avoids SSR/hydration drift) and refreshed each minute
+  // so options re-enable/disable as the clock advances. Null until mounted → nothing disabled.
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const isToday =
+    !!selectedDate &&
+    !!now &&
+    selectedDate.getFullYear() === now.getFullYear() &&
+    selectedDate.getMonth() === now.getMonth() &&
+    selectedDate.getDate() === now.getDate();
+
+  /** A time slot is in the past only when the selected date is today and it's at/before now. */
+  function isTimePast(value: string): boolean {
+    if (!isToday || !now) return false;
+    return toMinutes(value) <= now.getHours() * 60 + now.getMinutes();
+  }
+
+  const timeIsPast = scheduleTab === "time" && date !== "" && time !== "" && isTimePast(time);
+  const scheduleReady =
+    scheduleTab === "queue" || (date !== "" && time !== "" && !timeIsPast);
 
   return (
     <div className="glass flex flex-col gap-4 rounded-2xl p-4">
@@ -159,7 +191,7 @@ export function ScheduleCard({
                   </SelectTrigger>
                   <SelectContent className="max-h-64">
                     {TIME_OPTIONS.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
+                      <SelectItem key={t.value} value={t.value} disabled={isTimePast(t.value)}>
                         {t.label}
                       </SelectItem>
                     ))}
@@ -167,23 +199,34 @@ export function ScheduleCard({
                 </Select>
               </div>
               <div className="flex gap-2">
-                {QUICK_TIMES.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => setTime(q)}
-                    className={cn(
-                      "rounded-full border px-3 py-1 text-xs transition-colors hover:bg-muted",
-                      time === q && "border-primary text-primary",
-                    )}
-                  >
-                    {q}
-                  </button>
-                ))}
+                {QUICK_TIMES.map((q) => {
+                  const past = isTimePast(q);
+                  return (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => setTime(q)}
+                      disabled={past}
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-xs transition-colors hover:bg-muted",
+                        time === q && !past && "border-primary text-primary",
+                        past && "cursor-not-allowed opacity-40 hover:bg-transparent",
+                      )}
+                    >
+                      {timeLabel(q)}
+                    </button>
+                  );
+                })}
               </div>
-              <p className="text-xs text-muted-foreground">
-                Your post will be posted at {time ? timeLabel(time) : "HH:MM"} in your local time.
-              </p>
+              {timeIsPast ? (
+                <p className="text-xs text-destructive">
+                  That time has already passed today. Pick a later time.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Your post will be posted at {time ? timeLabel(time) : "HH:MM"} in your local time.
+                </p>
+              )}
               <Button
                 className="w-full"
                 disabled={!submitEnabled || !scheduleReady || busy}

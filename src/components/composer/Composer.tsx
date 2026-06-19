@@ -17,10 +17,11 @@ import {
 } from "@/lib/schemas/post";
 import { Reveal } from "@/components/motion/reveal";
 import { AccountSelector } from "./AccountSelector";
+import { AiSuggestionPanel } from "./AiSuggestionPanel";
 import { CaptionField } from "./CaptionField";
 import { ScheduleCard, type ComposerAction } from "./ScheduleCard";
 import { UploadDropzone } from "./UploadDropzone";
-import type { ComposerAccount, UploadedMedia } from "./types";
+import type { ComposerAccount, GeneratedCaption, UploadedMedia } from "./types";
 
 export interface InitialPost {
   id: string;
@@ -58,12 +59,15 @@ export function Composer({
   timezone,
   initialPost = null,
   initialDate,
+  aiEnabled = false,
 }: {
   type: PostTypeKey;
   accounts: ComposerAccount[];
   timezone: string;
   initialPost?: InitialPost | null;
   initialDate?: string;
+  /** Whether the signed-in user's plan can use the AI caption assistant (server-decided). */
+  aiEnabled?: boolean;
 }) {
   const router = useRouter();
   const isEdit = initialPost !== null;
@@ -83,6 +87,13 @@ export function Composer({
   const [scheduleTab, setScheduleTab] = useState<"time" | "queue">("time");
   const [date, setDate] = useState(initialDate ?? "");
   const [time, setTime] = useState("12:00");
+
+  // AI caption assistant (composer "Enhance with AI"). The panel shows the suggestion and the
+  // draft is only replaced when the user clicks Apply.
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<GeneratedCaption | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const [remember, setRemember] = useState(false);
   const [submitting, setSubmitting] = useState<ComposerAction | null>(null);
@@ -186,6 +197,51 @@ export function Composer({
   function setActiveCaption(v: string) {
     if (activeAccount) setPerPlatform((p) => ({ ...p, [activeTab]: v }));
     else setMainCaption(v);
+  }
+
+  // Distinct platforms across the selected accounts — drives the AI tone + strictest limit.
+  const aiPlatforms = useMemo(() => Array.from(new Set(selectedPlatforms)), [selectedPlatforms]);
+  const aiDisabledReason = targets.length === 0 ? "Select an account first" : null;
+
+  async function handleEnhance() {
+    setAiPanelOpen(true);
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const res = await fetch("/api/ai/caption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draft: activeValue, type, platforms: aiPlatforms }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 402) throw new Error(data.error ?? "Upgrade your plan to use AI captions.");
+        if (res.status === 429) throw new Error(data.error ?? "Too many requests — try again shortly.");
+        throw new Error(data.error ?? "Couldn't generate a caption. Try again.");
+      }
+      setAiSuggestion((await res.json()) as GeneratedCaption);
+    } catch (e) {
+      setAiSuggestion(null);
+      setAiError(e instanceof Error ? e.message : "Couldn't generate a caption.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  function applyAiSuggestion() {
+    if (!aiSuggestion) return;
+    const tags = aiSuggestion.hashtags.join(" ");
+    const next = tags ? `${aiSuggestion.caption}\n\n${tags}` : aiSuggestion.caption;
+    setActiveCaption(next);
+    setAiPanelOpen(false);
+    setAiSuggestion(null);
+    setAiError(null);
+  }
+
+  function closeAiPanel() {
+    setAiPanelOpen(false);
+    setAiSuggestion(null);
+    setAiError(null);
   }
 
   async function handleFiles(files: File[]) {
@@ -507,13 +563,30 @@ export function Composer({
                 value={activeValue}
                 onChange={setActiveCaption}
                 limit={activeLimit}
+                disabled={targets.length === 0}
                 label={activeAccount ? `${activeAccount.handle} caption` : "Main Caption"}
                 placeholder={
-                  activeAccount
-                    ? "Override the main caption for this account…"
-                    : "Start writing your post here…"
+                  targets.length === 0
+                    ? "Select an account above to start writing…"
+                    : activeAccount
+                      ? "Override the main caption for this account…"
+                      : "Start writing your post here…"
                 }
+                onEnhance={aiEnabled ? handleEnhance : undefined}
+                enhancing={aiLoading}
+                enhanceDisabledReason={aiDisabledReason}
               />
+
+              {aiEnabled && aiPanelOpen && (
+                <AiSuggestionPanel
+                  suggestion={aiSuggestion}
+                  loading={aiLoading}
+                  error={aiError}
+                  onApply={applyAiSuggestion}
+                  onRegenerate={handleEnhance}
+                  onClose={closeAiPanel}
+                />
+              )}
 
               {showPlatformCaptions && (
                 <button

@@ -1,6 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/auth";
 import { eligibleAccounts, getOwnedPost } from "@/server/posts";
+import { requirePlan } from "@/server/plans";
+import { isAiCaptionConfigured } from "@/server/ai-caption";
 import { POST_TYPES, type PostTypeKey } from "@/lib/schemas/post";
 import { Composer, type InitialPost } from "@/components/composer/Composer";
 
@@ -50,6 +52,10 @@ export default async function CreatePostPage({
 
   const accounts = await eligibleAccounts(user.id, type as PostTypeKey);
 
+  // AI caption assistant: shown only when the feature is configured AND the user's plan allows
+  // it (paid tier). Server-side enforcement still happens in /api/ai/caption.
+  const aiEnabled = isAiCaptionConfigured() && requirePlan(user.subscription, "creator").ok;
+
   return (
     <Composer
       type={type as PostTypeKey}
@@ -57,6 +63,7 @@ export default async function CreatePostPage({
       timezone={user.timezone}
       initialPost={initialPost}
       initialDate={date}
+      aiEnabled={aiEnabled}
     />
   );
 }

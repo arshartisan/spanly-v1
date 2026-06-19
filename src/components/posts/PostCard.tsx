@@ -3,7 +3,7 @@ import { FileText, Play } from "lucide-react";
 import type { MediaKind, PostStatus, PostType, TargetStatus } from "@prisma/client";
 import { PLATFORM_STYLE } from "@/lib/platform-style";
 import type { PlatformKey } from "@/lib/platforms";
-import { STATUS_META, TYPE_LABEL, formatDate, formatTime, snippet } from "@/lib/post-display";
+import { STATUS_META, TYPE_LABEL, formatDate, formatTime } from "@/lib/post-display";
 import { cn } from "@/lib/utils";
 
 export interface PostCardTarget {
@@ -77,8 +77,12 @@ export function PostCard({ post, tz }: { post: PostCardData; tz: string }) {
         </span>
       </div>
 
-      <p className="text-sm text-foreground/90">
-        {post.caption.trim() ? snippet(post.caption) : <span className="text-muted-foreground italic">No caption</span>}
+      <p className="whitespace-pre-line text-sm text-foreground/90 line-clamp-4">
+        {post.caption.trim() ? (
+          post.caption.trim()
+        ) : (
+          <span className="text-muted-foreground italic">No caption</span>
+        )}
       </p>
 
       {post.media.length > 0 && (
