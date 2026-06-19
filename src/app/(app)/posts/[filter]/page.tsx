@@ -79,7 +79,10 @@ export default async function PostsPage({
     where,
     orderBy: { createdAt: sp.sort === "oldest" ? "asc" : "desc" },
     take: 100,
-    include: { targets: { include: { account: true } }, media: true },
+    include: {
+      targets: { include: { account: true } },
+      media: { include: { media: true }, orderBy: { order: "asc" } },
+    },
   });
 
   const cards: PostCardData[] = posts.map((post) => {
@@ -89,7 +92,11 @@ export default async function PostsPage({
       type: post.type,
       status: post.status,
       caption: post.mainCaption,
-      mediaCount: post.media.length,
+      media: post.media.map((m) => ({
+        kind: m.media.kind,
+        url: m.media.url,
+        thumbnailUrl: m.media.thumbnailUrl,
+      })),
       when,
       whenLabel,
       targets: post.targets.map((t) => ({

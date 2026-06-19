@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ImageIcon } from "lucide-react";
-import type { PostStatus, PostType, TargetStatus } from "@prisma/client";
+import { FileText, Play } from "lucide-react";
+import type { MediaKind, PostStatus, PostType, TargetStatus } from "@prisma/client";
 import { PLATFORM_STYLE } from "@/lib/platform-style";
 import type { PlatformKey } from "@/lib/platforms";
 import { STATUS_META, TYPE_LABEL, formatDate, formatTime, snippet } from "@/lib/post-display";
@@ -12,15 +12,40 @@ export interface PostCardTarget {
   status: TargetStatus;
 }
 
+export interface PostCardMedia {
+  kind: MediaKind;
+  url: string;
+  thumbnailUrl: string | null;
+}
+
 export interface PostCardData {
   id: string;
   type: PostType;
   status: PostStatus;
   caption: string;
-  mediaCount: number;
+  media: PostCardMedia[];
   when: Date;
   whenLabel: string;
   targets: PostCardTarget[];
+}
+
+const MAX_THUMBS = 4;
+
+function MediaThumb({ item }: { item: PostCardMedia }) {
+  // Images have a renderable URL; videos may carry a poster in thumbnailUrl. PDFs/posterless
+  // videos fall back to an icon placeholder so we never point an <img> at a non-image source.
+  const src = item.kind === "image" ? item.url : item.thumbnailUrl;
+  if (src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- URLs are user media on S3/R2/dev proxy; plain img avoids next/image remote config
+      <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
+    );
+  }
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+      {item.kind === "pdf" ? <FileText className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+    </div>
+  );
 }
 
 /**
@@ -56,6 +81,32 @@ export function PostCard({ post, tz }: { post: PostCardData; tz: string }) {
         {post.caption.trim() ? snippet(post.caption) : <span className="text-muted-foreground italic">No caption</span>}
       </p>
 
+      {post.media.length > 0 && (
+        <div className="flex gap-1.5">
+          {post.media.slice(0, MAX_THUMBS).map((item, i) => {
+            const isOverflow = i === MAX_THUMBS - 1 && post.media.length > MAX_THUMBS;
+            return (
+              <div
+                key={i}
+                className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-muted"
+              >
+                <MediaThumb item={item} />
+                {item.kind === "video" && item.thumbnailUrl && (
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/25">
+                    <Play className="h-4 w-4 fill-white text-white" />
+                  </span>
+                )}
+                {isOverflow && (
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/55 text-sm font-medium text-white">
+                    +{post.media.length - (MAX_THUMBS - 1)}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div className="flex -space-x-2">
           {post.targets.length === 0 ? (
@@ -77,12 +128,6 @@ export function PostCard({ post, tz }: { post: PostCardData; tz: string }) {
             })
           )}
         </div>
-        {post.mediaCount > 0 && (
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <ImageIcon className="h-3.5 w-3.5" />
-            {post.mediaCount}
-          </span>
-        )}
       </div>
     </Link>
   );
