@@ -1,15 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { UserSettings } from "@/lib/schemas/settings";
 
 interface Initial {
@@ -45,6 +52,7 @@ export function GeneralPanel({ initial, mcpEndpoint }: { initial: Initial; mcpEn
   return (
     <div className="flex flex-col gap-5">
       <ProfileCard initial={initial} onSave={(displayName) => patch({ displayName })} />
+      <TimezoneCard initial={initial.timezone} />
       <EmailCard email={initial.email} verified={initial.emailVerified} />
       <PasswordCard email={initial.email} />
       <SecurityCard />
@@ -211,6 +219,159 @@ function ProfileCard({ initial, onSave }: { initial: Initial; onSave: (name: str
         </Button>
         {saved && <span className="text-xs text-primary">Saved</span>}
       </div>
+    </SettingCard>
+  );
+}
+
+// Common zones used as a fallback when Intl.supportedValuesOf isn't available.
+const FALLBACK_ZONES = [
+  "UTC",
+  "Asia/Colombo",
+  "Asia/Kolkata",
+  "Asia/Dubai",
+  "Asia/Singapore",
+  "Asia/Tokyo",
+  "Europe/London",
+  "Europe/Berlin",
+  "America/New_York",
+  "America/Chicago",
+  "America/Los_Angeles",
+  "Australia/Sydney",
+];
+
+/** The browser's current IANA timezone (e.g. "Asia/Colombo"), or "UTC" if undetectable. */
+function detectTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
+
+/** Human offset like "UTC+5:30" for a zone, computed for the current instant (DST-aware). */
+function offsetLabel(tz: string): string {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      timeZoneName: "shortOffset",
+    }).formatToParts(new Date());
+    const name = parts.find((p) => p.type === "timeZoneName")?.value ?? "";
+    return name.replace("GMT", "UTC") || "UTC+0";
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Timezone setting. All times across the app (post cards, calendar, schedule) render in this
+ * zone. If the stored value is still the onboarding default "UTC" but the browser is elsewhere,
+ * we adopt the detected zone once automatically so dates look right without manual setup.
+ */
+function TimezoneCard({ initial }: { initial: string }) {
+  const router = useRouter();
+  const [tz, setTz] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [autoNote, setAutoNote] = useState<string | null>(null);
+  const didAuto = useRef(false);
+
+  // Offset/detection rely on the browser, so only show them after mount (avoids hydration drift).
+  useEffect(() => setMounted(true), []);
+
+  const detected = useMemo(() => detectTimezone(), []);
+  const zones = useMemo(() => {
+    try {
+      const list = (
+        Intl as unknown as { supportedValuesOf?: (k: string) => string[] }
+      ).supportedValuesOf?.("timeZone");
+      if (list && list.length) return list;
+    } catch {
+      /* fall through */
+    }
+    return FALLBACK_ZONES;
+  }, []);
+
+  async function save(next: string): Promise<boolean> {
+    setBusy(true);
+    const res = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ timezone: next }),
+    });
+    setBusy(false);
+    if (!res.ok) return false;
+    setTz(next);
+    router.refresh(); // re-render server pages (cards/calendar) in the new zone
+    return true;
+  }
+
+  // One-time auto-adopt of the detected zone when the account is still on the default UTC.
+  useEffect(() => {
+    if (didAuto.current) return;
+    didAuto.current = true;
+    if (initial === "UTC" && detected !== "UTC") {
+      void save(detected).then((ok) => {
+        if (ok) setAutoNote(`Updated to your detected timezone: ${detected}.`);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const dirty = tz !== initial;
+
+  return (
+    <SettingCard
+      title="Timezone"
+      description="Times across Spanlyfy (posts, calendar, scheduling) are shown in this zone."
+    >
+      {mounted && (
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Globe className="h-3.5 w-3.5" />
+          Detected: <span className="font-medium text-foreground">{detected}</span>
+          <span>({offsetLabel(detected)})</span>
+          {detected !== tz && (
+            <button
+              type="button"
+              onClick={() => save(detected)}
+              className="ml-1 underline hover:text-foreground"
+            >
+              Use this
+            </button>
+          )}
+        </p>
+      )}
+      <div className="flex items-center gap-3">
+        <Select value={tz} onValueChange={setTz}>
+          <SelectTrigger className="w-[260px]">
+            <SelectValue placeholder="Select timezone">
+              {tz} {mounted ? `(${offsetLabel(tz)})` : ""}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent className="max-h-72">
+            {zones.map((z) => (
+              <SelectItem key={z} value={z}>
+                {z}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          loading={busy}
+          disabled={!dirty || busy}
+          onClick={async () => {
+            const ok = await save(tz);
+            if (ok) {
+              setSaved(true);
+              setTimeout(() => setSaved(false), 1500);
+            }
+          }}
+        >
+          Save
+        </Button>
+        {saved && <span className="text-xs text-primary">Saved</span>}
+      </div>
+      {autoNote && <p className="text-xs text-primary">{autoNote}</p>}
     </SettingCard>
   );
 }

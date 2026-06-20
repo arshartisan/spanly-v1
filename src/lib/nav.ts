@@ -12,7 +12,7 @@ import {
   Send,
   Settings,
   // Sparkles, // Content Studio — temporarily hidden from the sidebar
-  // Upload, // Bulk Import — temporarily hidden from the sidebar
+  Upload,
 } from "lucide-react";
 
 // Sidebar nav map (doc 04). `soon` items render disabled with a "Soon" tag.
@@ -33,7 +33,7 @@ export const NAV_SECTIONS: NavSection[] = [
     heading: "Create",
     items: [
       { label: "Create post", href: "/create/text", icon: PenSquare },
-      // { label: "Bulk Import", href: "/bulk", icon: Upload },
+      { label: "Bulk Import", href: "/bulk", icon: Upload },
       // { label: "Content Studio", href: "/studio", icon: Sparkles, soon: true },
     ],
   },
