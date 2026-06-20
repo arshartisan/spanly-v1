@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
   try {
     const result = await toggleApiAddon(user.id, parsed.data.enable);
-    // Live enable returns a PayPal approval URL the client must redirect to; the webhook
+    // Live enable returns a Polar checkout URL the client must redirect to; the webhook
     // flips apiAddonActive once the add-on subscription activates.
     return NextResponse.json({ ok: true, apiAddonActive: result.enabled, url: result.url });
   } catch (err) {

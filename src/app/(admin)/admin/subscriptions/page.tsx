@@ -176,7 +176,7 @@ export default async function AdminSubscriptionsPage({
                     <Th>Trial ends</Th>
                     <Th>Period end</Th>
                     <Th>Add-on</Th>
-                    <Th>PayPal</Th>
+                    <Th>Polar</Th>
                   </tr>
                 </thead>
                 <tbody>

@@ -225,14 +225,14 @@ function SubscriptionPanel({
         <Field label="Trial ends">{fmtDate(sub.trialEndsAt)}</Field>
         <Field label="Current period end">{fmtDate(sub.currentPeriodEnd)}</Field>
         <Field label="API add-on">{sub.apiAddonActive ? "Active" : "Off"}</Field>
-        <Field label="PayPal payer">
+        <Field label="Polar customer">
           {sub.providerCustomerId ? (
             <span className="font-mono text-xs">{sub.providerCustomerId}</span>
           ) : (
             "-"
           )}
         </Field>
-        <Field label="PayPal subscription">
+        <Field label="Polar subscription">
           {sub.providerSubId ? (
             <span className="font-mono text-xs">{sub.providerSubId}</span>
           ) : (

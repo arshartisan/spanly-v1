@@ -242,7 +242,7 @@ describe("buildWebhookEventWhere (pure → Prisma.WebhookEventWhereInput)", () =
   });
 
   it("source set → { source }", () => {
-    expect(buildWebhookEventWhere({ source: "paypal" })).toEqual({ source: "paypal" });
+    expect(buildWebhookEventWhere({ source: "polar" })).toEqual({ source: "polar" });
   });
 
   it("empty-string source is falsy → omitted", () => {
@@ -659,13 +659,13 @@ describe("webhookEventQuerySchema", () => {
   });
 
   it("trims source and rejects a blank one", () => {
-    expect(webhookEventQuerySchema.parse({ source: "  paypal  " }).source).toBe("paypal");
+    expect(webhookEventQuerySchema.parse({ source: "  polar  " }).source).toBe("polar");
     expect(webhookEventQuerySchema.safeParse({ source: "   " }).success).toBe(false);
   });
 
   it("accepts a real source + cursor", () => {
-    const parsed = webhookEventQuerySchema.parse({ source: "paypal", cursor: "evt_1" });
-    expect(parsed.source).toBe("paypal");
+    const parsed = webhookEventQuerySchema.parse({ source: "polar", cursor: "evt_1" });
+    expect(parsed.source).toBe("polar");
     expect(parsed.cursor).toBe("evt_1");
   });
 

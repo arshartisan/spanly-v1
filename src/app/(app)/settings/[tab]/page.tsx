@@ -28,17 +28,17 @@ export default async function SettingsPage({
   let user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  // On return from PayPal approval (?subscribed=1 / ?addon=1 with the subscription_id PayPal
-  // appends), reconcile straight from PayPal so the billing tab reflects the new plan/add-on
-  // immediately rather than waiting for the async webhook. Then re-read the user so the panel
-  // renders the fresh subscription. Failures fall back to the webhook backstop.
+  // On return from Polar checkout (?subscribed=1 / ?addon=1 with the checkout_id Polar
+  // substitutes into the success URL), reconcile straight from Polar so the billing tab reflects
+  // the new plan/add-on immediately rather than waiting for the async webhook. Then re-read the
+  // user so the panel renders the fresh subscription. Failures fall back to the webhook backstop.
   const sp = await searchParams;
   if (
     active === "billing" &&
     (sp.subscribed === "1" || sp.addon === "1") &&
-    typeof sp.subscription_id === "string"
+    typeof sp.checkout_id === "string"
   ) {
-    await reconcileSubscription(sp.subscription_id, user.id).catch(() => {});
+    await reconcileSubscription(sp.checkout_id, user.id).catch(() => {});
     user = (await getCurrentUser()) ?? user;
   }
 
@@ -75,6 +75,7 @@ export default async function SettingsPage({
                   status: user.subscription.status,
                   trialEndsAt: user.subscription.trialEndsAt?.toISOString() ?? null,
                   currentPeriodEnd: user.subscription.currentPeriodEnd?.toISOString() ?? null,
+                  cancelAtPeriodEnd: user.subscription.cancelAtPeriodEnd,
                   apiAddonActive: user.subscription.apiAddonActive,
                 }
               : null

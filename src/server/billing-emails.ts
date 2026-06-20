@@ -9,7 +9,7 @@ import {
 } from "@/server/email";
 
 /**
- * Transactional billing emails (doc 10). Called from the PayPal webhook + mock checkout. Every
+ * Transactional billing emails (doc 10). Called from the Polar webhook + mock checkout. Every
  * function is BEST-EFFORT: it loads the user + plan, sends, and swallows errors so a mail failure
  * never breaks webhook handling or a checkout redirect. Each logs on failure for diagnosis.
  */

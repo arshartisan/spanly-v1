@@ -4,8 +4,8 @@ import type { PlanKey } from "@/server/plans";
 
 // billing.ts imports "server-only" (a Next build alias, not a real module in a plain
 // vitest run). Stub it. We mock @/server/db so the service runs with no real database,
-// and @/server/billing-config + @/server/paypal so we drive `isLiveBilling()` per-test and
-// can assert that PayPal is NEVER touched in mock mode.
+// and @/server/billing-config + @/server/polar so we drive `isLiveBilling()` per-test and
+// can assert that Polar is NEVER touched in mock mode.
 vi.mock("server-only", () => ({}));
 
 // ─────────────────────────── Prisma mock ───────────────────────────
@@ -35,19 +35,30 @@ vi.mock("@/server/db", () => ({
   },
 }));
 
-// ─────────────────────────── PayPal mock ───────────────────────────
+// ─────────────────────────── Polar mock ───────────────────────────
 // `isLiveBilling` is read live on each call inside the service, so toggling the mock's
-// return value between tests flips the live/mock branch deterministically. `paypalFetch`
-// is the single REST entrypoint - tests route by request path (transactions vs refund).
+// return value between tests flips the live/mock branch deterministically. The Polar client is
+// exposed via `polar()`; we stub `orders.list` (paginated) and `refunds.create`.
 const isLiveBilling = vi.fn<() => boolean>();
-const paypalFetch = vi.fn();
+const ordersList = vi.fn();
+const refundsCreate = vi.fn();
 
 vi.mock("@/server/billing-config", () => ({
   isLiveBilling: () => isLiveBilling(),
 }));
-vi.mock("@/server/paypal", () => ({
-  paypalFetch: (p: string, i?: unknown) => paypalFetch(p, i),
+vi.mock("@/server/polar", () => ({
+  polar: () => ({
+    orders: { list: (a: unknown) => ordersList(a) },
+    refunds: { create: (a: unknown) => refundsCreate(a) },
+  }),
 }));
+
+/** Wrap items as a single-page async-iterable, mirroring the SDK's PageIterator. */
+function ordersPage(items: unknown[]) {
+  return (async function* () {
+    yield { result: { items } };
+  })();
+}
 
 // Imported after the mocks above are registered.
 import {
@@ -82,7 +93,8 @@ beforeEach(() => {
   subFindMany.mockReset();
   userFindUnique.mockReset();
   isLiveBilling.mockReset();
-  paypalFetch.mockReset();
+  ordersList.mockReset();
+  refundsCreate.mockReset();
   // Default: mock billing mode unless a test opts into live.
   isLiveBilling.mockReturnValue(false);
 });
@@ -212,10 +224,11 @@ describe("approveRefund (guards + mock/live branch)", () => {
     expect(err).toBeInstanceOf(AdminActionError);
     expect((err as AdminActionError).status).toBe(403);
     expect(refundUpdate).not.toHaveBeenCalled();
-    expect(paypalFetch).not.toHaveBeenCalled();
+    expect(ordersList).not.toHaveBeenCalled();
+    expect(refundsCreate).not.toHaveBeenCalled();
   });
 
-  it("out-of-policy with force:true (mock mode) → refunded, no PayPal, providerRefundId stays null", async () => {
+  it("out-of-policy with force:true (mock mode) → refunded, no Polar, providerRefundId stays null", async () => {
     refundFindUnique.mockResolvedValue(
       refundRow({ createdAt: new Date(Date.now() - 30 * DAY) }),
     );
@@ -225,7 +238,8 @@ describe("approveRefund (guards + mock/live branch)", () => {
       force: true,
     })) as unknown as RefundRequest;
 
-    expect(paypalFetch).not.toHaveBeenCalled();
+    expect(ordersList).not.toHaveBeenCalled();
+    expect(refundsCreate).not.toHaveBeenCalled();
     const arg = refundUpdate.mock.calls[0][0] as {
       where: { id: string };
       data: { status: string; providerRefundId: string | null; decidedById: string };
@@ -237,13 +251,14 @@ describe("approveRefund (guards + mock/live branch)", () => {
     expect(result.status).toBe("refunded");
   });
 
-  it("in-policy mock approve → refunded, decidedBy set, no PayPal call", async () => {
+  it("in-policy mock approve → refunded, decidedBy set, no Polar call", async () => {
     refundFindUnique.mockResolvedValue(refundRow()); // 1 day old, pending
     refundUpdate.mockImplementation((a: { data: unknown }) => a.data);
 
     await approveRefund("u_admin", "rr_1", {});
 
-    expect(paypalFetch).not.toHaveBeenCalled();
+    expect(ordersList).not.toHaveBeenCalled();
+    expect(refundsCreate).not.toHaveBeenCalled();
     const arg = refundUpdate.mock.calls[0][0] as {
       data: { status: string; decidedById: string; decidedAt: Date };
     };
@@ -252,32 +267,24 @@ describe("approveRefund (guards + mock/live branch)", () => {
     expect(arg.data.decidedAt).toBeInstanceOf(Date);
   });
 
-  it("LIVE mode with a subscription + a transaction → refunds the capture and stores providerRefundId", async () => {
+  it("LIVE mode with a subscription + a paid order → refunds the order and stores providerRefundId", async () => {
     isLiveBilling.mockReturnValue(true);
     refundFindUnique.mockResolvedValue(refundRow({ amount: 4900 }));
-    subFindUnique.mockResolvedValue({ id: "sub_1", providerSubId: "I-SUB123" });
-    paypalFetch.mockImplementation((path: string) => {
-      if (path.includes("/transactions")) {
-        return Promise.resolve({
-          transactions: [
-            {
-              id: "TXN1",
-              status: "COMPLETED",
-              amount_with_breakdown: { gross_amount: { value: "49.00", currency_code: "USD" } },
-            },
-          ],
-        });
-      }
-      if (path.includes("/refund")) return Promise.resolve({ id: "RF-xyz" });
-      return Promise.resolve({});
-    });
+    subFindUnique.mockResolvedValue({ id: "sub_1", providerSubId: "polar_sub_1" });
+    ordersList.mockReturnValue(
+      ordersPage([{ id: "ord_9", status: "paid", totalAmount: 4900, currency: "usd" }]),
+    );
+    refundsCreate.mockResolvedValue({ id: "RF-xyz" });
     refundUpdate.mockImplementation((a: { data: unknown }) => a.data);
 
     const result = (await approveRefund("u_admin", "rr_1", {})) as unknown as RefundRequest;
 
-    const refundCall = paypalFetch.mock.calls.find((c) => String(c[0]).includes("/refund"));
-    expect(refundCall?.[0]).toBe("/v2/payments/captures/TXN1/refund");
-    expect(String((refundCall?.[1] as { body: string }).body)).toContain("\"value\":\"49.00\"");
+    // request.amount (cents) is forwarded straight to Polar - no /100 conversion.
+    expect(refundsCreate).toHaveBeenCalledWith({
+      orderId: "ord_9",
+      amount: 4900,
+      reason: "customer_request",
+    });
     const arg = refundUpdate.mock.calls[0][0] as {
       data: { status: string; providerRefundId: string | null };
     };
@@ -286,25 +293,27 @@ describe("approveRefund (guards + mock/live branch)", () => {
     expect(result.providerRefundId).toBe("RF-xyz");
   });
 
-  it("LIVE mode with no PayPal subscription → 422, no refund created/updated", async () => {
+  it("LIVE mode with no Polar subscription → 422, no refund created/updated", async () => {
     isLiveBilling.mockReturnValue(true);
     refundFindUnique.mockResolvedValue(refundRow());
     subFindUnique.mockResolvedValue({ id: "sub_1", providerSubId: null });
 
     const err = await catchThrown(() => approveRefund("u_admin", "rr_1", {}));
     expect((err as AdminActionError).status).toBe(422);
-    expect(paypalFetch).not.toHaveBeenCalled();
+    expect(ordersList).not.toHaveBeenCalled();
+    expect(refundsCreate).not.toHaveBeenCalled();
     expect(refundUpdate).not.toHaveBeenCalled();
   });
 
-  it("LIVE mode with a subscription but no transaction → 422", async () => {
+  it("LIVE mode with a subscription but no paid order → 422", async () => {
     isLiveBilling.mockReturnValue(true);
     refundFindUnique.mockResolvedValue(refundRow());
-    subFindUnique.mockResolvedValue({ id: "sub_1", providerSubId: "I-SUB123" });
-    paypalFetch.mockResolvedValue({ transactions: [] });
+    subFindUnique.mockResolvedValue({ id: "sub_1", providerSubId: "polar_sub_1" });
+    ordersList.mockReturnValue(ordersPage([]));
 
     const err = await catchThrown(() => approveRefund("u_admin", "rr_1", {}));
     expect((err as AdminActionError).status).toBe(422);
+    expect(refundsCreate).not.toHaveBeenCalled();
     expect(refundUpdate).not.toHaveBeenCalled();
   });
 });
@@ -347,20 +356,22 @@ describe("denyRefund", () => {
 // ─────────────────────────── grantCredit / overrideSubscription ───────────────────────────
 
 describe("grantCredit", () => {
-  it("mock mode is a recorded no-op that returns ok and never calls PayPal", async () => {
+  it("mock mode is a recorded no-op that returns ok and never calls Polar", async () => {
     const result = await grantCredit("u_admin", "u_1", 500, "goodwill");
     expect(result).toEqual({ ok: true });
-    expect(paypalFetch).not.toHaveBeenCalled();
+    expect(ordersList).not.toHaveBeenCalled();
+    expect(refundsCreate).not.toHaveBeenCalled();
     expect(subFindUnique).not.toHaveBeenCalled();
   });
 
-  it("live mode is also a recorded no-op (PayPal has no balance-credit equivalent)", async () => {
+  it("live mode is also a recorded no-op (we don't push a Polar balance credit)", async () => {
     isLiveBilling.mockReturnValue(true);
 
     const result = await grantCredit("u_admin", "u_1", 500, "goodwill");
 
     expect(result).toEqual({ ok: true });
-    expect(paypalFetch).not.toHaveBeenCalled();
+    expect(ordersList).not.toHaveBeenCalled();
+    expect(refundsCreate).not.toHaveBeenCalled();
     // No subscription lookup either - it's a pure recorded no-op.
     expect(subFindUnique).not.toHaveBeenCalled();
   });
@@ -415,17 +426,19 @@ describe("overrideSubscription", () => {
 // ─────────────────────────── listPayments (mock-mode flag) ───────────────────────────
 
 describe("listPayments", () => {
-  it("mock mode returns an empty list flagged mockMode:true, no PayPal call", async () => {
+  it("mock mode returns an empty list flagged mockMode:true, no Polar call", async () => {
     const result = await listPayments();
     expect(result).toEqual({ mockMode: true, payments: [] });
-    expect(paypalFetch).not.toHaveBeenCalled();
+    expect(ordersList).not.toHaveBeenCalled();
+    expect(refundsCreate).not.toHaveBeenCalled();
   });
 
-  it("live mode without a userId returns empty (no platform-wide PayPal feed)", async () => {
+  it("live mode without a userId returns empty (payments are per-user)", async () => {
     isLiveBilling.mockReturnValue(true);
     const result = await listPayments();
     expect(result).toEqual({ mockMode: false, payments: [] });
-    expect(paypalFetch).not.toHaveBeenCalled();
+    expect(ordersList).not.toHaveBeenCalled();
+    expect(refundsCreate).not.toHaveBeenCalled();
   });
 });
 

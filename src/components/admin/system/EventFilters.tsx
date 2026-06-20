@@ -19,7 +19,7 @@ import {
 const ALL = "all";
 
 const SOURCES = [
-  { value: "paypal", label: "PayPal" },
+  { value: "polar", label: "Polar" },
   { value: "user_webhook", label: "User webhook" },
 ];
 

@@ -359,10 +359,11 @@ model Subscription {
   status           SubscriptionStatus @default(trialing)
   trialEndsAt      DateTime?
   currentPeriodEnd DateTime?
+  cancelAtPeriodEnd  Boolean            @default(false) // scheduled to cancel at period end; access persists until then
   apiAddonActive     Boolean            @default(false)
-  providerCustomerId String? // PayPal payer id (when known); identity carried by custom_id
-  providerSubId      String? // PayPal subscription id
-  providerAddonSubId String? // separate PayPal subscription id for the $5/mo API add-on
+  providerCustomerId String? // Polar customer id (when known); identity carried by external_customer_id
+  providerSubId      String? // Polar subscription id
+  providerAddonSubId String? // separate Polar subscription id for the $5/mo API add-on
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 

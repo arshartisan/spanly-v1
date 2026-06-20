@@ -10,7 +10,7 @@ const PLANS = ["creator", "growth", "pro"];
 const INTERVALS = ["month", "year"];
 
 // GET /api/billing/mock/complete?plan&interval - mock checkout "Subscribe" action. Drives the
-// same Subscription upsert the live PayPal webhook would, then returns to Billing. Mock-only.
+// same Subscription upsert the live Polar webhook would, then returns to Billing. Mock-only.
 export async function GET(req: Request) {
   if (isLiveBilling()) return NextResponse.json({ error: "Not found." }, { status: 404 });
 

@@ -5,7 +5,7 @@ import type { GeneratedCaption } from "@/components/composer/types";
 
 /**
  * AI caption + hashtag generation via the Google Gemini REST API. Thin fetch-based client in
- * the same spirit as src/server/paypal.ts (no SDK dependency). Powers the composer's
+ * the same spirit as a thin REST client (no SDK dependency). Powers the composer's
  * "Enhance with AI" action: a rough draft + the selected platforms → a polished caption and a
  * set of suitable hashtags.
  *

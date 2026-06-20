@@ -5,7 +5,7 @@
  * block renderer with no markdown pipeline, stays trivially diffable, and exposes a single
  * `effectiveDate` per document. The text is modeled on a mature social-scheduler's legal docs
  * but written originally for Spanlyfy: only the six supported platforms (Facebook, Instagram,
- * LinkedIn, TikTok, YouTube, X), our real billing (PayPal), our real 7-day free trial and
+ * LinkedIn, TikTok, YouTube, X), our real billing (Polar), our real 7-day free trial and
  * 7-day refund window, and how we actually handle OAuth tokens and content.
  *
  * NOT legal advice. Before going to production, have counsel review and fill the bracketed
@@ -134,7 +134,7 @@ export const TERMS: LegalDocument = {
         },
         {
           type: "p",
-          text: "Payments are processed by our third-party payment processor, PayPal. By subscribing you authorize us, through PayPal, to charge your chosen payment method the recurring fee for your plan (monthly or annually, as selected), plus applicable taxes, until you cancel.",
+          text: "Payments are processed by our merchant of record, Polar. By subscribing you authorize us, through Polar, to charge your chosen payment method the recurring fee for your plan (monthly or annually, as selected), plus applicable taxes, until you cancel.",
         },
         {
           type: "ul",
@@ -148,7 +148,7 @@ export const TERMS: LegalDocument = {
         },
         {
           type: "p",
-          text: "We do not store your full payment details; they are handled directly by PayPal under its own terms and security standards.",
+          text: "We do not store your full payment details; they are handled directly by Polar under its own terms and security standards.",
         },
       ],
     },
@@ -293,7 +293,7 @@ export const TERMS: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: "The Service relies on third-party services, including PayPal for payments, our email provider, hosting and storage providers, and the social media platforms you connect. Your use of those services may be subject to their own terms. We are not responsible for the acts, omissions, availability, or content of third-party services.",
+          text: "The Service relies on third-party services, including Polar for payments, our email provider, hosting and storage providers, and the social media platforms you connect. Your use of those services may be subject to their own terms. We are not responsible for the acts, omissions, availability, or content of third-party services.",
         },
       ],
     },
@@ -432,7 +432,7 @@ export const PRIVACY: LegalDocument = {
         { type: "h", text: "Billing information" },
         {
           type: "p",
-          text: "When you subscribe, payments are processed by PayPal. We do not receive or store your full card number. We store billing-related metadata such as your plan, subscription status, billing period, and limited identifiers (for example, a PayPal subscription or payer ID) needed to manage your subscription.",
+          text: "When you subscribe, payments are processed by Polar. We do not receive or store your full card number. We store billing-related metadata such as your plan, subscription status, billing period, and limited identifiers (for example, a Polar subscription or customer ID) needed to manage your subscription.",
         },
         { type: "h", text: "Connected social accounts and access tokens" },
         {
@@ -491,7 +491,7 @@ export const PRIVACY: LegalDocument = {
           type: "ul",
           items: [
             "Social media platforms: when you publish or schedule content, we transmit that content and the necessary data to the platforms you have connected and instructed us to post to.",
-            "Service providers (subprocessors): trusted vendors who process data on our behalf to run the Service - including PayPal (payments), our email provider, our hosting and storage providers, and error-monitoring tools - under contracts that limit their use of your data.",
+            "Service providers (subprocessors): trusted vendors who process data on our behalf to run the Service - including Polar (payments), our email provider, our hosting and storage providers, and error-monitoring tools - under contracts that limit their use of your data.",
             "Legal and safety: when required by law or legal process, or to protect the rights, property, or safety of Spanlyfy, our users, or the public.",
             "Business transfers: in connection with a merger, acquisition, financing, or sale of assets, where your information may be transferred subject to this Policy.",
           ],

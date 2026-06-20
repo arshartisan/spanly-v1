@@ -12,7 +12,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { EventFilters } from "@/components/admin/system/EventFilters";
 import { cn } from "@/lib/utils";
 
-// Admin webhook/PayPal event log (doc 19) - RSC. Lenient-parses the source filter, reads via
+// Admin webhook/Polar event log (doc 19) - RSC. Lenient-parses the source filter, reads via
 // listWebhookEvents(), and renders the glass table with a cursor "Load more" link (mirrors the
 // content list). Status renders as a badge: received/processed/delivered = ok-ish, failed = red.
 
@@ -66,7 +66,7 @@ export default async function AdminSystemEventsPage({
       <Reveal delay={0.04}>
         <h1 className="text-2xl font-semibold tracking-tight">Event log</h1>
         <p className="text-sm text-muted-foreground">
-          Inbound PayPal webhooks and outbound user-webhook deliveries.
+          Inbound Polar webhooks and outbound user-webhook deliveries.
         </p>
       </Reveal>
 
@@ -119,7 +119,7 @@ export default async function AdminSystemEventsPage({
 }
 
 const SOURCE_LABEL: Record<string, string> = {
-  paypal: "PayPal",
+  polar: "Polar",
   user_webhook: "User webhook",
 };
 

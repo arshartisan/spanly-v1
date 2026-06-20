@@ -6,39 +6,33 @@ import type {
   RefundStatus,
   SubscriptionStatus,
 } from "@prisma/client";
+import type { Order } from "@polar-sh/sdk/models/components/order.js";
 import { prisma } from "@/server/db";
 import { isLiveBilling } from "@/server/billing-config";
-import { paypalFetch } from "@/server/paypal";
+import { polar } from "@/server/polar";
 import { AdminActionError } from "@/server/admin/errors";
 import { PLANS, type PlanKey } from "@/server/plans";
 
 /**
- * Admin billing service (doc 17). Wraps `src/server/billing.ts` + `src/server/paypal.ts`
+ * Admin billing service (doc 17). Wraps `src/server/billing.ts` + `src/server/polar.ts`
  * for the staff surface: subscriptions oversight, the refund-request workflow, manual
- * overrides, credits, and a payments view. In mock mode we NEVER call PayPal -
+ * overrides, credits, and a payments view. In mock mode we NEVER call Polar -
  * refunds/overrides mutate the local rows only.
  */
 
-/** A PayPal subscription transaction (the subset we read for refunds + the payments view). */
-interface PaypalTransaction {
-  id: string;
-  status: string;
-  time?: string;
-  amount_with_breakdown?: { gross_amount?: { value?: string; currency_code?: string } };
-}
-
-/** Lookback window for PayPal subscription transaction queries (start_time is required). */
-const TXN_LOOKBACK_MS = 395 * 86_400_000;
-
-/** List a PayPal subscription's transactions over the lookback window (newest last). */
-async function listSubscriptionTransactions(providerSubId: string): Promise<PaypalTransaction[]> {
-  const end = new Date();
-  const start = new Date(end.getTime() - TXN_LOOKBACK_MS);
-  const qs = `start_time=${start.toISOString()}&end_time=${end.toISOString()}`;
-  const data = await paypalFetch<{ transactions?: PaypalTransaction[] }>(
-    `/v1/billing/subscriptions/${providerSubId}/transactions?${qs}`,
-  );
-  return data.transactions ?? [];
+/** A Polar subscription's orders (its paid invoices), newest first. Live mode only. */
+async function listSubscriptionOrders(providerSubId: string): Promise<Order[]> {
+  const res = await polar().orders.list({
+    subscriptionId: providerSubId,
+    sorting: ["-created_at"],
+    limit: 100,
+  });
+  const orders: Order[] = [];
+  for await (const page of res) {
+    orders.push(...page.result.items);
+    break; // first page (newest first) is enough for refunds + the recent-payments view
+  }
+  return orders;
 }
 
 const REFUND_WINDOW_DAYS = 7;
@@ -151,8 +145,8 @@ export interface ApproveRefundOptions {
 }
 
 /**
- * Approve a pending refund and issue it. Live mode refunds the latest PayPal subscription
- * transaction; mock mode skips PayPal. Out-of-policy approvals require `force` (superadmin-gated at the
+ * Approve a pending refund and issue it. Live mode refunds the latest paid Polar order;
+ * mock mode skips Polar. Out-of-policy approvals require `force` (superadmin-gated at the
  * route). Returns the updated request.
  */
 export async function approveRefund(
@@ -177,25 +171,20 @@ export async function approveRefund(
       : await prisma.subscription.findUnique({ where: { userId: request.userId } });
     const providerSubId = sub?.providerSubId;
     if (!providerSubId) {
-      throw new AdminActionError(422, "No PayPal subscription to refund.");
+      throw new AdminActionError(422, "No Polar subscription to refund.");
     }
-    const txns = await listSubscriptionTransactions(providerSubId);
-    const completed = txns.filter((t) => t.status === "COMPLETED");
-    const txn = completed[completed.length - 1] ?? txns[txns.length - 1];
-    if (!txn) {
-      throw new AdminActionError(422, "No PayPal transaction to refund.");
+    const orders = await listSubscriptionOrders(providerSubId);
+    // Newest paid order (Polar refunds operate on the order, not a charge id).
+    const order = orders.find((o) => o.status === "paid" || o.status === "partially_refunded");
+    if (!order) {
+      throw new AdminActionError(422, "No paid Polar order to refund.");
     }
-    const currency = txn.amount_with_breakdown?.gross_amount?.currency_code ?? "USD";
-    // request.amount is in minor units; PayPal wants a decimal string.
-    const refund = await paypalFetch<{ id: string }>(
-      `/v2/payments/captures/${txn.id}/refund`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          amount: { value: (request.amount / 100).toFixed(2), currency_code: currency },
-        }),
-      },
-    );
+    // request.amount is already in minor units (cents), which is what Polar expects.
+    const refund = await polar().refunds.create({
+      orderId: order.id,
+      amount: request.amount,
+      reason: "customer_request",
+    });
     providerRefundId = refund.id;
   }
 
@@ -286,8 +275,8 @@ export async function overrideSubscription(
 }
 
 /**
- * Grant account credit (MVP). PayPal has no customer-balance-credit equivalent (unlike
- * Stripe), so this is a recorded no-op in both modes - the audit log at the route captures
+ * Grant account credit (MVP). We don't push a customer-balance credit to Polar here, so this
+ * is a recorded no-op in both modes - the audit log at the route captures
  * actor/user/amount/reason, and any actual credit is issued out-of-band (e.g. a refund or a
  * comped period via an override). Kept with the same shape so callers don't change.
  */
@@ -323,10 +312,9 @@ export interface PaymentsResult {
 }
 
 /**
- * Recent PayPal subscription transactions for a user. Mock mode returns an empty list flagged
- * `mockMode: true` (the UI shows a mock banner). PayPal has no platform-wide charge listing
- * like Stripe, so a call without `userId` returns an empty list - the payments view is
- * per-user (reachable from a user's detail page).
+ * Recent Polar orders (paid invoices) for a user. Mock mode returns an empty list flagged
+ * `mockMode: true` (the UI shows a mock banner). A call without `userId` returns an empty list -
+ * the payments view is per-user (reachable from a user's detail page).
  */
 export async function listPayments(userId?: string): Promise<PaymentsResult> {
   if (!isLiveBilling()) {
@@ -342,20 +330,17 @@ export async function listPayments(userId?: string): Promise<PaymentsResult> {
   });
   if (!sub?.providerSubId) return { mockMode: false, payments: [] };
 
-  const txns = await listSubscriptionTransactions(sub.providerSubId);
-  const payments: PaymentItem[] = txns.map((t) => {
-    const gross = t.amount_with_breakdown?.gross_amount;
-    return {
-      id: t.id,
-      amount: Math.round(parseFloat(gross?.value ?? "0") * 100),
-      currency: (gross?.currency_code ?? "USD").toLowerCase(),
-      status: t.status,
-      description: null,
-      created: t.time ? Math.floor(new Date(t.time).getTime() / 1000) : 0,
-      customerId: null,
-      receiptUrl: null,
-    };
-  });
+  const orders = await listSubscriptionOrders(sub.providerSubId);
+  const payments: PaymentItem[] = orders.map((o) => ({
+    id: o.id,
+    amount: o.totalAmount, // already in minor units (cents)
+    currency: (o.currency ?? "usd").toLowerCase(),
+    status: o.status,
+    description: null,
+    created: o.createdAt ? Math.floor(new Date(o.createdAt).getTime() / 1000) : 0,
+    customerId: o.customerId ?? null,
+    receiptUrl: null,
+  }));
 
   return { mockMode: false, payments };
 }

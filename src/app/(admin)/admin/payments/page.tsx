@@ -6,9 +6,9 @@ import { Reveal } from "@/components/motion/reveal";
 import { formatCents } from "@/lib/admin-format";
 import { cn } from "@/lib/utils";
 
-// Admin payments view (doc 17) - RSC. In mock billing mode there is no PayPal data, so we show
-// an info banner. PayPal has no platform-wide charge feed (unlike Stripe), so per-subscriber
-// payment history lives on each user's detail page; this platform view stays empty in live mode.
+// Admin payments view (doc 17) - RSC. In mock billing mode there is no Polar data, so we show
+// an info banner. Per-subscriber payment history (Polar orders) lives on each user's detail
+// page; this platform view stays empty here.
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +35,7 @@ export default async function AdminPaymentsPage() {
       <Reveal>
         <h1 className="text-2xl font-semibold tracking-tight">Payments</h1>
         <p className="text-sm text-muted-foreground">
-          Per-subscriber payment history from PayPal - view it on a user&apos;s detail page.
+          Per-subscriber payment history from Polar - view it on a user&apos;s detail page.
         </p>
       </Reveal>
 
@@ -46,7 +46,7 @@ export default async function AdminPaymentsPage() {
             <div className="flex flex-col gap-0.5">
               <p className="text-sm font-medium">Mock billing mode</p>
               <p className="text-sm text-muted-foreground">
-                No PayPal payment data. Set{" "}
+                No Polar payment data. Set{" "}
                 <code className="rounded bg-foreground/10 px-1 py-0.5 font-mono text-xs">
                   BILLING_MODE=live
                 </code>{" "}
@@ -151,7 +151,7 @@ function EmptyState() {
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-semibold">No payments yet</h2>
           <p className="max-w-sm text-sm text-muted-foreground">
-            No platform-wide charge feed in PayPal - see a user&apos;s detail page for their payments.
+            See a user&apos;s detail page for their payment history.
           </p>
         </div>
       </div>

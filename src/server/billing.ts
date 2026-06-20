@@ -1,5 +1,6 @@
 import "server-only";
 import type { BillingInterval, Subscription } from "@prisma/client";
+import type { Subscription as PolarSubscription } from "@polar-sh/sdk/models/components/subscription.js";
 import { prisma } from "@/server/db";
 import { mailer } from "@/server/mailer";
 import { getPlanMap } from "@/server/plans";
@@ -7,54 +8,35 @@ import type { PlanKey } from "@/server/plans";
 import { getRefundWindowDays, getTrialDays } from "@/server/settings/config";
 import { appUrl, isLiveBilling } from "@/server/billing-config";
 import {
-  API_ADDON_PLAN,
-  paypalFetch,
-  planFromPlanId,
-  planIdFor,
-} from "@/server/paypal";
+  API_ADDON_PRODUCT,
+  isAddonProduct,
+  planFromProductId,
+  polar,
+  productIdFor,
+} from "@/server/polar";
 
 /**
  * Billing service (docs/implementation/10). One module both modes share: the live path talks
- * to PayPal's Subscriptions API, the mock path drives the same `Subscription` upsert logic via
- * internal pages. In live mode PayPal is the source of truth (webhook-driven); mock mode writes
- * directly.
+ * to Polar.sh, the mock path drives the same `Subscription` upsert logic via internal pages.
+ * In live mode Polar is the source of truth (webhook-driven); mock mode writes directly.
  *
- * PayPal differences vs the old Stripe wiring: subscriptions return an approval URL the user
- * must visit (no hosted Checkout); there is no Customer object (identity is carried by
- * `custom_id = userId`); the trial lives on the billing plan, not the create call; and the
- * $5/mo API add-on is its own subscription (PayPal can't attach arbitrary items to a sub).
+ * Polar specifics vs the old PayPal wiring: checkout returns a hosted `url`; identity is carried
+ * by a real Customer linked via `external_customer_id = userId` (no `custom_id`); the $5/mo API
+ * add-on is its own subscription (a separate product); and cancellation is scheduled for the
+ * period end (`cancelAtPeriodEnd`) rather than immediate - access persists until `revoked`.
  */
 
 export type CheckoutResult = { url: string };
 
-/** A PayPal billing-subscription resource (the subset we read). */
-export interface PaypalSubscription {
-  id: string;
-  plan_id?: string;
-  status: string;
-  custom_id?: string;
-  subscriber?: { payer_id?: string; email_address?: string };
-  billing_info?: {
-    next_billing_time?: string;
-    cycle_executions?: Array<{ tenure_type: string; cycles_remaining: number }>;
-  };
-  links?: Array<{ rel: string; href: string }>;
-}
-
-/** Extract the approval URL the subscriber must visit from a PayPal subscription's HATEOAS links. */
-function approveLink(links?: Array<{ rel: string; href: string }>): string | undefined {
-  return links?.find((l) => l.rel === "approve")?.href;
-}
-
-/** GET a PayPal subscription by id (used by the webhook + add-on flows). Live mode only. */
-export async function getPaypalSubscription(id: string): Promise<PaypalSubscription> {
-  return paypalFetch<PaypalSubscription>(`/v1/billing/subscriptions/${id}`);
+/** GET a Polar subscription by id (used by reconcile + the webhook). Live mode only. */
+export async function getPolarSubscription(id: string): Promise<PolarSubscription> {
+  return polar().subscriptions.get({ id });
 }
 
 /**
  * Start a subscription checkout for (plan, interval).
- * - live: create a PayPal subscription and return its approval URL. No local row is written -
- *   the BILLING.SUBSCRIPTION.ACTIVATED webhook creates/updates it (PayPal is the truth).
+ * - live: create a Polar checkout session and return its hosted `url`. No local row is written -
+ *   the subscription.active webhook (or the post-checkout reconcile) creates it.
  * - mock: redirect to the internal mock checkout page (which completes via /api/billing/mock).
  */
 export async function createCheckout(
@@ -68,61 +50,58 @@ export async function createCheckout(
     return { url: `/billing/mock/checkout?${qs.toString()}` };
   }
 
-  const created = await paypalFetch<PaypalSubscription>("/v1/billing/subscriptions", {
-    method: "POST",
-    body: JSON.stringify({
-      plan_id: planIdFor(plan, interval),
-      custom_id: userId,
-      subscriber: { email_address: email },
-      application_context: {
-        brand_name: "Spanlyfy",
-        user_action: "SUBSCRIBE_NOW",
-        shipping_preference: "NO_SHIPPING",
-        return_url: appUrl("/settings/billing?subscribed=1"),
-        cancel_url: appUrl("/settings/plans?canceled=1"),
-      },
-    }),
+  const checkout = await polar().checkouts.create({
+    products: [productIdFor(plan, interval)],
+    externalCustomerId: userId,
+    customerEmail: email,
+    successUrl: appUrl("/settings/billing?subscribed=1&checkout_id={CHECKOUT_ID}"),
+    metadata: { userId, plan, interval },
   });
-  const url = approveLink(created.links);
-  if (!url) throw new Error("PayPal did not return an approval URL.");
-  return { url };
+  if (!checkout.url) throw new Error("Polar did not return a checkout URL.");
+  return { url: checkout.url };
 }
 
 /**
- * Reconcile the local subscription directly from PayPal by subscription id (live mode only).
- * Called on the post-approval return (`/settings/billing?subscribed=1&subscription_id=…`) so the
+ * Reconcile the local subscription directly from Polar by checkout id (live mode only).
+ * Called on the post-checkout return (`/settings/billing?subscribed=1&checkout_id=…`) so the
  * billing page reflects the new plan/add-on immediately, instead of waiting for the async
- * ACTIVATED webhook (which races the redirect and leaves the page stale until a manual refresh).
+ * subscription.active webhook (which races the redirect and leaves the page stale otherwise).
  *
  * Idempotent and safe to run alongside the webhook - both funnel through the same upserts. The
- * `custom_id` guard prevents a crafted `?subscription_id` from syncing someone else's
- * subscription onto the current account. No-op in mock mode or for unmappable subscriptions.
+ * external-customer guard prevents a crafted `?checkout_id` from syncing someone else's
+ * checkout onto the current account. No-op in mock mode or before the checkout completes.
  */
-export async function reconcileSubscription(subscriptionId: string, userId: string): Promise<void> {
+export async function reconcileSubscription(checkoutId: string, userId: string): Promise<void> {
   if (!isLiveBilling()) return;
-  const full = await getPaypalSubscription(subscriptionId);
-  const customId = full.custom_id ?? "";
+  const checkout = await polar().checkouts.get({ id: checkoutId });
 
-  // Add-on subscription: custom_id is "userId:addon".
-  if (customId === `${userId}:addon`) {
-    if (full.status === "ACTIVE" || full.status === "APPROVED") {
+  // Only reconcile a checkout that belongs to this user (external_customer_id == userId).
+  if (checkout.externalCustomerId && checkout.externalCustomerId !== userId) return;
+  if (!checkout.subscriptionId) return; // not completed yet
+
+  const sub = await getPolarSubscription(checkout.subscriptionId);
+
+  // Add-on subscription: its product is the API add-on product.
+  if (isAddonProduct(sub.productId)) {
+    if (sub.status === "active" || sub.status === "trialing") {
       await prisma.subscription.updateMany({
         where: { userId },
-        data: { apiAddonActive: true, providerAddonSubId: full.id },
+        data: { apiAddonActive: true, providerAddonSubId: sub.id },
       });
     }
     return;
   }
 
-  // Plan subscription: only reconcile when the PayPal sub belongs to this user.
-  if (customId && customId !== userId) return;
-  const input = fromPaypalSubscription(full, userId);
+  const input = fromPolarSubscription(sub, userId);
   if (input) await syncSubscription(input);
 }
 
 /**
- * Cancel the user's subscription (PayPal has no billing portal). Live: cancel via the PayPal
- * API; both modes flip the local row to `canceled` (the webhook also confirms it in live).
+ * Cancel the user's subscription at the end of the current period (decision: keep access until
+ * the period they paid for ends). Live: schedule cancellation on Polar via
+ * `cancelAtPeriodEnd`; the subscription.revoked webhook flips status to `canceled` at period
+ * end. Both modes set the local `cancelAtPeriodEnd` flag (status stays active so entitlement
+ * persists). Mock has no webhook, so the flag is the visible effect.
  */
 export async function cancelSubscription(userId: string): Promise<void> {
   const sub = await prisma.subscription.findUnique({ where: { userId } });
@@ -130,20 +109,20 @@ export async function cancelSubscription(userId: string): Promise<void> {
 
   if (isLiveBilling()) {
     if (!sub.providerSubId) throw new Error("No active subscription to cancel.");
-    await paypalFetch(`/v1/billing/subscriptions/${sub.providerSubId}/cancel`, {
-      method: "POST",
-      body: JSON.stringify({ reason: "Customer requested cancellation" }),
+    await polar().subscriptions.update({
+      id: sub.providerSubId,
+      subscriptionUpdate: { cancelAtPeriodEnd: true },
     });
   }
-  await prisma.subscription.update({ where: { userId }, data: { status: "canceled" } });
+  await prisma.subscription.update({ where: { userId }, data: { cancelAtPeriodEnd: true } });
 }
 
 export type AddonResult = { enabled: boolean; url?: string };
 
 /**
- * Enable/disable the $5/mo API add-on. In live mode the add-on is its own PayPal subscription:
- * enabling creates one and returns its approval URL (the webhook flips `apiAddonActive` true on
- * activation); disabling cancels it. Mock mode flips the flag directly.
+ * Enable/disable the $5/mo API add-on. In live mode the add-on is its own Polar subscription:
+ * enabling opens a checkout and returns its `url` (the webhook flips `apiAddonActive` true on
+ * activation); disabling cancels it at period end. Mock mode flips the flag directly.
  */
 export async function toggleApiAddon(userId: string, enable: boolean): Promise<AddonResult> {
   const sub = await prisma.subscription.findUnique({ where: { userId } });
@@ -151,34 +130,23 @@ export async function toggleApiAddon(userId: string, enable: boolean): Promise<A
 
   if (isLiveBilling()) {
     if (enable) {
-      if (!API_ADDON_PLAN) throw new Error("PAYPAL_PLAN_API_ADDON is not configured.");
-      const created = await paypalFetch<PaypalSubscription>("/v1/billing/subscriptions", {
-        method: "POST",
-        body: JSON.stringify({
-          plan_id: API_ADDON_PLAN,
-          custom_id: `${userId}:addon`,
-          application_context: {
-            brand_name: "Spanlyfy",
-            user_action: "SUBSCRIBE_NOW",
-            shipping_preference: "NO_SHIPPING",
-            return_url: appUrl("/settings/billing?addon=1"),
-            cancel_url: appUrl("/settings/billing"),
-          },
-        }),
+      if (!API_ADDON_PRODUCT) throw new Error("POLAR_PRODUCT_API_ADDON is not configured.");
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+      const checkout = await polar().checkouts.create({
+        products: [API_ADDON_PRODUCT],
+        externalCustomerId: userId,
+        customerEmail: user?.email ?? undefined,
+        successUrl: appUrl("/settings/billing?addon=1&checkout_id={CHECKOUT_ID}"),
+        metadata: { userId, kind: "addon" },
       });
-      await prisma.subscription.update({
-        where: { userId },
-        data: { providerAddonSubId: created.id },
-      });
-      const url = approveLink(created.links);
-      if (!url) throw new Error("PayPal did not return an approval URL for the add-on.");
+      if (!checkout.url) throw new Error("Polar did not return a checkout URL for the add-on.");
       // Not active yet - the webhook sets apiAddonActive=true once the add-on sub activates.
-      return { enabled: false, url };
+      return { enabled: false, url: checkout.url };
     }
     if (sub.providerAddonSubId) {
-      await paypalFetch(`/v1/billing/subscriptions/${sub.providerAddonSubId}/cancel`, {
-        method: "POST",
-        body: JSON.stringify({ reason: "Add-on disabled" }),
+      await polar().subscriptions.update({
+        id: sub.providerAddonSubId,
+        subscriptionUpdate: { cancelAtPeriodEnd: true },
       });
     }
     await prisma.subscription.update({
@@ -197,7 +165,7 @@ export type RefundResult = { ok: true; message: string } | { ok: false; message:
 
 /**
  * Request a refund (D-016). Within the refund window we record the request + notify support;
- * outside it we deny. No automatic PayPal refund here - staff issue it from the admin queue.
+ * outside it we deny. No automatic Polar refund here - staff issue it from the admin queue.
  */
 export async function requestRefund(userId: string, email: string): Promise<RefundResult> {
   const sub = await prisma.subscription.findUnique({ where: { userId } });
@@ -254,6 +222,7 @@ export interface SyncInput {
   status: Subscription["status"];
   trialEndsAt: Date | null;
   currentPeriodEnd: Date | null;
+  cancelAtPeriodEnd?: boolean;
   providerCustomerId?: string | null;
   providerSubId?: string | null;
   providerAddonSubId?: string | null;
@@ -285,55 +254,60 @@ export async function mockActivate(
     status: "trialing",
     trialEndsAt: new Date(now + trialDays * 86_400_000),
     currentPeriodEnd: new Date(now + intervalMs(interval)),
-    providerCustomerId: `mock_payer_${userId.slice(0, 12)}`,
+    cancelAtPeriodEnd: false,
+    providerCustomerId: `mock_customer_${userId.slice(0, 12)}`,
     providerSubId: `mock_sub_${userId.slice(0, 12)}`,
   });
 }
 
-// ─────────────────────────── PayPal webhook normalization ───────────────────────────
+// ─────────────────────────── Polar webhook normalization ───────────────────────────
 
-/** Map a PayPal subscription resource → our SyncInput (live mode webhook). */
-export function fromPaypalSubscription(
-  sub: PaypalSubscription,
+/** Map a Polar subscription resource → our SyncInput (live mode webhook + reconcile). */
+export function fromPolarSubscription(
+  sub: PolarSubscription,
   userId: string,
 ): SyncInput | null {
-  const mapped = sub.plan_id ? planFromPlanId(sub.plan_id) : null;
+  const mapped = sub.productId ? planFromProductId(sub.productId) : null;
   if (!mapped) return null;
 
-  const trial = sub.billing_info?.cycle_executions?.find((c) => c.tenure_type === "TRIAL");
-  const inTrial = !!trial && trial.cycles_remaining > 0;
-  const nextBill = sub.billing_info?.next_billing_time
-    ? new Date(sub.billing_info.next_billing_time)
-    : null;
-
-  let status = mapPaypalStatus(sub.status);
-  if (status === "active" && inTrial) status = "trialing";
+  const status = mapPolarStatus(sub.status);
+  // Polar exposes no separate trial-end field: while `trialing`, currentPeriodEnd is the trial end.
+  const periodEnd = sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd) : null;
 
   return {
     userId,
     plan: mapped.plan,
     interval: mapped.interval,
     status,
-    trialEndsAt: inTrial ? nextBill : null,
-    currentPeriodEnd: nextBill,
-    providerCustomerId: sub.subscriber?.payer_id ?? null,
+    trialEndsAt: status === "trialing" ? periodEnd : null,
+    currentPeriodEnd: periodEnd,
+    cancelAtPeriodEnd: sub.cancelAtPeriodEnd ?? false,
+    providerCustomerId: sub.customerId ?? null,
     providerSubId: sub.id,
   };
 }
 
-/** Map a PayPal subscription status → our local enum. */
-export function mapPaypalStatus(s: string): Subscription["status"] {
+/** Map a Polar subscription status → our local enum. */
+export function mapPolarStatus(s: string): Subscription["status"] {
   switch (s) {
-    case "ACTIVE":
+    case "active":
       return "active";
-    case "APPROVAL_PENDING":
-    case "APPROVED":
-      return "trialing"; // pending activation - treated as in-trial until ACTIVATED
-    case "SUSPENDED":
+    case "trialing":
+      return "trialing";
+    case "incomplete":
+      return "trialing"; // awaiting first payment - treated as in-trial until active
+    case "past_due":
+      return "past_due";
+    case "unpaid":
       return "paused";
     default:
-      return "canceled"; // CANCELLED | EXPIRED | anything unexpected
+      return "canceled"; // canceled | incomplete_expired | anything unexpected
   }
+}
+
+/** Resolve our userId from a Polar subscription's linked customer external id. */
+export function userIdFromPolarSubscription(sub: PolarSubscription): string | null {
+  return sub.customer?.externalId ?? null;
 }
 
 // ─────────────────────────── helpers ───────────────────────────

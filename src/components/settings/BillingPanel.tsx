@@ -18,10 +18,11 @@ interface SubView {
   status: SubscriptionStatus;
   trialEndsAt: string | null;
   currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
   apiAddonActive: boolean;
 }
 
-// Billing tab (doc 10). Live subscription state + PayPal actions (mock-backed in dev, D-014).
+// Billing tab (doc 10). Live subscription state + Polar actions (mock-backed in dev, D-014).
 // `plan` is the LIVE catalog def for the current subscription's plan, passed from the RSC
 // parent so admin price/name edits show; it falls back to the static default when absent.
 export function BillingPanel({
@@ -58,7 +59,7 @@ export function BillingPanel({
       body: JSON.stringify({ enable: next }),
     });
     const data = await res.json().catch(() => null);
-    // Live enable returns a PayPal approval URL to redirect to; mock toggles immediately.
+    // Live enable returns a Polar checkout URL to redirect to; mock toggles immediately.
     if (res.ok && data?.url) {
       window.location.href = data.url;
       return;
@@ -98,6 +99,8 @@ export function BillingPanel({
   const per = subscription.interval === "year" ? "/year" : "/month";
   const isTrial = subscription.status === "trialing";
   const isCanceled = subscription.status === "canceled";
+  // Scheduled to end at period end but still active (access persists until then).
+  const cancelScheduled = subscription.cancelAtPeriodEnd && !isCanceled;
 
   return (
     <div className="flex flex-col gap-4">
@@ -138,6 +141,11 @@ export function BillingPanel({
                   Canceled
                 </span>
               )}
+              {cancelScheduled && (
+                <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                  Cancels at period end
+                </span>
+              )}
             </div>
             <p className="mt-0.5 text-sm text-muted-foreground">
               ${price ?? 0}
@@ -150,7 +158,9 @@ export function BillingPanel({
             )}
             {!isTrial && subscription.currentPeriodEnd && !isCanceled && (
               <p className="mt-1 text-xs text-muted-foreground">
-                Renews {formatDate(subscription.currentPeriodEnd)}
+                {cancelScheduled
+                  ? `Cancels ${formatDate(subscription.currentPeriodEnd)}`
+                  : `Renews ${formatDate(subscription.currentPeriodEnd)}`}
               </p>
             )}
             <p className="mt-1 text-xs text-muted-foreground">
@@ -163,7 +173,7 @@ export function BillingPanel({
           <Button asChild variant="outline" size="sm">
             <Link href="/settings/plans">Change Plan</Link>
           </Button>
-          {!isCanceled && (
+          {!isCanceled && !cancelScheduled && (
             <Button
               variant="outline"
               size="sm"
@@ -222,7 +232,7 @@ function MockNotice() {
   return (
     <div className="rounded-lg border border-dashed bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
       Billing is in <span className="font-medium">mock mode</span> - checkout uses an internal
-      stand-in (no PayPal account needed). Set <code>BILLING_MODE=live</code> + PayPal keys to
+      stand-in (no Polar account needed). Set <code>BILLING_MODE=live</code> + Polar keys to
       switch on real payments.
     </div>
   );
