@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /** Google "G" wordmark (official multi-color). Sized by Button's `[&_svg]:size-4`. */
 function GoogleIcon() {
@@ -31,13 +32,15 @@ function GoogleIcon() {
 export function GoogleButton({
   next,
   label = "Continue with Google",
+  className,
 }: {
   next?: string | null;
   label?: string;
+  className?: string;
 }) {
   const href = next ? `/api/auth/google/start?next=${encodeURIComponent(next)}` : "/api/auth/google/start";
   return (
-    <Button asChild variant="outline" className="w-full">
+    <Button asChild variant="outline" className={cn("w-full", className)}>
       <a href={href}>
         <GoogleIcon />
         {label}

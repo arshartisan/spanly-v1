@@ -197,7 +197,13 @@
   }
 }
 
-/* Lenis smooth scroll (bound to <main> in SmoothScroll.tsx). */
+/* Lenis smooth scroll — window mode on the marketing pages (MarketingSmoothScroll.tsx),
+   <main> mode in the authenticated shell (SmoothScroll.tsx). The height:auto rule is required
+   for window mode: without it a forced full-height html/body leaves nothing to scroll. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
 }
@@ -206,6 +212,9 @@
 }
 .lenis.lenis-stopped {
   overflow: hidden;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

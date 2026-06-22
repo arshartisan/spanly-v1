@@ -18,6 +18,12 @@ const TEXT = "#2A2422";
 const MUTED = "#7A726C";
 const BORDER = "#ECE4DD";
 
+// Inter where the client supports web fonts (Apple Mail, iOS Mail, etc.); everything else falls
+// back to the platform UI font. Gmail/Outlook strip web fonts, so the stack matters — keep it
+// matched to the app's Inter-led UI so the mail reads as the same brand.
+const FONT_STACK =
+  "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
 /** Escape user/dynamic content before interpolating into HTML. */
 export function escapeHtml(value: string): string {
   return value
@@ -43,12 +49,12 @@ export interface EmailLayoutOptions {
 
 /** Wrap a paragraph of (already-escaped or trusted) HTML in the standard body style. */
 export function p(html: string): string {
-  return `<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${TEXT};">${html}</p>`;
+  return `<p style="margin:0 0 16px;font-family:${FONT_STACK};font-size:15px;line-height:1.6;color:${TEXT};">${html}</p>`;
 }
 
 /** A muted "this code/link expires in N" style note. */
 export function note(html: string): string {
-  return `<p style="margin:0 0 8px;font-size:13px;line-height:1.5;color:${MUTED};">${html}</p>`;
+  return `<p style="margin:0 0 8px;font-family:${FONT_STACK};font-size:13px;line-height:1.5;color:${MUTED};">${html}</p>`;
 }
 
 /** Render the full HTML document for an email. */
@@ -60,7 +66,7 @@ export function renderEmail(opts: EmailLayoutOptions): string {
         <tr>
           <td align="center" bgcolor="${BRAND_ORANGE}" style="border-radius:10px;">
             <a href="${opts.action.url}"
-               style="display:inline-block;padding:13px 26px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:10px;background:${BRAND_ORANGE};border:1px solid ${BRAND_ORANGE_DARK};">
+               style="display:inline-block;padding:13px 26px;font-family:${FONT_STACK};font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:10px;background:${BRAND_ORANGE};border:1px solid ${BRAND_ORANGE_DARK};">
               ${escapeHtml(opts.action.label)}
             </a>
           </td>
@@ -70,7 +76,7 @@ export function renderEmail(opts: EmailLayoutOptions): string {
 
   // A copyable plain link under the button helps when the button doesn't render.
   const fallbackLink = opts.action
-    ? `<p style="margin:0 0 16px;font-size:12px;line-height:1.5;color:${MUTED};word-break:break-all;">
+    ? `<p style="margin:0 0 16px;font-family:${FONT_STACK};font-size:12px;line-height:1.5;color:${MUTED};word-break:break-all;">
          Or paste this link into your browser:<br/>
          <a href="${opts.action.url}" style="color:${BRAND_ORANGE_DARK};">${escapeHtml(opts.action.url)}</a>
        </p>`
@@ -83,8 +89,16 @@ export function renderEmail(opts: EmailLayoutOptions): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="color-scheme" content="light"/>
   <title>${escapeHtml(opts.heading)}</title>
+  <!-- Inter for clients that honour web fonts; ignored (with graceful fallback) elsewhere. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body, table, td, h1, p, span, a { font-family: ${FONT_STACK} !important; }
+  </style>
 </head>
-<body style="margin:0;padding:0;background:${BODY_BG};-webkit-font-smoothing:antialiased;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<body style="margin:0;padding:0;background:${BODY_BG};-webkit-font-smoothing:antialiased;font-family:${FONT_STACK};">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(opts.preheader)}</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BODY_BG};padding:24px 12px;">
     <tr>
@@ -101,14 +115,14 @@ export function renderEmail(opts: EmailLayoutOptions): string {
                 alt="Spanlyfy"
                 style="display:inline-block;vertical-align:middle;border-radius:9px;border:0;"
               />
-              <span style="display:inline-block;vertical-align:middle;margin-left:10px;font-size:20px;font-weight:700;letter-spacing:-0.02em;color:${CHARCOAL};">
+              <span style="display:inline-block;vertical-align:middle;margin-left:10px;font-family:${FONT_STACK};font-size:20px;font-weight:700;letter-spacing:-0.02em;color:${CHARCOAL};">
                 Spanly<span style="color:${BRAND_ORANGE};">fy</span>
               </span>
             </td>
           </tr>
           <tr>
             <td style="background:${CARD_BG};border:1px solid ${BORDER};border-radius:16px;padding:32px 28px;">
-              <h1 style="margin:0 0 18px;font-size:21px;line-height:1.3;font-weight:700;color:${CHARCOAL};">${escapeHtml(opts.heading)}</h1>
+              <h1 style="margin:0 0 18px;font-family:${FONT_STACK};font-size:21px;line-height:1.3;font-weight:700;color:${CHARCOAL};">${escapeHtml(opts.heading)}</h1>
               ${opts.bodyHtml}
               ${button}
               ${fallbackLink}
@@ -116,11 +130,11 @@ export function renderEmail(opts: EmailLayoutOptions): string {
           </tr>
           <tr>
             <td style="padding:20px 8px;text-align:center;">
-              <p style="margin:0 0 6px;font-size:12px;line-height:1.5;color:${MUTED};">
+              <p style="margin:0 0 6px;font-family:${FONT_STACK};font-size:12px;line-height:1.5;color:${MUTED};">
                 Spanlyfy — schedule and publish across every social platform.
               </p>
               ${opts.footerExtraHtml ?? ""}
-              <p style="margin:8px 0 0;font-size:11px;color:${MUTED};">© ${year} Spanlyfy. All rights reserved.</p>
+              <p style="margin:8px 0 0;font-family:${FONT_STACK};font-size:11px;color:${MUTED};">© ${year} Spanlyfy. All rights reserved.</p>
             </td>
           </tr>
         </table>

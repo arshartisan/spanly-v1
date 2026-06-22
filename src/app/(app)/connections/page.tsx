@@ -28,6 +28,7 @@ export default async function ConnectionsPage({
     avatarUrl: a.avatarUrl,
     externalId: a.externalId,
     status: a.status,
+    tokenExpiresAt: a.tokenExpiresAt ? a.tokenExpiresAt.toISOString() : null,
   }));
 
   const plan = user.subscription?.plan ?? "creator";
