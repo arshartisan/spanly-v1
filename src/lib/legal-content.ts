@@ -24,7 +24,7 @@ export interface LegalSection {
 }
 
 export interface LegalDocument {
-  slug: "terms" | "privacy";
+  slug: "terms" | "privacy" | "data-deletion";
   title: string;
   /** Human-readable effective date, shown under the title. */
   effectiveDate: string;
@@ -624,7 +624,323 @@ export const PRIVACY: LegalDocument = {
   ],
 };
 
-export const LEGAL_DOCUMENTS: Record<"terms" | "privacy", LegalDocument> = {
+export const DATA_DELETION: LegalDocument = {
+  slug: "data-deletion",
+  title: "Data Deletion Policy",
+  effectiveDate: "June 25, 2026",
+  intro: [
+    {
+      type: "p",
+      text: "Welcome to Spanlyfy. This Data Deletion Policy explains how users can request deletion of their personal data and how Spanlyfy processes such requests.",
+    },
+    {
+      type: "p",
+      text: "This policy applies to all users of Spanlyfy and covers data collected through our website, applications, APIs, and third-party integrations.",
+    },
+  ],
+  sections: [
+    {
+      heading: "1. About Spanlyfy",
+      blocks: [
+        {
+          type: "p",
+          text: "Spanlyfy is a social media management and scheduling platform that allows users to connect and manage multiple social media accounts from a single dashboard.",
+        },
+        {
+          type: "p",
+          text: "This policy applies to all users of Spanlyfy and covers data collected through our website, applications, APIs, and third-party integrations.",
+        },
+      ],
+    },
+    {
+      heading: "2. Your Right to Delete Data",
+      blocks: [
+        {
+          type: "p",
+          text: "You have the right to request deletion of your personal data stored by Spanlyfy.",
+        },
+        {
+          type: "p",
+          text: "You may request deletion at any time by:",
+        },
+        {
+          type: "ul",
+          items: [
+            "Using the account deletion feature within your Spanlyfy account settings.",
+            "Disconnecting connected social media accounts.",
+            "Contacting our privacy team via email.",
+            "Submitting a deletion request through our website.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "3. Data We Delete",
+      blocks: [
+        {
+          type: "p",
+          text: "Upon receiving and verifying a valid deletion request, Spanlyfy will delete or anonymize the following information associated with your account:",
+        },
+        {
+          type: "h",
+          text: "Account Information",
+        },
+        {
+          type: "ul",
+          items: [
+            "Full name",
+            "Email address",
+            "Profile information",
+            "Account preferences",
+            "User-generated settings",
+          ],
+        },
+        {
+          type: "h",
+          text: "Connected Social Media Data",
+        },
+        {
+          type: "ul",
+          items: [
+            "Facebook access tokens",
+            "Instagram access tokens",
+            "LinkedIn access tokens",
+            "X (Twitter) access tokens",
+            "TikTok access tokens",
+            "YouTube access tokens",
+            "Other connected platform credentials",
+          ],
+        },
+        {
+          type: "h",
+          text: "Content Data",
+        },
+        {
+          type: "ul",
+          items: [
+            "Scheduled posts",
+            "Draft posts",
+            "Published post history stored by Spanlyfy",
+            "Uploaded images",
+            "Uploaded videos",
+            "Content templates",
+            "AI-generated content history",
+          ],
+        },
+        {
+          type: "h",
+          text: "Team and Workspace Data",
+        },
+        {
+          type: "ul",
+          items: [
+            "Team member invitations",
+            "Workspace information",
+            "Collaboration records",
+          ],
+        },
+        {
+          type: "h",
+          text: "Analytics Data",
+        },
+        {
+          type: "ul",
+          items: [
+            "Social media analytics collected by Spanlyfy",
+            "Engagement reports",
+            "Performance metrics associated with your account",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "4. Data We May Retain",
+      blocks: [
+        {
+          type: "p",
+          text: "Certain information may be retained where required by law or for legitimate business purposes, including:",
+        },
+        {
+          type: "ul",
+          items: [
+            "Billing records",
+            "Invoices",
+            "Payment transaction history",
+            "Tax-related documentation",
+            "Fraud prevention records",
+            "Security logs",
+            "Legal compliance records",
+            "Dispute and chargeback records",
+          ],
+        },
+        {
+          type: "p",
+          text: "Such information will only be retained for the period required by applicable laws and regulations.",
+        },
+      ],
+    },
+    {
+      heading: "5. Social Media Platform Data",
+      blocks: [
+        {
+          type: "p",
+          text: "Spanlyfy integrates with third-party platforms including: Meta Platforms (Facebook and Instagram), LinkedIn, X Corp., Google, TikTok.",
+        },
+        {
+          type: "p",
+          text: "When you disconnect an account or delete your Spanlyfy account:",
+        },
+        {
+          type: "ul",
+          items: [
+            "Access tokens stored by Spanlyfy are removed.",
+            "Future access to your connected accounts is revoked.",
+            "Data retained directly by the social media platforms remains subject to their own privacy policies and deletion procedures.",
+          ],
+        },
+        {
+          type: "p",
+          text: "Users may need to separately manage or delete data stored by those platforms.",
+        },
+      ],
+    },
+    {
+      heading: "6. Account Deletion Process",
+      blocks: [
+        {
+          type: "p",
+          text: "Users can delete their account by:",
+        },
+        {
+          type: "ul",
+          items: [
+            "Logging into Spanlyfy.",
+            "Navigating to Settings → Account Settings.",
+            "Selecting Delete Account.",
+            "Confirming the deletion request.",
+          ],
+        },
+        {
+          type: "p",
+          text: "Once confirmed:",
+        },
+        {
+          type: "ul",
+          items: [
+            "Connected social accounts are disconnected.",
+            "Scheduled content is removed.",
+            "Uploaded media is deleted.",
+            "User data enters the deletion process.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "7. Deletion Timeline",
+      blocks: [
+        {
+          type: "ul",
+          items: [
+            "Access tokens are removed immediately.",
+            "User account access is disabled immediately.",
+            "Most personal data is deleted within 30 days.",
+            "Backup copies may remain for up to 30 additional days before automatic removal.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "8. Backup and Recovery Systems",
+      blocks: [
+        {
+          type: "p",
+          text: "For security and disaster recovery purposes:",
+        },
+        {
+          type: "ul",
+          items: [
+            "Encrypted backups may temporarily contain deleted information.",
+            "Backup data is automatically purged according to our retention schedule.",
+            "Backup data is not used for operational purposes after deletion requests are processed.",
+          ],
+        },
+      ],
+    },
+    {
+      heading: "9. Verification of Requests",
+      blocks: [
+        {
+          type: "p",
+          text: "To protect user privacy and prevent unauthorized deletions, Spanlyfy may verify the identity of the individual submitting a deletion request before processing it.",
+        },
+      ],
+    },
+    {
+      heading: "10. Third-Party Service Providers",
+      blocks: [
+        {
+          type: "p",
+          text: "Spanlyfy may use third-party providers for cloud hosting, payment processing, email delivery, analytics, error monitoring, and security services.",
+        },
+        {
+          type: "p",
+          text: "Where applicable, deletion requests will be propagated to our service providers in accordance with contractual and legal obligations.",
+        },
+      ],
+    },
+    {
+      heading: "11. GDPR and International Privacy Rights",
+      blocks: [
+        {
+          type: "p",
+          text: "Users located in jurisdictions with applicable privacy laws may have rights including the right to access, correction, deletion, portability, objection, and withdrawal of consent.",
+        },
+      ],
+    },
+    {
+      heading: "12. How to Submit a Data Deletion Request",
+      blocks: [
+        {
+          type: "p",
+          text: "If you cannot access your account, submit a request by emailing:",
+        },
+        {
+          type: "p",
+          text: "Email: privacy@spanlyfy.com",
+        },
+        {
+          type: "p",
+          text: "Subject: Data Deletion Request",
+        },
+        {
+          type: "p",
+          text: "Please include: your registered email address, full name, and reason for the request (optional).",
+        },
+      ],
+    },
+    {
+      heading: "13. Contact Information",
+      blocks: [
+        {
+          type: "p",
+          text: "If you have questions regarding this Data Deletion Policy, contact: Spanlyfy Privacy Team, Email: privacy@spanlyfy.com, Website: https://spanlyfy.com",
+        },
+      ],
+    },
+    {
+      heading: "14. Changes to This Policy",
+      blocks: [
+        {
+          type: "p",
+          text: "Spanlyfy may update this Data Deletion Policy periodically. Updated versions will be posted on this page with a revised last updated date.",
+        },
+      ],
+    },
+  ],
+};
+
+export const LEGAL_DOCUMENTS: Record<"terms" | "privacy" | "data-deletion", LegalDocument> = {
   terms: TERMS,
   privacy: PRIVACY,
+  "data-deletion": DATA_DELETION,
 };
