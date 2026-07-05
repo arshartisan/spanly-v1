@@ -37,6 +37,10 @@ export const KNOWN_FLAGS: readonly KnownFlag[] = [
     key: "maintenance-mode",
     description: "Put the customer app into maintenance mode (default off).",
   },
+  {
+    key: "waitlist-mode",
+    description: "Put the public site into waitlist mode (default off).",
+  },
   ...PLATFORMS.map((p) => ({
     key: `platform.${p}`,
     description: `Allow connecting & publishing to ${p}.`,
@@ -44,10 +48,12 @@ export const KNOWN_FLAGS: readonly KnownFlag[] = [
 ];
 
 /**
- * Flags whose ABSENT default is `false`. Only `maintenance-mode`: a missing row means the
- * app is NOT in maintenance. Every other flag defaults to true when its row is missing.
+ * Flags whose ABSENT default is `false`. `maintenance-mode` (a missing row means the app is
+ * NOT in maintenance) and `waitlist-mode` (a missing row means the site is NOT in waitlist
+ * mode - an absent row must never lock the public site). Every other flag defaults to true
+ * when its row is missing.
  */
-const DEFAULT_OFF = new Set<string>(["maintenance-mode"]);
+const DEFAULT_OFF = new Set<string>(["maintenance-mode", "waitlist-mode"]);
 
 /** The default `enabled` value for a flag with no stored row. */
 function defaultEnabled(key: string): boolean {

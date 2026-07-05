@@ -336,6 +336,19 @@ model Announcement {
   @@index([active, startsAt])
 }
 
+// Public waitlist sign-ups (doc 20 waitlist mode). Collected from the landing page while the
+// site is in waitlist mode; `email` is stored normalized (lowercase, trimmed) and unique so a
+// re-submit is idempotent. `position` is derived from createdAt ordering, not stored.
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  ip        String?
+  source    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 // Auth.js session table (Credentials + DB sessions). Deleting rows powers
 // "sign out of all devices".
 model Session {

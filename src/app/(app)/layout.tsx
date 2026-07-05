@@ -33,10 +33,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const isStaff = roleAtLeast(user.role, "support");
 
   // Audience + window filtering happens server-side in activeAnnouncements().
-  const [announcements, maintenance] = await Promise.all([
+  const [announcements, maintenance, waitlist] = await Promise.all([
     activeAnnouncements(user),
     isEnabled("maintenance-mode"),
+    isEnabled("waitlist-mode"),
   ]);
+
+  // Waitlist mode (doc 20): the app is closed to the public. Non-staff are bounced to the public
+  // waitlist landing at `/`; staff keep full access so operators are never locked out.
+  if (waitlist && !isStaff) redirect("/");
 
   const banners: BannerAnnouncement[] = announcements.map((a) => ({
     id: a.id,

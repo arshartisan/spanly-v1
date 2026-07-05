@@ -102,6 +102,11 @@ describe("isEnabled (default rule - absent row must never break the product)", (
     expect(await flags.isEnabled("maintenance-mode")).toBe(false);
   });
 
+  it("absent waitlist-mode → false (never auto-lock the public site)", async () => {
+    flagFindUnique.mockResolvedValue(null);
+    expect(await flags.isEnabled("waitlist-mode")).toBe(false);
+  });
+
   it("stored enabled:false row → false (kill switch engaged)", async () => {
     flagFindUnique.mockResolvedValue({ key: "publishing", enabled: false, value: null });
     expect(await flags.isEnabled("publishing")).toBe(false);
@@ -438,7 +443,7 @@ describe("deleteAnnouncement (returns whether a row was removed)", () => {
 describe("KNOWN_FLAGS (seed set)", () => {
   it("includes the core flags + one per platform, and maintenance-mode", () => {
     const keys = flags.KNOWN_FLAGS.map((f) => f.key);
-    for (const k of ["signups", "publishing", "content-studio", "bulk", "api", "maintenance-mode"]) {
+    for (const k of ["signups", "publishing", "content-studio", "bulk", "api", "maintenance-mode", "waitlist-mode"]) {
       expect(keys).toContain(k);
     }
     for (const p of ["facebook", "instagram", "linkedin", "tiktok", "youtube", "x"]) {

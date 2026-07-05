@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/auth";
+import { isEnabled } from "@/server/settings/flags";
+import { waitlistCount } from "@/server/waitlist";
 
+import { WaitlistLanding } from "@/components/marketing/WaitlistLanding";
 import { Hero } from "@/components/marketing/Hero";
 import { Capabilities } from "@/components/marketing/Capabilities";
 import { PlatformStrip } from "@/components/marketing/PlatformStrip";
@@ -19,6 +22,19 @@ import { HomepageSchema } from "@/components/schema/HomepageSchema";
 export default async function Home() {
   const user = await getCurrentUser();
   if (user) redirect("/dashboard");
+
+  // Waitlist mode: replace the full marketing page with a single-purpose capture landing.
+  // The (marketing) layout suppresses its nav/footer when this flag is on (see layout.tsx),
+  // so the landing stands alone with zero distractions.
+  if (await isEnabled("waitlist-mode")) {
+    const count = await waitlistCount();
+    return (
+      <>
+        <HomepageSchema />
+        <WaitlistLanding count={count} />
+      </>
+    );
+  }
 
   return (
     <>

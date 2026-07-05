@@ -57,10 +57,14 @@ export async function GET(req: Request) {
     }
 
     // 3) Brand-new user → create with the standard onboarding defaults. Honors the signups
-    //    kill-switch exactly like the email signup route.
+    //    kill-switch exactly like the email signup route. Waitlist mode (doc 20) also blocks
+    //    NEW account creation - existing users signing in above (steps 1-2) are unaffected.
     if (!user) {
       if (!(await isEnabled("signups"))) {
         return NextResponse.redirect(new URL("/signup?error=signups_disabled", origin));
+      }
+      if (await isEnabled("waitlist-mode")) {
+        return NextResponse.redirect(new URL("/signup?error=waitlist", origin));
       }
       user = await createTrialUser({
         email: profile.email,

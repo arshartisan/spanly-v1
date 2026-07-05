@@ -19,6 +19,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Sign-ups are temporarily disabled." }, { status: 403 });
   }
 
+  // Waitlist mode (doc 20): the public site is a waitlist - new accounts are paused. Existing
+  // users keep logging in (that path is untouched). Absent flag → not in waitlist mode.
+  if (await isEnabled("waitlist-mode")) {
+    return NextResponse.json(
+      { error: "Sign-ups are paused. Join the waitlist." },
+      { status: 403 },
+    );
+  }
+
   const parsed = signupSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input." }, { status: 400 });

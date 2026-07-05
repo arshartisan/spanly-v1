@@ -7,8 +7,9 @@ import { isAlwaysLive } from "../src/providers/registry";
 
 // Known feature flags to seed (doc 20). Mirrors KNOWN_FLAGS in src/server/settings/flags.ts
 // — kept inline here because that module is `server-only` (unresolvable under the tsx seed).
-// Every flag seeds enabled EXCEPT maintenance-mode, which seeds disabled (absent = not in
-// maintenance). The runtime store treats a missing row as enabled regardless.
+// Every flag seeds enabled EXCEPT the DEFAULT_OFF flags (maintenance-mode, waitlist-mode),
+// which seed disabled (absent = not engaged). The runtime store treats a missing row the same.
+const DEFAULT_OFF_FLAGS = new Set(["maintenance-mode", "waitlist-mode"]);
 const KNOWN_FLAGS: { key: string; description: string }[] = [
   { key: "signups", description: "Allow new account sign-ups." },
   { key: "publishing", description: "Allow posts to be dispatched to providers." },
@@ -16,6 +17,7 @@ const KNOWN_FLAGS: { key: string; description: string }[] = [
   { key: "bulk", description: "Enable bulk scheduling / CSV import." },
   { key: "api", description: "Enable the public v1 API + MCP surface." },
   { key: "maintenance-mode", description: "Put the customer app into maintenance mode (default off)." },
+  { key: "waitlist-mode", description: "Put the public site into waitlist mode (default off)." },
   ...PLATFORMS.map((p) => ({
     key: `platform.${p}`,
     description: `Allow connecting & publishing to ${p}.`,
@@ -120,15 +122,15 @@ async function main() {
   console.log(`✅ Seeded superadmin ${adminEmail} / ${adminPassword} (role: superadmin).`);
 
   // Feature flags (doc 20). Idempotent upsert per key; only create the row when missing so a
-  // re-seed never clobbers an admin's deliberate toggle. maintenance-mode seeds disabled.
+  // re-seed never clobbers an admin's deliberate toggle. DEFAULT_OFF flags seed disabled.
   for (const flag of KNOWN_FLAGS) {
     await prisma.featureFlag.upsert({
       where: { key: flag.key },
-      create: { key: flag.key, enabled: flag.key !== "maintenance-mode", description: flag.description },
+      create: { key: flag.key, enabled: !DEFAULT_OFF_FLAGS.has(flag.key), description: flag.description },
       update: { description: flag.description },
     });
   }
-  console.log(`✅ Seeded ${KNOWN_FLAGS.length} feature flags (maintenance-mode disabled).`);
+  console.log(`✅ Seeded ${KNOWN_FLAGS.length} feature flags (maintenance-mode + waitlist-mode disabled).`);
 
   // Plan catalog (doc 10/17). DB-backed + admin-editable; these mirror DEFAULT_PLAN_DEFS in
   // src/lib/plan-defaults.ts (accountLimit -1 = unlimited). Idempotent upsert; a re-seed

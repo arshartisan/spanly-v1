@@ -27,7 +27,10 @@ import { DefaultsForm } from "@/components/admin/settings/DefaultsForm";
 export const dynamic = "force-dynamic";
 
 // The three global kill switches; superadmin-only to change.
-const GLOBAL_KEYS = new Set(["signups", "publishing", "maintenance-mode"]);
+const GLOBAL_KEYS = new Set(["signups", "publishing", "maintenance-mode", "waitlist-mode"]);
+
+// Global kill switches whose absent-row default is OFF (mirrors flags.ts DEFAULT_OFF).
+const DEFAULT_OFF_KEYS = new Set(["maintenance-mode", "waitlist-mode"]);
 
 interface FlagRow {
   key: string;
@@ -45,6 +48,7 @@ const SPECIAL_LABELS: Record<string, string> = {
   bulk: "Bulk tools",
   api: "Public API",
   "maintenance-mode": "Maintenance mode",
+  "waitlist-mode": "Waitlist mode",
 };
 
 function humanizeFlag(key: string): string {
@@ -71,13 +75,13 @@ export default async function AdminSettingsPage() {
   const rows: FlagRow[] = KNOWN_FLAGS.map((f) => {
     const storedEnabled = storedByKey.get(f.key);
     const enabled =
-      storedEnabled !== undefined ? storedEnabled : f.key !== "maintenance-mode";
+      storedEnabled !== undefined ? storedEnabled : !DEFAULT_OFF_KEYS.has(f.key);
     return { key: f.key, description: f.description, enabled, isGlobal: GLOBAL_KEYS.has(f.key) };
   });
 
   const byKey = (k: string): FlagRow | undefined => rows.find((r) => r.key === k);
 
-  const globalRows = ["signups", "publishing", "maintenance-mode"]
+  const globalRows = ["signups", "publishing", "maintenance-mode", "waitlist-mode"]
     .map(byKey)
     .filter((r): r is FlagRow => r !== undefined);
   const platformRows = PLATFORMS.map((p) => byKey(`platform.${p}`)).filter(

@@ -7,9 +7,9 @@ import { flagPatchSchema } from "@/lib/schemas/admin-settings";
 import { clientIp } from "@/server/rate-limit";
 
 // PATCH /api/admin/settings/flags/:key - toggle a feature flag (doc 20). Role: admin, BUT the
-// global kill switches (signups, publishing) + maintenance-mode require superadmin. Audited
-// with before/after { key, enabled }.
-const SUPERADMIN_ONLY = new Set(["maintenance-mode", "signups", "publishing"]);
+// global kill switches (signups, publishing) + maintenance-mode + waitlist-mode require
+// superadmin. Audited with before/after { key, enabled }.
+const SUPERADMIN_ONLY = new Set(["maintenance-mode", "waitlist-mode", "signups", "publishing"]);
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ key: string }> }) {
   try {
