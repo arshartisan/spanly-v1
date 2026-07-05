@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ManageCookiesButton } from "@/components/consent/ManageCookiesButton";
+import { Logo } from "@/components/brand/Logo";
 
 // Public reading shell for legal pages (Terms / Privacy). Accessible without authentication
 // (these paths are not in middleware's PROTECTED_PREFIXES), so prospective and signed-out
@@ -8,14 +9,11 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary font-bold text-primary-foreground">
-              S
-            </div>
-            <span className="text-lg font-bold tracking-tight">Spanlyfy</span>
+        <div className="mx-auto flex max-w-3xl items-center justify-between py-4 sticky">
+          <Link href="/" className="press flex items-center" aria-label="Spanlyfy home">
+            <Logo className="h-7" />
           </Link>
-          <nav className="flex items-center gap-4 text-sm text-muted-foreground">
+          <nav className="flex items-center gap-4 text-sm text-muted-foreground tracking-tighter">
             <Link href="/terms" className="hover:text-foreground">
               Terms
             </Link>
