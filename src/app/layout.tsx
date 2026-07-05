@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ConsentProvider } from "@/components/consent/ConsentProvider";
 import { AnalyticsScripts } from "@/components/consent/AnalyticsScripts";
+import { OrganizationSchema } from "@/components/schema/OrganizationSchema";
 import "./globals.css";
 
 const inter = Inter({
@@ -33,6 +34,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <OrganizationSchema />
+      </head>
       <body className={`${inter.variable} ${neueMachina.variable} min-h-screen font-sans tracking-tight antialiased`}>
         <ThemeProvider
           attribute="class"

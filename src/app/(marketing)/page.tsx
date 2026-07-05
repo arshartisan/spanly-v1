@@ -12,6 +12,7 @@ import { Pricing } from "@/components/marketing/Pricing";
 import { Testimonials } from "@/components/marketing/Testimonials";
 import { FAQ } from "@/components/marketing/FAQ";
 import { FinalCTA } from "@/components/marketing/FinalCTA";
+import { HomepageSchema } from "@/components/schema/HomepageSchema";
 
 // Public homepage. Signed-in users skip the marketing page and go straight to the app;
 // everyone else sees the landing (so the nav can always assume the signed-out state).
@@ -21,6 +22,7 @@ export default async function Home() {
 
   return (
     <>
+      <HomepageSchema />
       <Hero />
       <Capabilities />
       <PlatformStrip />
